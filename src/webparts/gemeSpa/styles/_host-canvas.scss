@@ -1,0 +1,17 @@
+// Contenedor host SharePoint: ancho completo (selectores fuera del scope de la Web Part).
+.CanvasZone {
+  padding: 0 !important;
+}
+
+.CanvasZoneSectionContainer {
+  max-width: 100% !important;
+}
+
+.CanvasSection {
+  padding: 0 !important;
+}
+
+.ControlZone {
+  padding: 0 !important;
+  margin: 0 !important;
+}

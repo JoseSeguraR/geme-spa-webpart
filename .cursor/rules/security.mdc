@@ -1,0 +1,27 @@
+---
+description: Restricciones de seguridad para código SPFx, React y SharePoint
+globs:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+alwaysApply: false
+---
+
+# Seguridad
+
+No hardcodear secretos, tokens, credenciales ni claves.
+
+No hardcodear configuración dependiente del entorno cuando pueda obtenerse del contexto o configuración de la aplicación.
+
+No utilizar `dangerouslySetInnerHTML` salvo necesidad explícita y contenido correctamente controlado o sanitizado.
+
+No confiar en contenido proporcionado por usuarios.
+
+No asumir permisos SharePoint.
+
+No ampliar permisos Microsoft Graph para resolver problemas de implementación.
+
+Aplicar principio de mínimo privilegio.
+
+No registrar tokens, secretos ni datos sensibles mediante console.log, console.warn o console.error.
+
+No desactivar validaciones TypeScript o de seguridad para hacer funcionar una implementación.

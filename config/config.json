@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "geme-spa-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/gemeSpa/GemeSpaWebPart.js",
+          "manifest": "./src/webparts/gemeSpa/GemeSpaWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "GemeSpaWebPartStrings": "lib/webparts/gemeSpa/loc/{locale}.js"
+  }
+}

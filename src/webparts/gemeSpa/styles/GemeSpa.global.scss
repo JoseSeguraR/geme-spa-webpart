@@ -1,0 +1,17 @@
+@import 'host-canvas';
+
+$bootstrap-icons-font-dir: '~bootstrap-icons/font/fonts';
+@import '~bootstrap-icons/font/bootstrap-icons';
+
+.gemeSpaBootstrap {
+  $font-size-base: 0.9375rem;
+  @import 'tokens';
+  @import '~bootstrap/scss/bootstrap';
+  font-size: var(--cowork-font-size-base);
+  line-height: var(--cowork-line-height);
+  @import 'layout';
+  @import 'navigation';
+  @import 'loading';
+  @import 'buttons';
+  @import 'theme-geme';
+}

@@ -1,0 +1,69 @@
+// Ajustes puntuales GEME (sidebar azul) sobre clases corporativas cowork-*.
+
+.cowork-barra-lateral__alternar:hover,
+.cowork-barra-lateral__alternar:focus-visible {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.cowork-barra-lateral__alternar:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.45);
+}
+
+.cowork-barra-lateral__pie {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.cowork-menu-arbol__lista--anidada {
+  border-left-color: rgba(255, 255, 255, 0.15);
+}
+
+.cowork-menu-arbol__grupo:hover,
+.cowork-menu-arbol__grupo:focus-visible,
+.cowork-menu-arbol__enlace:hover,
+.cowork-menu-arbol__enlace:focus-visible {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.cowork-menu-arbol__grupo:focus-visible,
+.cowork-menu-arbol__enlace:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.45);
+}
+
+.cowork-menu-arbol__enlace--activo {
+  color: inherit;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.cowork-menu-arbol__icono-principal:hover,
+.cowork-menu-arbol__icono-principal:focus-visible,
+a.cowork-menu-arbol__icono-principal:hover,
+a.cowork-menu-arbol__icono-principal:focus-visible {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.cowork-menu-arbol__icono-principal--activo {
+  color: inherit;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.cowork-menu-arbol__icono-principal:focus-visible,
+a.cowork-menu-arbol__icono-principal:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.45);
+}
+
+.cowork-menu-flyout__titulo {
+  color: rgba(255, 255, 255, 0.65);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.cowork-menu-flyout {
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.25);
+}
+
+.cowork-cargando-inicial__spinner {
+  color: var(--cowork-color-sidebar-bg);
+}
+
+.cowork-menu-usuario__avatar {
+  color: var(--cowork-color-texto-principal);
+}

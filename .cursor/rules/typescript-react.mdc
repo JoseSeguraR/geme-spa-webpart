@@ -1,0 +1,28 @@
+---
+description: Reglas TypeScript y React del proyecto SPFx
+globs:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+alwaysApply: false
+---
+
+# TypeScript y React
+
+La fuente canónica de convenciones generales es `AGENTS.md`.
+
+Aplicar además estas reglas al modificar TypeScript o React:
+
+- Utilizar TypeScript estricto.
+- Evitar `any`.
+- No utilizar prefijo `I` para interfaces.
+- Componentes, funciones, interfaces, types y clases usan PascalCase.
+- Variables, propiedades y parámetros usan camelCase.
+- Los nombres propios del proyecto se escriben en español.
+- Preferir componentes funcionales React y hooks.
+- React controla el DOM del Web Part.
+- No utilizar jQuery.
+- Evitar manipulación directa del DOM salvo necesidad técnica justificada.
+- No introducir Redux, Zustand, MobX u otro gestor de estado.
+- No introducir React Router u otra biblioteca de routing sin autorización.
+- No agregar comentarios que describan código evidente.
+- No crear abstracciones preventivas.

@@ -1,0 +1,33 @@
+---
+description: Reglas de integración con SharePoint Online y SharePoint REST
+globs:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+alwaysApply: false
+---
+
+# SharePoint
+
+La integración predeterminada utiliza SharePoint REST mediante SPHttpClient.
+
+Orden de preferencia:
+
+1. SharePoint REST.
+2. Microsoft Graph solamente cuando sea necesario.
+3. PnPjs solamente con autorización y justificación.
+
+Las solicitudes SharePoint deben residir en servicios.
+
+Los componentes React no deben construir ni ejecutar directamente solicitudes REST.
+
+Validar respuestas HTTP antes de procesarlas.
+
+Distinguir errores de respuestas exitosas sin resultados.
+
+No ocultar errores devolviendo valores aparentemente válidos.
+
+Evitar URLs absolutas, GUID o usuarios dependientes del entorno hardcodeados.
+
+Solicitar mediante `$select` solamente las propiedades necesarias cuando sea razonable.
+
+Considerar paginación y throttling según el volumen de datos.

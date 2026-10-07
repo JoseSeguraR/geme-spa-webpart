@@ -1,0 +1,49 @@
+---
+description: Reglas de UI, Bootstrap 5.2 y estilos de la SPA
+globs:
+  - "src/**/*.tsx"
+  - "src/**/*.scss"
+  - "src/**/*.css"
+alwaysApply: false
+---
+
+# UI y Bootstrap
+
+Utilizar Bootstrap 5.2 como base visual.
+
+Priorizar:
+
+- grid;
+- layout;
+- utilities;
+- clases de componentes Bootstrap.
+
+No utilizar JavaScript de Bootstrap.
+
+No agregar Popper.
+
+No utilizar Fluent UI.
+
+## Iconografía
+
+Utilizar Bootstrap Icons como sistema de iconografía predeterminado de la aplicación.
+
+Reservar SVG o imágenes propios para identidad corporativa o iconografía que Bootstrap Icons no represente adecuadamente.
+
+No introducir otras librerías de iconos sin autorización explícita.
+
+No utilizar emojis como sustitutos de iconos de interfaz.
+
+Los iconos puramente decorativos deben llevar `aria-hidden="true"`.
+
+Los controles representados solo con un icono deben tener nombre accesible, por ejemplo mediante `aria-label`.
+
+Utilizar variables CSS `:root` para los tokens visuales propios de la aplicación cuando corresponda.
+
+Evitar recrear mediante CSS propio aquello que Bootstrap ya resuelve adecuadamente.
+
+Utilizar SCSS/CSS propio para identidad visual o comportamiento que Bootstrap no cubra.
+
+Evitar estilos inline salvo valores realmente dinámicos.
+
+No introducir otra biblioteca de UI sin autorización.

@@ -1,0 +1,22 @@
+.cowork-cargando-inicial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--cowork-color-contenido-bg);
+  color: var(--cowork-color-texto-principal);
+}
+
+.cowork-cargando-inicial__spinner {
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--cowork-color-sidebar-enlace-activo);
+}
+
+.cowork-cargando-inicial__texto {
+  margin: 0;
+  font-size: 0.9375rem;
+}

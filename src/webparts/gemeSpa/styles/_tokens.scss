@@ -1,0 +1,94 @@
+// Tokens Cowork (densidad y tipografía). Marca GEME: sidebar azul corporativo.
+$cowork-color-texto-principal: #0f172b !default;
+
+$cowork-color-sidebar-bg: #003773 !default;
+$cowork-color-sidebar-text: #ffffff !default;
+$cowork-color-sidebar-borde: rgba(255, 255, 255, 0.15) !default;
+$cowork-color-sidebar-enlace-activo: #ffffff !default;
+$cowork-color-contenido-bg: #f8f9fb !default;
+$cowork-color-topbar-bg: #ffffff !default;
+$cowork-color-topbar-borde: #dee2e6 !default;
+
+$cowork-font-size-base: 0.9375rem !default;
+$cowork-font-size-sm: 0.875rem !default;
+$cowork-font-size-xs: 0.8125rem !default;
+$cowork-line-height: 1.45 !default;
+
+$cowork-heading-vista: 1.75rem !default;
+$cowork-heading-seccion: 1.375rem !default;
+$cowork-heading-sub: 1.125rem !default;
+
+$cowork-space-1: 0.25rem !default;
+$cowork-space-2: 0.5rem !default;
+$cowork-space-3: 0.75rem !default;
+$cowork-space-4: 1rem !default;
+$cowork-space-5: 1.5rem !default;
+$cowork-space-6: 2rem !default;
+
+$cowork-topbar-altura: 40px !default;
+$cowork-sidebar-ancho: 12.8rem !default;
+$cowork-sidebar-ancho-colapsado: 3.6rem !default;
+$cowork-sidebar-logo-altura: 2.8rem !default;
+$cowork-sidebar-logo-altura-colapsada: 1.6rem !default;
+$cowork-sidebar-logo-altura-movil: 1.8rem !default;
+$cowork-topbar-logo-ancho-max: 8rem !default;
+$cowork-topbar-logo-ancho-max-movil: 4rem !default;
+$cowork-topbar-logo-altura-movil: 1.375rem !default;
+$cowork-control-tamano: 2rem !default;
+$cowork-control-altura: 2.375rem !default;
+$cowork-espaciado-contenido: 1.25rem !default;
+$cowork-espaciado-contenido-movil: 1rem !default;
+$cowork-nav-indent: 0.75rem !default;
+$cowork-transicion-layout: 0.2s ease !default;
+
+$cowork-tabla-row-height: 42px !default;
+$cowork-tabla-header-height: 40px !default;
+
+$cowork-color-btn-primary-hover: #002d5c !default;
+$cowork-color-btn-primary-active: #002449 !default;
+
+& {
+  --cowork-color-sidebar-bg: #{$cowork-color-sidebar-bg};
+  --cowork-color-sidebar-text: #{$cowork-color-sidebar-text};
+  --cowork-color-sidebar-borde: #{$cowork-color-sidebar-borde};
+  --cowork-color-sidebar-enlace-activo: #{$cowork-color-sidebar-enlace-activo};
+  --cowork-color-contenido-bg: #{$cowork-color-contenido-bg};
+  --cowork-color-topbar-bg: #{$cowork-color-topbar-bg};
+  --cowork-color-topbar-borde: #{$cowork-color-topbar-borde};
+  --cowork-color-texto-principal: #{$cowork-color-texto-principal};
+
+  --cowork-font-size-base: #{$cowork-font-size-base};
+  --cowork-font-size-sm: #{$cowork-font-size-sm};
+  --cowork-font-size-xs: #{$cowork-font-size-xs};
+  --cowork-line-height: #{$cowork-line-height};
+
+  --cowork-heading-vista: #{$cowork-heading-vista};
+  --cowork-heading-seccion: #{$cowork-heading-seccion};
+  --cowork-heading-sub: #{$cowork-heading-sub};
+
+  --cowork-space-1: #{$cowork-space-1};
+  --cowork-space-2: #{$cowork-space-2};
+  --cowork-space-3: #{$cowork-space-3};
+  --cowork-space-4: #{$cowork-space-4};
+  --cowork-space-5: #{$cowork-space-5};
+  --cowork-space-6: #{$cowork-space-6};
+
+  --cowork-topbar-altura: #{$cowork-topbar-altura};
+  --cowork-sidebar-ancho: #{$cowork-sidebar-ancho};
+  --cowork-sidebar-ancho-colapsado: #{$cowork-sidebar-ancho-colapsado};
+  --cowork-sidebar-logo-altura: #{$cowork-sidebar-logo-altura};
+  --cowork-sidebar-logo-altura-colapsada: #{$cowork-sidebar-logo-altura-colapsada};
+  --cowork-sidebar-logo-altura-movil: #{$cowork-sidebar-logo-altura-movil};
+  --cowork-topbar-logo-ancho-max: #{$cowork-topbar-logo-ancho-max};
+  --cowork-topbar-logo-ancho-max-movil: #{$cowork-topbar-logo-ancho-max-movil};
+  --cowork-topbar-logo-altura-movil: #{$cowork-topbar-logo-altura-movil};
+  --cowork-control-tamano: #{$cowork-control-tamano};
+  --cowork-control-altura: #{$cowork-control-altura};
+  --cowork-espaciado-contenido: #{$cowork-espaciado-contenido};
+  --cowork-espaciado-contenido-movil: #{$cowork-espaciado-contenido-movil};
+  --cowork-nav-indent: #{$cowork-nav-indent};
+  --cowork-transicion-layout: #{$cowork-transicion-layout};
+
+  --cowork-tabla-row-height: #{$cowork-tabla-row-height};
+  --cowork-tabla-header-height: #{$cowork-tabla-header-height};
+}

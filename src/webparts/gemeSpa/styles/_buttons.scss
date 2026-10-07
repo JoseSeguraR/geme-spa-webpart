@@ -1,0 +1,21 @@
+// Botones corporativos: combinar con utilidades Bootstrap (.btn, .btn-sm, etc.).
+// Ejemplo: className="btn cowork-btn-primary btn-sm"
+
+$cowork-color-btn-primary-hover: #d12856 !default;
+$cowork-color-btn-primary-active: #b8244c !default;
+
+.btn.cowork-btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #{$cowork-color-sidebar-enlace-activo};
+  --bs-btn-border-color: #{$cowork-color-sidebar-enlace-activo};
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #{$cowork-color-btn-primary-hover};
+  --bs-btn-hover-border-color: #{$cowork-color-btn-primary-hover};
+  --bs-btn-focus-shadow-rgb: 233, 47, 97;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #{$cowork-color-btn-primary-active};
+  --bs-btn-active-border-color: #{$cowork-color-btn-primary-active};
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #{$cowork-color-sidebar-enlace-activo};
+  --bs-btn-disabled-border-color: #{$cowork-color-sidebar-enlace-activo};
+}
