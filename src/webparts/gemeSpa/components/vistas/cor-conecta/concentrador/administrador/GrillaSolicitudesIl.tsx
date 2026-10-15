@@ -14,12 +14,13 @@ import DesplegableAccionesFila, {
   type ModoAccionesFilaSolicitudesIl
 } from '../DesplegableAccionesFila';
 import { FormatearFechaHoraVisible } from './UtilidadesFechaSolicitudIl';
-import { UseSolicitudesIlLista } from './UseSolicitudesIlLista';
+import { UseSolicitudesIlLista, type RestriccionInstalacionesSolicitante } from './UseSolicitudesIlLista';
 
 export type GrillaSolicitudesIlProps = {
   context: WebPartContext;
   estadoFiltro: EstadoSolicitudIl;
   centralIdFiltro?: number;
+  restriccionInstalaciones?: RestriccionInstalacionesSolicitante;
   textoBusqueda: string;
   onCambioBusqueda: (texto: string) => void;
   recargarToken: number;
@@ -37,6 +38,7 @@ export default function GrillaSolicitudesIl(props: GrillaSolicitudesIlProps): Re
     context,
     estadoFiltro,
     centralIdFiltro,
+    restriccionInstalaciones,
     textoBusqueda,
     onCambioBusqueda,
     recargarToken,
@@ -56,6 +58,7 @@ export default function GrillaSolicitudesIl(props: GrillaSolicitudesIlProps): Re
     context,
     estadoFiltro,
     centralIdFiltro,
+    restriccionInstalaciones,
     textoBusqueda,
     paginaActual,
     tamanoPagina,
@@ -66,7 +69,7 @@ export default function GrillaSolicitudesIl(props: GrillaSolicitudesIlProps): Re
 
   useEffect(() => {
     setPaginaActual(0);
-  }, [estadoFiltro, centralIdFiltro, textoBusqueda, recargarToken]);
+  }, [estadoFiltro, centralIdFiltro, restriccionInstalaciones, textoBusqueda, recargarToken]);
 
   const mapaFilasPorId = useMemo(() => {
     const mapa = new Map<number, SolicitudIl>();

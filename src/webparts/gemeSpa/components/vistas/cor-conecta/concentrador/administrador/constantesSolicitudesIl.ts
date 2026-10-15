@@ -18,11 +18,9 @@ export const CampoEstadoDestinoBitacoraIl = 'TAREADESTINO_x003a_ESTADO';
 export const CampoAccionAvanceBitacoraIl = 'ACCIONAVANCE_x003a_ACCION';
 /** Mantenedor de instalaciones; en UI se presenta como «Central». */
 export const NombreListaCentrales = 'CONC_MANTENEDOR_INSTALACIONES';
+/** Asignación usuario → instalaciones (lookup múltiple) para perfil solicitante. */
+export const NombreListaUsuariosInstalaciones = 'CONC_MANTENEDOR_USUARIOSINSTALACIONES';
 export const ModuloFiltroInstalacionConcentrador = 'Concentrador';
-
-/** URL de ejemplo del Excel vinculado; reemplazar por la biblioteca real del sitio. */
-export const UrlExcelVinculadoSolicitudesIl =
-  'https://www.microsoft.com/es-es/download/details.aspx?id=5197';
 
 export type EstadoSolicitudIl = 'Vigente' | 'Finalizada' | 'Anulada';
 

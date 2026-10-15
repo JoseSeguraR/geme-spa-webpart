@@ -11,7 +11,7 @@ import {
 
 export type ModalVerSolicitudIlProps = {
   context: WebPartContext;
-  solicitud: SolicitudIl | null;
+  solicitud?: SolicitudIl;
   visible: boolean;
   onCerrar: () => void;
 };
@@ -29,7 +29,7 @@ function CampoDetalle(props: { etiqueta: string; valor: React.ReactNode; multili
   );
 }
 
-export default function ModalVerSolicitudIl(props: ModalVerSolicitudIlProps): React.ReactElement | null {
+export default function ModalVerSolicitudIl(props: ModalVerSolicitudIlProps): React.ReactElement {
   const { context, solicitud, visible, onCerrar } = props;
   const [adjuntos, setAdjuntos] = useState<AdjuntoSolicitudIl[]>([]);
   const [cargandoAdjuntos, setCargandoAdjuntos] = useState(false);
@@ -70,7 +70,7 @@ export default function ModalVerSolicitudIl(props: ModalVerSolicitudIlProps): Re
   }, [context, solicitud, visible]);
 
   if (!visible || !solicitud) {
-    return null;
+    return <></>;
   }
 
   const estadoVisible = ResolverEstadoSolicitudIl(solicitud.estado);

@@ -3,11 +3,11 @@ import type { EstadoSolicitudIl } from '../components/vistas/cor-conecta/concent
 export type SolicitudIl = {
   id: number;
   idCen: string;
-  centralId: number | null;
+  centralId?: number;
   centralEtiqueta: string;
   descripcion: string;
-  fechaInicio: string | null;
-  fechaFin: string | null;
+  fechaInicio?: string;
+  fechaFin?: string;
   estado: EstadoSolicitudIl | string;
 };
 
@@ -34,7 +34,7 @@ export type AdjuntoSolicitudIl = {
 
 /** Detalle para gestión: incluye lookup TAREAACTUAL (bitácora vigente). */
 export type DetalleSolicitudIl = SolicitudIl & {
-  idBitacoraActual: number | null;
+  idBitacoraActual?: number;
 };
 
 export type DatosActualizarSolicitudIl = {

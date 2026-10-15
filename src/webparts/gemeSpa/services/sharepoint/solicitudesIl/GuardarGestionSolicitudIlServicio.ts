@@ -20,7 +20,7 @@ export type ProgresoGestionSolicitudIl = {
 
 export type ParametrosGuardarGestionSolicitudIl = {
   idSolicitud: number;
-  idBitacoraActual: number | null;
+  idBitacoraActual?: number;
   estadoInicial: EstadoSolicitudIl;
   estadoNuevo: EstadoSolicitudIl;
   datos: DatosActualizarSolicitudIl;

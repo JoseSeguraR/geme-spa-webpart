@@ -18,7 +18,7 @@ export type ModalNuevaSolicitudIlProps = {
   centrales: CentralMantenedor[];
   propiedadesSolicitudesIl: PropiedadesWebPartSolicitudesIl;
   /** Si se indica, el formulario se abre como clon (sin adjuntos ni fecha fin de origen). */
-  solicitudOrigenClon?: SolicitudIl | null;
+  solicitudOrigenClon?: SolicitudIl;
   onCerrar: () => void;
   onCreado: () => void;
 };
@@ -39,7 +39,7 @@ function ObtenerEstadoDesdeFechas(finLocal: string): EstadoSolicitudIl {
   return finLocal.trim() ? 'Finalizada' : 'Vigente';
 }
 
-export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps): React.ReactElement | null {
+export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps): React.ReactElement {
   const { context, visible, centrales, propiedadesSolicitudesIl, solicitudOrigenClon, onCerrar, onCreado } = props;
   const [idCen, setIdCen] = useState('');
   const [centralId, setCentralId] = useState('');
@@ -53,7 +53,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
 
   const estadoCalculado = useMemo(() => ObtenerEstadoDesdeFechas(finLocal), [finLocal]);
   const finHabilitado = inicioLocal.trim().length > 0;
-  const esClon = solicitudOrigenClon !== null && solicitudOrigenClon !== undefined;
+  const esClon = solicitudOrigenClon !== undefined;
 
   const LimpiarFormulario = (): void => {
     setIdCen('');
@@ -73,9 +73,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
     if (solicitudOrigenClon) {
       setIdCen(solicitudOrigenClon.idCen ?? '');
       setCentralId(
-        solicitudOrigenClon.centralId !== null && solicitudOrigenClon.centralId !== undefined
-          ? String(solicitudOrigenClon.centralId)
-          : ''
+        solicitudOrigenClon.centralId !== undefined ? String(solicitudOrigenClon.centralId) : ''
       );
       setDescripcion(solicitudOrigenClon.descripcion ?? '');
       setInicioLocal(ConvertirIsoAFechaLocalInput(solicitudOrigenClon.fechaInicio));
@@ -89,7 +87,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
   }, [visible, solicitudOrigenClon]);
 
   if (!visible) {
-    return null;
+    return <></>;
   }
 
   const Cerrar = (): void => {

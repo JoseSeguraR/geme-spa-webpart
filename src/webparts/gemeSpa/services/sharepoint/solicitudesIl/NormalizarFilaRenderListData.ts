@@ -39,7 +39,7 @@ function ObtenerTexto(valor: unknown): string {
   return String(valor);
 }
 
-function ObtenerLookupId(valor: unknown): number | null {
+function ObtenerLookupId(valor: unknown): number | undefined {
   if (Array.isArray(valor) && valor.length > 0) {
     const primero = valor[0] as Record<string, unknown>;
     const id = primero.lookupId ?? primero.LookupId;
@@ -57,7 +57,7 @@ function ObtenerLookupId(valor: unknown): number | null {
       return id;
     }
   }
-  return null;
+  return undefined;
 }
 
 function ObtenerNumero(valor: unknown): number {
@@ -87,8 +87,8 @@ export function NormalizarFilaSolicitudIlDesdeRender(fila: FilaRenderListData): 
     centralId: ObtenerLookupId(centralRaw),
     centralEtiqueta: ObtenerTexto(centralRaw),
     descripcion: ObtenerTexto(fila.DESCRIPCION),
-    fechaInicio: ObtenerTexto(fila.FECHA_INICIO) || null,
-    fechaFin: ObtenerTexto(fila.FECHA_FIN) || null,
+    fechaInicio: ObtenerTexto(fila.FECHA_INICIO) || undefined,
+    fechaFin: ObtenerTexto(fila.FECHA_FIN) || undefined,
     estado: estadoTexto as EstadoSolicitudIl
   };
 }

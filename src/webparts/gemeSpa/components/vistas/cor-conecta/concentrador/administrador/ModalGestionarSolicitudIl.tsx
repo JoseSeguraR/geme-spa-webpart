@@ -26,7 +26,7 @@ import { ValidarArchivoAdjuntoSharePoint } from '../../../../../utils/Validacion
 
 export type ModalGestionarSolicitudIlProps = {
   context: WebPartContext;
-  solicitud: SolicitudIl | null;
+  solicitud?: SolicitudIl;
   visible: boolean;
   centrales: CentralMantenedor[];
   propiedadesSolicitudesIl: PropiedadesWebPartSolicitudesIl;
@@ -67,12 +67,12 @@ function CalcularEstadoNuevo(
   return estadoInicial;
 }
 
-export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitudIlProps): React.ReactElement | null {
+export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitudIlProps): React.ReactElement {
   const { context, solicitud, visible, centrales, propiedadesSolicitudesIl, onCerrar, onGuardado } = props;
 
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
   const [errorCarga, setErrorCarga] = useState<string | undefined>();
-  const [idBitacoraActual, setIdBitacoraActual] = useState<number | null>(null);
+  const [idBitacoraActual, setIdBitacoraActual] = useState<number | undefined>(undefined);
   const [estadoInicial, setEstadoInicial] = useState<EstadoSolicitudIl>('Vigente');
   const [teniaFechaFinAlCargar, setTeniaFechaFinAlCargar] = useState(false);
 
@@ -104,7 +104,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
     if (!visible || !solicitud) {
       setErrorCarga(undefined);
       setCargandoDetalle(false);
-      setIdBitacoraActual(null);
+      setIdBitacoraActual(undefined);
       setAdjuntosExistentes([]);
       setAdjuntosMarcadosEliminar([]);
       setArchivosNuevos([]);
@@ -163,7 +163,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
   }, [context, solicitud, visible]);
 
   if (!visible || !solicitud) {
-    return null;
+    return <></>;
   }
 
   const Cerrar = (): void => {

@@ -119,13 +119,14 @@ export async function ObtenerDetalleSolicitudIlPorId(
   return {
     id: item.Id,
     idCen: item.ID_CEN ?? '',
-    centralId: item.INSTALACIONId ?? null,
+    centralId: item.INSTALACIONId ?? undefined,
     centralEtiqueta,
     descripcion: item.DESCRIPCION ?? '',
-    fechaInicio: item.FECHA_INICIO ?? null,
-    fechaFin: item.FECHA_FIN ?? null,
+    fechaInicio: item.FECHA_INICIO ?? undefined,
+    fechaFin: item.FECHA_FIN ?? undefined,
     estado: ResolverEstadoSolicitudIl(estadoTexto),
-    idBitacoraActual: item.TAREAACTUALId && item.TAREAACTUALId > 0 ? item.TAREAACTUALId : null
+    idBitacoraActual:
+      item.TAREAACTUALId && item.TAREAACTUALId > 0 ? item.TAREAACTUALId : undefined
   };
 }
 

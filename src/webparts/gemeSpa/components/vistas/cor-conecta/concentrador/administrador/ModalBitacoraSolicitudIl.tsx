@@ -12,7 +12,7 @@ import { FormatearFechaHoraVisible } from './UtilidadesFechaSolicitudIl';
 
 export type ModalBitacoraSolicitudIlProps = {
   context: WebPartContext;
-  idSolicitudIl: number | null;
+  idSolicitudIl?: number;
   visible: boolean;
   onCerrar: () => void;
 };
@@ -28,14 +28,14 @@ function CeldaFecha(valor: string): React.ReactElement {
   return <span>{visible || '—'}</span>;
 }
 
-export default function ModalBitacoraSolicitudIl(props: ModalBitacoraSolicitudIlProps): React.ReactElement | null {
+export default function ModalBitacoraSolicitudIl(props: ModalBitacoraSolicitudIlProps): React.ReactElement {
   const { context, idSolicitudIl, visible, onCerrar } = props;
   const [filas, setFilas] = useState<FilaGrillaBitacora[]>([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
-    if (!visible || idSolicitudIl === null) {
+    if (!visible || idSolicitudIl === undefined) {
       setFilas([]);
       setError(undefined);
       return undefined;
@@ -129,8 +129,8 @@ export default function ModalBitacoraSolicitudIl(props: ModalBitacoraSolicitudIl
     []
   );
 
-  if (!visible || idSolicitudIl === null) {
-    return null;
+  if (!visible || idSolicitudIl === undefined) {
+    return <></>;
   }
 
   return (

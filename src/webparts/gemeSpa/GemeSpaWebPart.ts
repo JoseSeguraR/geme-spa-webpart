@@ -31,7 +31,8 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
         concSolicitudesIlIdTareaReactivar: this.properties.concSolicitudesIlIdTareaReactivar,
         concSolicitudesIlIdAccionFinalizar: this.properties.concSolicitudesIlIdAccionFinalizar,
         concSolicitudesIlIdAccionAnular: this.properties.concSolicitudesIlIdAccionAnular,
-        concSolicitudesIlIdAccionReactivar: this.properties.concSolicitudesIlIdAccionReactivar
+        concSolicitudesIlIdAccionReactivar: this.properties.concSolicitudesIlIdAccionReactivar,
+        concSolicitudesIlUrlExcelVinculado: this.properties.concSolicitudesIlUrlExcelVinculado
       }
     });
 
@@ -89,6 +90,11 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdAccionReactivar', {
                   label: 'ID Acción Reactivar'
+                }),
+                PropertyPaneTextField('concSolicitudesIlUrlExcelVinculado', {
+                  label: 'URL Excel vinculado Solicitudes IL',
+                  description:
+                    'Enlace al archivo Excel vinculado (URL absoluta o relativa al sitio).'
                 })
               ]
             }

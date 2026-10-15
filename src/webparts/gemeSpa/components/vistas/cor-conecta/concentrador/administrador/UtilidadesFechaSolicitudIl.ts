@@ -6,7 +6,7 @@ const OpcionesFechaHoraEs: Intl.DateTimeFormatOptions = {
   minute: '2-digit'
 };
 
-export function FormatearFechaHoraVisible(valor: string | null | undefined): string {
+export function FormatearFechaHoraVisible(valor: string | undefined): string {
   if (!valor) {
     return '';
   }
@@ -29,7 +29,7 @@ export function ConvertirEntradaLocalAIsoUtc(valorLocal: string): string {
   return fecha.toISOString();
 }
 
-export function ConvertirIsoAFechaLocalInput(valorIso: string | null | undefined): string {
+export function ConvertirIsoAFechaLocalInput(valorIso: string | undefined): string {
   if (!valorIso) {
     return '';
   }

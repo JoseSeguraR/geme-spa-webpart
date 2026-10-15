@@ -7,10 +7,17 @@ import { ObtenerPaginaSolicitudesIlRenderListData } from '../../../../../service
 import { SharePointRestError } from '../../../../../services/sharepoint/SharePointRestError';
 import { CampoEstadoTareaActualIl, type EstadoSolicitudIl } from './constantesSolicitudesIl';
 
+/** Filtro por instalaciones asignadas al solicitante; ausente en otros perfiles. */
+export type RestriccionInstalacionesSolicitante =
+  | { activo: false }
+  | { activo: true; listo: false }
+  | { activo: true; listo: true; ids: readonly number[] };
+
 export type UseSolicitudesIlListaParams = {
   context: WebPartContext;
   estadoFiltro: EstadoSolicitudIl;
   centralIdFiltro?: number;
+  restriccionInstalaciones?: RestriccionInstalacionesSolicitante;
   textoBusqueda: string;
   paginaActual: number;
   tamanoPagina: number;
@@ -44,6 +51,7 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
     context,
     estadoFiltro,
     centralIdFiltro,
+    restriccionInstalaciones = { activo: false },
     textoBusqueda,
     paginaActual,
     tamanoPagina,
@@ -93,7 +101,17 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
 
   useEffect(() => {
     tokensPagingRef.current = [];
-  }, [estadoFiltro, centralIdFiltro, tamanoPagina, campoOrden, direccionOrden, textoBusqueda, recargarToken, tokenRecargaLocal]);
+  }, [
+    estadoFiltro,
+    centralIdFiltro,
+    restriccionInstalaciones,
+    tamanoPagina,
+    campoOrden,
+    direccionOrden,
+    textoBusqueda,
+    recargarToken,
+    tokenRecargaLocal
+  ]);
 
   useEffect(() => {
     let cancelado = false;
@@ -102,7 +120,23 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
       setEstadoCarga('cargando');
       setMensajeError(undefined);
 
+      if (restriccionInstalaciones.activo) {
+        if (!restriccionInstalaciones.listo) {
+          return;
+        }
+        if (restriccionInstalaciones.ids.length === 0) {
+          setFilas([]);
+          setHayPaginaSiguiente(false);
+          setEstadoCarga('vacio');
+          return;
+        }
+      }
+
       try {
+        const instalacionesPermitidasIds =
+          restriccionInstalaciones.activo && restriccionInstalaciones.listo
+            ? restriccionInstalaciones.ids
+            : undefined;
         const campoSharePoint = MapaCampoOrdenGrilla[campoOrden] ?? 'ID';
         let paging: string | undefined;
         const tokens = tokensPagingRef.current;
@@ -116,6 +150,7 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
               {
                 estado: estadoFiltro,
                 centralId: centralIdFiltro,
+                instalacionesPermitidasIds,
                 tamanoPagina,
                 campoOrden: campoSharePoint,
                 direccionOrden
@@ -137,6 +172,7 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
           {
             estado: estadoFiltro,
             centralId: centralIdFiltro,
+            instalacionesPermitidasIds,
             tamanoPagina,
             campoOrden: campoSharePoint,
             direccionOrden
@@ -181,6 +217,7 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
     context,
     estadoFiltro,
     centralIdFiltro,
+    restriccionInstalaciones,
     textoBusqueda,
     paginaActual,
     tamanoPagina,

@@ -21,7 +21,16 @@ export type PropiedadesWebPartSolicitudesIl = {
   concSolicitudesIlIdAccionFinalizar?: string;
   concSolicitudesIlIdAccionAnular?: string;
   concSolicitudesIlIdAccionReactivar?: string;
+  /** Enlace al Excel vinculado de Solicitudes IL (descarga / apertura en Office). */
+  concSolicitudesIlUrlExcelVinculado?: string;
 };
+
+export function ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps(
+  props: PropiedadesWebPartSolicitudesIl
+): string | undefined {
+  const url = props.concSolicitudesIlUrlExcelVinculado?.trim() ?? '';
+  return url.length > 0 ? url : undefined;
+}
 
 function ParsearIdNumerico(valor: string | undefined, nombreCampo: string): number {
   const texto = valor?.trim() ?? '';

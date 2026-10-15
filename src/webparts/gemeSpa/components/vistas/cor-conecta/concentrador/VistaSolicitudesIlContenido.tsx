@@ -3,12 +3,14 @@ import { useEffect, useState } from 'react';
 import type { PropsVistaSpa } from '../../../../constants/registro-vistas/TiposRegistroVistas';
 import type { CentralMantenedor, SolicitudIl } from '../../../../models/SolicitudIl';
 import { ObtenerCentralesDesdeSharePoint } from '../../../../services/sharepoint/solicitudesIl/CentralesServicio';
+import { ObtenerIdsInstalacionesUsuarioActual } from '../../../../services/sharepoint/solicitudesIl/UsuarioInstalacionesSolicitanteServicio';
+import type { RestriccionInstalacionesSolicitante } from './administrador/UseSolicitudesIlLista';
 import {
   EstadosSolicitudIlRadio,
   SubtitulosPorEstadoSolicitudIl,
-  UrlExcelVinculadoSolicitudesIl,
   type EstadoSolicitudIl
 } from './administrador/constantesSolicitudesIl';
+import { ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps } from '../../../../models/ConfiguracionSolicitudesIl';
 import BarraFiltrosDesplegableVista from '../../BarraFiltrosDesplegableVista';
 import ContenedorVista from '../../ContenedorVista';
 import GrillaSolicitudesIl from './administrador/GrillaSolicitudesIl';
@@ -40,6 +42,7 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
   const enlacesTabs = ObtenerEnlacesTabsSolicitudesIl(perfil);
   const modoAccionesGrilla = ObtenerModoAccionesGrillaPorPerfil(perfil);
   const permitirCreacion = PermitirCreacionSolicitudesIlPorPerfil(perfil);
+  const urlExcelVinculado = ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps(propiedadesSolicitudesIl);
   const sufijoId = perfil;
 
   const [estadoPendiente, setEstadoPendiente] = useState<EstadoSolicitudIl>(EstadoFiltroInicial);
@@ -49,30 +52,78 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
   const [centralPendiente, setCentralPendiente] = useState('');
   const [centralIdAplicado, setCentralIdAplicado] = useState<number | undefined>();
   const [modalNuevaVisible, setModalNuevaVisible] = useState(false);
-  const [solicitudVer, setSolicitudVer] = useState<SolicitudIl | null>(null);
-  const [idSolicitudBitacora, setIdSolicitudBitacora] = useState<number | null>(null);
-  const [solicitudGestionar, setSolicitudGestionar] = useState<SolicitudIl | null>(null);
-  const [solicitudOrigenClon, setSolicitudOrigenClon] = useState<SolicitudIl | null>(null);
+  const [solicitudVer, setSolicitudVer] = useState<SolicitudIl | undefined>(undefined);
+  const [idSolicitudBitacora, setIdSolicitudBitacora] = useState<number | undefined>(undefined);
+  const [solicitudGestionar, setSolicitudGestionar] = useState<SolicitudIl | undefined>(undefined);
+  const [solicitudOrigenClon, setSolicitudOrigenClon] = useState<SolicitudIl | undefined>(undefined);
   const [recargarToken, setRecargarToken] = useState(0);
   const [centrales, setCentrales] = useState<CentralMantenedor[]>([]);
+  const [restriccionInstalaciones, setRestriccionInstalaciones] = useState<RestriccionInstalacionesSolicitante>(
+    () => (perfil === 'solicitante' ? { activo: true, listo: false } : { activo: false })
+  );
 
   useEffect(() => {
     let cancelado = false;
-    ObtenerCentralesDesdeSharePoint(context)
-      .then((resultado) => {
-        if (!cancelado) {
-          setCentrales(resultado);
+
+    const CargarCentralesGenerales = (): void => {
+      ObtenerCentralesDesdeSharePoint(context)
+        .then((resultado) => {
+          if (!cancelado) {
+            setCentrales(resultado);
+          }
+        })
+        .catch(() => {
+          if (!cancelado) {
+            setCentrales([]);
+          }
+        });
+    };
+
+    if (perfil !== 'solicitante') {
+      setRestriccionInstalaciones({ activo: false });
+      CargarCentralesGenerales();
+      return () => {
+        cancelado = true;
+      };
+    }
+
+    setRestriccionInstalaciones({ activo: true, listo: false });
+    setCentrales([]);
+
+    const CargarInstalacionesSolicitante = async (): Promise<void> => {
+      try {
+        const idsInstalaciones = await ObtenerIdsInstalacionesUsuarioActual(context);
+        if (cancelado) {
+          return;
         }
-      })
-      .catch(() => {
+        if (idsInstalaciones.length === 0) {
+          setCentrales([]);
+          setRestriccionInstalaciones({ activo: true, listo: true, ids: [] });
+          return;
+        }
+
+        const todasCentrales = await ObtenerCentralesDesdeSharePoint(context);
+        if (cancelado) {
+          return;
+        }
+
+        const idsPermitidos = new Set(idsInstalaciones);
+        setCentrales(todasCentrales.filter((central) => idsPermitidos.has(central.id)));
+        setRestriccionInstalaciones({ activo: true, listo: true, ids: idsInstalaciones });
+      } catch {
         if (!cancelado) {
           setCentrales([]);
+          setRestriccionInstalaciones({ activo: true, listo: true, ids: [] });
         }
-      });
+      }
+    };
+
+    CargarInstalacionesSolicitante().catch(() => undefined);
+
     return () => {
       cancelado = true;
     };
-  }, [context]);
+  }, [context, perfil]);
 
   const AlternarFiltros = (): void => {
     setFiltrosVisibles((visible) => !visible);
@@ -162,22 +213,24 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
                 type="button"
                 className="btn btn-sm cowork-btn-primary"
                 onClick={() => {
-                  setSolicitudOrigenClon(null);
+                  setSolicitudOrigenClon(undefined);
                   setModalNuevaVisible(true);
                 }}
               >
                 <i className="bi bi-plus-lg me-1" aria-hidden="true" />
                 Nueva solicitud IL
               </button>
-              <a
-                className="btn btn-sm cowork-btn-exito"
-                href={UrlExcelVinculadoSolicitudesIl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <i className="bi bi-file-earmark-excel me-1" aria-hidden="true" />
-                Excel vinculado
-              </a>
+              {urlExcelVinculado ? (
+                <a
+                  className="btn btn-sm cowork-btn-exito"
+                  href={urlExcelVinculado}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="bi bi-file-earmark-excel me-1" aria-hidden="true" />
+                  Excel vinculado
+                </a>
+              ) : null}
             </>
           ) : null}
         </div>
@@ -211,6 +264,7 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
         context={context}
         estadoFiltro={estadoAplicado}
         centralIdFiltro={centralIdAplicado}
+        restriccionInstalaciones={restriccionInstalaciones}
         textoBusqueda={textoBusqueda}
         onCambioBusqueda={setTextoBusqueda}
         recargarToken={recargarToken}
@@ -231,15 +285,15 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
       <ModalVerSolicitudIl
         context={context}
         solicitud={solicitudVer}
-        visible={solicitudVer !== null}
-        onCerrar={() => setSolicitudVer(null)}
+        visible={solicitudVer !== undefined}
+        onCerrar={() => setSolicitudVer(undefined)}
       />
 
       <ModalBitacoraSolicitudIl
         context={context}
         idSolicitudIl={idSolicitudBitacora}
-        visible={idSolicitudBitacora !== null}
-        onCerrar={() => setIdSolicitudBitacora(null)}
+        visible={idSolicitudBitacora !== undefined}
+        onCerrar={() => setIdSolicitudBitacora(undefined)}
       />
 
       {permitirCreacion ? (
@@ -252,7 +306,7 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
             solicitudOrigenClon={solicitudOrigenClon}
             onCerrar={() => {
               setModalNuevaVisible(false);
-              setSolicitudOrigenClon(null);
+              setSolicitudOrigenClon(undefined);
             }}
             onCreado={OnCreadoNuevaSolicitud}
           />
@@ -260,10 +314,10 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
           <ModalGestionarSolicitudIl
             context={context}
             solicitud={solicitudGestionar}
-            visible={solicitudGestionar !== null}
+            visible={solicitudGestionar !== undefined}
             centrales={centrales}
             propiedadesSolicitudesIl={propiedadesSolicitudesIl}
-            onCerrar={() => setSolicitudGestionar(null)}
+            onCerrar={() => setSolicitudGestionar(undefined)}
             onGuardado={OnCreadoNuevaSolicitud}
           />
         </>
