@@ -40,11 +40,8 @@ export default function MenuUsuario(props: MenuUsuarioProps): React.ReactElement
         aria-haspopup="menu"
         id="cowork-menu-usuario-disparador"
       >
-        <span className="cowork-menu-usuario__avatar" aria-hidden="true">
-          <i className="bi bi-person-fill" aria-hidden="true" />
-        </span>
         {userDisplayName ? (
-          <span className="cowork-menu-usuario__nombre d-none d-md-inline">{userDisplayName}</span>
+          <span className="cowork-menu-usuario__nombre">{userDisplayName}</span>
         ) : null}
       </button>
       <ul

@@ -43,8 +43,8 @@ export const TemaGrillaGeme = createTheme(
       MuiDataGrid: {
         styleOverrides: {
           root: {
-            border: '1px solid var(--cowork-color-topbar-borde)',
-            backgroundColor: 'var(--cowork-color-topbar-bg)',
+            border: '1px solid var(--cowork-color-grilla-borde)',
+            backgroundColor: 'var(--cowork-color-grilla-superficie-bg)',
             fontSize: 'var(--cowork-font-size-sm)',
             lineHeight: 'var(--cowork-line-height)',
             '--DataGrid-rowHeight': `${AlturaFilaGrillaPx}px`,
@@ -127,7 +127,7 @@ export const TemaGrillaGeme = createTheme(
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
-            backgroundColor: 'var(--cowork-color-topbar-bg)',
+            backgroundColor: 'var(--cowork-color-grilla-superficie-bg)',
             fontSize: 'var(--cowork-font-size-sm)',
             lineHeight: 'var(--cowork-line-height)'
           },
@@ -151,7 +151,7 @@ export const TemaGrillaGeme = createTheme(
         styleOverrides: {
           root: {
             '& .MuiInputLabel-root': {
-              backgroundColor: 'var(--cowork-color-topbar-bg)',
+              backgroundColor: 'var(--cowork-color-grilla-superficie-bg)',
               paddingLeft: 'var(--cowork-space-1)',
               paddingRight: 'var(--cowork-space-1)'
             }

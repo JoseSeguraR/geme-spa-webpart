@@ -94,6 +94,73 @@ No introducir una biblioteca de routing sin autorización explícita.
 
 Para navegación interna simple de la SPA, preferir inicialmente navegación basada en `location.hash`, manteniendo la página moderna de SharePoint como documento host.
 
+## Vistas y rutas
+
+La SPA puede crecer a decenas o cientos de pantallas. Mantener un modelo simple: **menú → rutaHash → carpeta → registro**.
+
+### Capas
+
+1. **Menú (`SISTEMA_ACCESOS`)** — árbol, permisos y `HASH_KEY` por ítem. El servicio de menú arma `rutaHash` uniendo los `HASH_KEY` de ancestros (`ConstruirRutaHashDesdeSegmentos`).
+2. **URL** — `#/{rutaHash}` (`NavegacionHash`, `UseRutaHash`).
+3. **Implementación** — componente bajo `components/vistas/` y entrada en el registro de vistas.
+
+`EnrutadorVistas` resuelve en este orden: componente registrado → ruta en menú sin componente (`VistaFallbackRoute`) → `VistaRutaDesconocida`.
+
+### Regla: ruta = carpeta = clave de registro
+
+- **`rutaHash`** debe coincidir exactamente con los `HASH_KEY` acumulados del ítem en SharePoint (kebab-case, segmentos con `/`).
+- La **carpeta** bajo `components/vistas/` refleja esos segmentos (Screaming Architecture). Ejemplo: `cor-conecta/concentrador/administrador/` para la ruta `cor-conecta/concentrador/administrador/solicitudes-il`.
+- El **archivo de entrada** se nombra `Vista{Nombre}.tsx` (no tiene que llamarse igual que el último segmento del hash).
+- La **clave del registro** es la misma cadena que `rutaHash`. Preferir una constante `RutaHash…` en `rutas.ts` dentro del módulo de la vista y usarla en el registro del dominio.
+
+Colocar subcomponentes, hooks y datos dummy de la feature **en la misma carpeta del módulo**, no en carpetas técnicas sueltas en la raíz de `vistas/`.
+
+**Layout visual:** envolver pantallas de negocio en `ContenedorVista` (`components/vistas/ContenedorVista.tsx`), que aplica `cowork-vista` y los logos corporativos arriba a la derecha. Usar el bloque BEM `cowork-vista__*` (`styles/_vista.scss`): tabs, encabezado, título, subtítulo, descripción, barra de filtros, barra de acciones, radios de estado. Combinar con utilidades Bootstrap (`d-flex`, `gap-*`, botones) sin duplicar estilos por pantalla.
+
+**Botones:** clases `cowork-btn-*` con tokens `--cowork-color-btn-*` en `_tokens.scss` (`styles/_buttons.scss`): `cowork-btn-primary` (formularios/nuevo), `cowork-btn-exito` (descargas), `cowork-btn-acento` (naranja corporativo), `cowork-btn-filtro` / `cowork-btn-filtro-alt` (zona de filtros). Siempre junto con `.btn` y tamaño (p. ej. `.btn-sm`).
+
+### Rutas globales vs pantallas de negocio
+
+- `models/RutaAplicacion.ts` — solo rutas transversales (p. ej. `RutaInicio`) y el tipo `RutaHash` (`string`). No ampliar un union con cada pantalla nueva.
+- Constantes de ruta de una feature — en `rutas.ts` junto a la vista (export `as const`).
+
+### Registro de vistas
+
+- Carpeta `constants/registro-vistas/`: un archivo por **dominio de negocio** (p. ej. `inicio.ts`, `corConecta.ts`) fusionados en `index.ts`.
+- Punto de importación estable para el resto del código: `constants/ComponentRegistry.tsx` (reexporta el registro).
+- Al agregar una pantalla: una entrada en el archivo del dominio correspondiente; clave = constante `RutaHash…`.
+
+Las vistas deben aceptar `PropsVistaSpa` cuando consuman contexto SPFx. Si aún no usan props, registrar con `RegistrarVistaSinProps` hasta adaptarlas.
+
+### Checklist — nueva pantalla
+
+1. Definir o confirmar `HASH_KEY` en SharePoint y la `rutaHash` resultante.
+2. Crear la estructura de carpetas bajo `components/vistas/` (el equipo define la jeraría; consultar antes de crear rutas nuevas).
+3. Implementar `Vista*.tsx` y piezas colocalizadas; datos vía servicios (no REST en el componente).
+4. Exportar la ruta en `rutas.ts` del módulo y registrar en `constants/registro-vistas/{dominio}.ts`.
+5. Validar con `npm run build` y navegación `#/{rutaHash}`.
+
+### Tabs y menú lateral
+
+Varias pantallas pueden compartir una barra de tabs (rutas hermanas bajo el mismo prefijo). No todas tienen ítem propio en el menú.
+
+- Navegación entre tabs: enlaces `#/{rutaHash}` (cuando la pantalla exista en SPA); mientras tanto, links externos o placeholder.
+- **Ancla de menú:** ruta del ítem lateral que representa el grupo (p. ej. `…/solicitudes`). Definir en `rutas.ts` del módulo (`RutaHashAncla…`, `RutasHashGrupoTabs…`) y registrar el grupo en `constants/AnclasMenuGrupoRuta.ts` para que rutas relacionadas (p. ej. `…/solicitudes-il`) resalten esa ancla y expandan ancestros (`MenuRutaActiva`, `EsEnlaceMenuActivoParaRuta`).
+- Regla automática adicional: ruta anidada (`ancla/hijo`) y extensión con guion (`solicitudes` → `solicitudes-il`). Hermanos con segmento distinto (p. ej. `guias-maniobra`) deben añadirse al arreglo del grupo al implementarse.
+
+### Estados de una ruta
+
+| Menú | Registro | Resultado |
+|------|----------|-----------|
+| Sí | No | Fallback “en preparación” |
+| Sí | Sí | Pantalla implementada |
+| No | Sí | Ruta interna (p. ej. tabs) sin ítem de menú |
+| No | No | Ruta desconocida |
+
+### Escalado futuro
+
+Con muchas pantallas o bundle grande, valorar **import dinámico** por ruta en el registro (code splitting) sin introducir React Router ni descubrimiento automático opaco.
+
 ## TypeScript
 
 Utilizar tipado estricto.

@@ -8,13 +8,14 @@ export type CarcasaSpaProps = {
   userDisplayName: string;
   signOutUrl: string;
   versionWebPart: string;
+  urlColeccionSitio: string;
   nodosMenu: NodoMenu[];
   rutaActual: string;
   children?: React.ReactNode;
 };
 
 export default function CarcasaSpa(props: CarcasaSpaProps): React.ReactElement {
-  const { userDisplayName, signOutUrl, versionWebPart, nodosMenu, rutaActual, children } = props;
+  const { userDisplayName, signOutUrl, versionWebPart, urlColeccionSitio, nodosMenu, rutaActual, children } = props;
   const [sidebarColapsada, setSidebarColapsada] = useState(false);
   const [sidebarMovilAbierta, setSidebarMovilAbierta] = useState(false);
 
@@ -47,6 +48,7 @@ export default function CarcasaSpa(props: CarcasaSpaProps): React.ReactElement {
           nodosMenu={nodosMenu}
           rutaActual={rutaActual}
           versionWebPart={versionWebPart}
+          urlColeccionSitio={urlColeccionSitio}
           onAlternarColapsada={AlternarSidebarColapsada}
           onAlternarMovil={AlternarSidebarMovil}
           onEnlaceMenu={CerrarSidebarMovil}

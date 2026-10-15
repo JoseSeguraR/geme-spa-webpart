@@ -1,13 +1,4 @@
-export type IdRuta =
-  | 'inicio'
-  | 'cor-conecta/concentrador-solicitudes/solicitante'
-  | 'cor-conecta/concentrador-solicitudes/administrador'
-  | 'cor-conecta/concentrador-solicitudes/despachador'
-  | 'cor-conecta/sistema-monitoreo-datos'
-  | 'cor-conecta/control/permisos-usuarios'
-  | 'cor-conecta/control/mantenedores'
-  | 'adquisiciones/proveedores/solicitante'
-  | 'adquisiciones/proveedores/aprobadores'
-  | 'adquisiciones/abastecimiento';
+/** Identificador de ruta en el hash (#/…). Las pantallas de negocio usan la rutaHash del menú. */
+export type RutaHash = string;
 
-export const RutaInicio: IdRuta = 'inicio';
+export const RutaInicio = 'inicio' as const;

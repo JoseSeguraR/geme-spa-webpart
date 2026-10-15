@@ -1,13 +1,21 @@
 // Tokens Cowork (densidad y tipografía). Marca GEME: sidebar azul corporativo.
 $cowork-color-texto-principal: #0f172b !default;
+/** Texto claro sobre topbar / barra superior (p. ej. menú usuario). */
+$cowork-color-texto-secundario: #ffffff !default;
+/** Texto de apoyo en zonas de contenido (subtítulos, etiquetas secundarias). */
+$cowork-color-texto-apoyo: #64748b !default;
 
-$cowork-color-sidebar-bg: #003773 !default;
+$cowork-color-sidebar-bg: #4B4B49 !default;
 $cowork-color-sidebar-text: #ffffff !default;
 $cowork-color-sidebar-borde: rgba(255, 255, 255, 0.15) !default;
 $cowork-color-sidebar-enlace-activo: #ffffff !default;
 $cowork-color-contenido-bg: #f8f9fb !default;
-$cowork-color-topbar-bg: #ffffff !default;
+$cowork-color-topbar-bg: #003773 !default;
 $cowork-color-topbar-borde: #dee2e6 !default;
+
+/** Superficie de grillas MUI, buscador y paneles claros (independiente de la topbar). */
+$cowork-color-grilla-superficie-bg: #ffffff !default;
+$cowork-color-grilla-borde: #dee2e6 !default;
 
 $cowork-font-size-base: 0.9375rem !default;
 $cowork-font-size-sm: 0.875rem !default;
@@ -26,7 +34,7 @@ $cowork-space-5: 1.5rem !default;
 $cowork-space-6: 2rem !default;
 
 $cowork-topbar-altura: 40px !default;
-$cowork-sidebar-ancho: 12.8rem !default;
+$cowork-sidebar-ancho: 15rem !default;
 $cowork-sidebar-ancho-colapsado: 3.6rem !default;
 $cowork-sidebar-logo-altura: 2.8rem !default;
 $cowork-sidebar-logo-altura-colapsada: 1.6rem !default;
@@ -44,8 +52,29 @@ $cowork-transicion-layout: 0.2s ease !default;
 $cowork-tabla-row-height: 42px !default;
 $cowork-tabla-header-height: 40px !default;
 
+$cowork-color-btn-texto-claro: #ffffff !default;
+
+$cowork-color-btn-primary-bg: #003773 !default;
 $cowork-color-btn-primary-hover: #002d5c !default;
 $cowork-color-btn-primary-active: #002449 !default;
+
+$cowork-color-btn-exito-bg: #198754 !default;
+$cowork-color-btn-exito-hover: #157347 !default;
+$cowork-color-btn-exito-active: #146c43 !default;
+
+$cowork-color-btn-acento-bg: #e56000 !default;
+$cowork-color-btn-acento-hover: #cc5600 !default;
+$cowork-color-btn-acento-active: #b34d00 !default;
+
+$cowork-color-btn-filtro-bg: #6c757d !default;
+$cowork-color-btn-filtro-hover: #5c636a !default;
+$cowork-color-btn-filtro-active: #565e64 !default;
+
+$cowork-color-btn-filtro-alt-bg: #ffffff !default;
+$cowork-color-btn-filtro-alt-texto: #6c757d !default;
+$cowork-color-btn-filtro-alt-borde: #6c757d !default;
+$cowork-color-btn-filtro-alt-hover-bg: #f8f9fa !default;
+$cowork-color-btn-filtro-alt-hover-texto: #565e64 !default;
 
 & {
   --cowork-color-sidebar-bg: #{$cowork-color-sidebar-bg};
@@ -55,7 +84,11 @@ $cowork-color-btn-primary-active: #002449 !default;
   --cowork-color-contenido-bg: #{$cowork-color-contenido-bg};
   --cowork-color-topbar-bg: #{$cowork-color-topbar-bg};
   --cowork-color-topbar-borde: #{$cowork-color-topbar-borde};
+  --cowork-color-grilla-superficie-bg: #{$cowork-color-grilla-superficie-bg};
+  --cowork-color-grilla-borde: #{$cowork-color-grilla-borde};
   --cowork-color-texto-principal: #{$cowork-color-texto-principal};
+  --cowork-color-texto-secundario: #{$cowork-color-texto-secundario};
+  --cowork-color-texto-apoyo: #{$cowork-color-texto-apoyo};
 
   --cowork-font-size-base: #{$cowork-font-size-base};
   --cowork-font-size-sm: #{$cowork-font-size-sm};
@@ -91,4 +124,23 @@ $cowork-color-btn-primary-active: #002449 !default;
 
   --cowork-tabla-row-height: #{$cowork-tabla-row-height};
   --cowork-tabla-header-height: #{$cowork-tabla-header-height};
+
+  --cowork-color-btn-texto-claro: #{$cowork-color-btn-texto-claro};
+  --cowork-color-btn-primary-bg: #{$cowork-color-btn-primary-bg};
+  --cowork-color-btn-primary-hover: #{$cowork-color-btn-primary-hover};
+  --cowork-color-btn-primary-active: #{$cowork-color-btn-primary-active};
+  --cowork-color-btn-exito-bg: #{$cowork-color-btn-exito-bg};
+  --cowork-color-btn-exito-hover: #{$cowork-color-btn-exito-hover};
+  --cowork-color-btn-exito-active: #{$cowork-color-btn-exito-active};
+  --cowork-color-btn-acento-bg: #{$cowork-color-btn-acento-bg};
+  --cowork-color-btn-acento-hover: #{$cowork-color-btn-acento-hover};
+  --cowork-color-btn-acento-active: #{$cowork-color-btn-acento-active};
+  --cowork-color-btn-filtro-bg: #{$cowork-color-btn-filtro-bg};
+  --cowork-color-btn-filtro-hover: #{$cowork-color-btn-filtro-hover};
+  --cowork-color-btn-filtro-active: #{$cowork-color-btn-filtro-active};
+  --cowork-color-btn-filtro-alt-bg: #{$cowork-color-btn-filtro-alt-bg};
+  --cowork-color-btn-filtro-alt-texto: #{$cowork-color-btn-filtro-alt-texto};
+  --cowork-color-btn-filtro-alt-borde: #{$cowork-color-btn-filtro-alt-borde};
+  --cowork-color-btn-filtro-alt-hover-bg: #{$cowork-color-btn-filtro-alt-hover-bg};
+  --cowork-color-btn-filtro-alt-hover-texto: #{$cowork-color-btn-filtro-alt-hover-texto};
 }

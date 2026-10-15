@@ -1,5 +1,6 @@
 import type { NodoMenu } from '../models/NodoMenu';
 import { EsNodoMenuEnlaceInterno, EsNodoMenuGrupo } from '../models/NodoMenu';
+import { EsEnlaceMenuActivoParaRuta } from './MenuRutaActiva';
 
 /** Rail del sidebar colapsado: valor de ICONO en SISTEMA_ACCESOS (p. ej. bi-diagram-3) o este predeterminado. */
 const ICONO_RAIL_PREDETERMINADO = 'three-dots-vertical';
@@ -11,7 +12,7 @@ export function ObtenerClaseIconoMenu(nodo: NodoMenu): string {
 
 export function EsNodoPrimerNivelActivo(nodo: NodoMenu, rutaActual: string): boolean {
   if (EsNodoMenuEnlaceInterno(nodo)) {
-    return nodo.rutaHash === rutaActual;
+    return EsEnlaceMenuActivoParaRuta(nodo.rutaHash, rutaActual);
   }
 
   if (!EsNodoMenuGrupo(nodo)) {
@@ -23,7 +24,7 @@ export function EsNodoPrimerNivelActivo(nodo: NodoMenu, rutaActual: string): boo
 
 function RutaPerteneceANodo(nodo: NodoMenu, rutaActual: string): boolean {
   if (EsNodoMenuEnlaceInterno(nodo)) {
-    return nodo.rutaHash === rutaActual;
+    return EsEnlaceMenuActivoParaRuta(nodo.rutaHash, rutaActual);
   }
 
   if (!EsNodoMenuGrupo(nodo)) {

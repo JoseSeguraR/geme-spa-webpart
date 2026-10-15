@@ -1,0 +1,429 @@
+// Layout común de pantallas (con o sin tabs): título, barras de herramientas, radios de estado.
+
+.cowork-vista {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--cowork-space-3);
+  align-items: end;
+}
+
+.cowork-vista > :not(.cowork-vista__logos-marca):not(.cowork-vista__tabs) {
+  grid-column: 1 / -1;
+}
+
+.cowork-vista > .cowork-vista__tabs {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.cowork-vista > .cowork-vista__logos-marca {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+}
+
+.cowork-vista:not(:has(.cowork-vista__tabs)) > .cowork-vista__encabezado:first-child {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  min-width: 0;
+}
+
+.cowork-vista__logos-marca {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--cowork-space-3);
+  height: 60px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.cowork-vista__logo-marca {
+  display: block;
+  height: 60px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.cowork-vista__tabs {
+  border-bottom-color: var(--cowork-color-topbar-borde);
+  margin-bottom: var(--cowork-space-4);
+}
+
+.cowork-vista__encabezado {
+  margin-bottom: var(--cowork-space-4);
+}
+
+.cowork-vista__titulo {
+  font-size: var(--cowork-heading-vista);
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: var(--cowork-space-2);
+}
+
+.cowork-vista__titulo--compacto {
+  margin-bottom: 0;
+}
+
+.cowork-vista__subtitulo {
+  font-size: var(--cowork-font-size-sm);
+  font-weight: 400;
+  color: var(--cowork-color-texto-apoyo, #64748b);
+}
+
+.cowork-vista__descripcion {
+  font-size: var(--cowork-font-size-sm);
+  line-height: var(--cowork-line-height);
+  margin-bottom: 0;
+}
+
+.cowork-vista code {
+  font-size: 0.875em;
+}
+
+.cowork-vista__barra-filtros {
+  margin-bottom: var(--cowork-space-3);
+}
+
+// Bloque reutilizable: barra + panel desplegable de filtros de grilla.
+.cowork-vista-filtros {
+  margin-bottom: var(--cowork-space-4);
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  box-shadow: 0 1px 3px rgba(15, 23, 43, 0.08);
+}
+
+.cowork-vista-filtros--expandido {
+  border-left: 3px solid var(--cowork-color-btn-primary-bg, #003773);
+}
+
+.cowork-vista-filtros__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cowork-space-3);
+  padding: var(--cowork-space-3) var(--cowork-space-4);
+}
+
+.cowork-vista-filtros--expandido .cowork-vista-filtros__cabecera {
+  border-bottom: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+}
+
+.cowork-vista-filtros__criterios {
+  padding: var(--cowork-space-3) var(--cowork-space-4);
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border-bottom: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+}
+
+.cowork-vista-filtros__criterios:last-child {
+  border-bottom: none;
+  border-radius: 0 0 var(--cowork-radius-md, 0.375rem) var(--cowork-radius-md, 0.375rem);
+}
+
+.cowork-vista-filtros__panel:last-child {
+  border-radius: 0 0 var(--cowork-radius-md, 0.375rem) var(--cowork-radius-md, 0.375rem);
+}
+
+.cowork-vista-filtros__titulo {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  font-size: var(--cowork-font-size-sm);
+  font-weight: 600;
+  color: var(--cowork-color-texto-apoyo, #64748b);
+}
+
+.cowork-vista-filtros__acciones {
+  margin-right: auto;
+}
+
+.cowork-vista-filtros__panel {
+  padding: var(--cowork-space-4);
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border-radius: 0 0 var(--cowork-radius-md, 0.375rem) var(--cowork-radius-md, 0.375rem);
+}
+
+.cowork-vista-filtros__panel .form-label {
+  font-size: var(--cowork-font-size-xs);
+  font-weight: 600;
+  color: var(--cowork-color-texto-principal, #0f172b);
+  margin-bottom: var(--cowork-space-1);
+}
+
+.cowork-vista__barra-acciones {
+  margin-bottom: var(--cowork-space-3);
+}
+
+.cowork-vista__radios-estado {
+  background: var(--cowork-color-contenido-bg, #f1f5f9);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  padding: var(--cowork-space-2) var(--cowork-space-3) !important;
+}
+
+.cowork-vista-tabla-mui {
+  width: 100%;
+  min-width: 0;
+}
+
+.cowork-desplegable-acciones {
+  position: relative;
+}
+
+.cowork-desplegable-acciones__disparador::after {
+  margin-left: 0;
+}
+
+.cowork-desplegable-acciones__menu {
+  z-index: 2000;
+  display: block;
+  min-width: 9rem;
+  padding: var(--cowork-space-1) 0;
+  background-color: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 43, 0.12);
+}
+
+.cowork-desplegable-acciones__menu .dropdown-item {
+  font-size: var(--cowork-font-size-sm);
+  padding: 0.4rem 0.75rem;
+}
+
+.cowork-desplegable-acciones__menu .dropdown-item:focus,
+.cowork-desplegable-acciones__menu .dropdown-item:hover {
+  background-color: rgba(15, 23, 43, 0.06);
+}
+
+.cowork-formulario__asterisco,
+.cowork-formulario__etiqueta--obligatoria::after {
+  color: var(--cowork-color-btn-acento-bg, #e56000);
+  font-weight: 700;
+}
+
+.cowork-formulario__etiqueta--obligatoria::after {
+  content: ' *';
+}
+
+.cowork-formulario__nota-obligatorios {
+  font-size: var(--cowork-font-size-xs);
+  color: var(--cowork-color-texto-apoyo, #64748b);
+}
+
+.cowork-formulario-progreso {
+  display: flex;
+  align-items: center;
+  gap: var(--cowork-space-2);
+  padding: var(--cowork-space-3);
+  margin-bottom: var(--cowork-space-3);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  background: rgba(0, 55, 115, 0.08);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  color: var(--cowork-color-texto-principal, #0f172b);
+}
+
+.cowork-formulario-progreso__texto {
+  font-size: var(--cowork-font-size-sm);
+  font-weight: 500;
+}
+
+.cowork-badge-estado {
+  display: inline-block;
+  font-size: var(--cowork-font-size-base);
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+  color: var(--cowork-color-btn-texto-claro, #ffffff);
+}
+
+.cowork-estado-solicitud-il--vigente.cowork-badge-estado {
+  background-color: var(--cowork-color-btn-primary-bg, #003773);
+}
+
+.cowork-estado-solicitud-il--finalizada.cowork-badge-estado {
+  background-color: var(--cowork-color-btn-filtro-bg, #6c757d);
+}
+
+.cowork-estado-solicitud-il--anulada.cowork-badge-estado {
+  background-color: #b42318;
+}
+
+.cowork-formulario-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--cowork-space-2);
+  padding: var(--cowork-space-4);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-left-width: 4px;
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+}
+
+.cowork-formulario-estado.cowork-estado-solicitud-il--vigente {
+  border-left-color: var(--cowork-color-btn-primary-bg, #003773);
+  background: rgba(0, 55, 115, 0.06);
+}
+
+.cowork-formulario-estado.cowork-estado-solicitud-il--finalizada {
+  border-left-color: var(--cowork-color-btn-filtro-bg, #6c757d);
+  background: rgba(108, 117, 125, 0.1);
+}
+
+.cowork-formulario-estado.cowork-estado-solicitud-il--anulada {
+  border-left-color: #b42318;
+  background: rgba(180, 35, 24, 0.08);
+}
+
+.cowork-formulario-estado__principal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cowork-space-3);
+}
+
+.cowork-formulario-estado__etiqueta {
+  font-size: var(--cowork-font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cowork-color-texto-principal, #0f172b);
+}
+
+.cowork-formulario-estado__ayuda {
+  font-size: var(--cowork-font-size-xs);
+  color: var(--cowork-color-texto-apoyo, #64748b);
+  margin-top: var(--cowork-space-1);
+}
+
+.cowork-formulario-estado-switch {
+  padding: var(--cowork-space-3);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+}
+
+.cowork-formulario-estado-switch--anular {
+  border-left: 4px solid #b42318;
+}
+
+.cowork-formulario-estado-switch--anular.cowork-formulario-estado-switch--activo {
+  background: rgba(180, 35, 24, 0.06);
+}
+
+.cowork-formulario-estado-switch--reactivar {
+  border-left: 4px solid var(--cowork-color-btn-primary-bg, #003773);
+}
+
+.cowork-formulario-estado-switch--reactivar.cowork-formulario-estado-switch--activo {
+  background: rgba(0, 55, 115, 0.06);
+}
+
+.cowork-formulario-estado-switch__ayuda {
+  font-size: var(--cowork-font-size-xs);
+  color: var(--cowork-color-texto-apoyo, #64748b);
+  margin-top: var(--cowork-space-2);
+}
+
+.cowork-formulario-detalle__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cowork-space-1);
+  min-height: 100%;
+  padding: var(--cowork-space-3);
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+}
+
+.cowork-formulario-detalle__etiqueta {
+  font-size: var(--cowork-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cowork-color-texto-apoyo, #64748b);
+}
+
+.cowork-formulario-detalle__valor {
+  font-size: var(--cowork-font-size-base);
+  color: var(--cowork-color-texto-principal, #0f172b);
+  word-break: break-word;
+}
+
+.cowork-formulario-detalle__valor--multilinea {
+  white-space: pre-wrap;
+}
+
+.cowork-formulario-detalle__seccion {
+  margin-top: var(--cowork-space-4);
+}
+
+.cowork-formulario-detalle__seccion-titulo {
+  font-size: var(--cowork-font-size-sm);
+  font-weight: 700;
+  margin-bottom: var(--cowork-space-3);
+  color: var(--cowork-color-texto-principal, #0f172b);
+}
+
+.cowork-formulario-detalle__adjuntos {
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+  overflow: hidden;
+}
+
+.cowork-formulario-detalle__adjuntos .list-group-item {
+  background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border-color: var(--cowork-color-grilla-borde, #dee2e6);
+  padding: var(--cowork-space-3) var(--cowork-space-4);
+}
+
+.cowork-formulario-detalle__adjuntos a {
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.cowork-formulario-detalle__adjuntos a:hover {
+  text-decoration: underline;
+}
+
+// Mismo breakpoint que la carcasa SPA (_layout.scss).
+@media (max-width: 767.98px) {
+  .cowork-vista__logos-marca {
+    height: auto;
+    gap: var(--cowork-space-2);
+  }
+
+  .cowork-vista__logo-marca {
+    height: 2.25rem;
+    max-height: 2.25rem;
+  }
+
+  .cowork-vista__tabs {
+    margin-bottom: var(--cowork-space-3);
+
+    .nav-link {
+      font-size: var(--cowork-font-size-xs);
+      padding: 0.35rem 0.5rem;
+      line-height: 1.3;
+    }
+  }
+
+  .cowork-vista__titulo--compacto {
+    font-size: var(--cowork-heading-sub);
+    line-height: 1.3;
+  }
+
+  .cowork-vista__titulo--compacto .cowork-vista__subtitulo {
+    font-size: var(--cowork-font-size-xs);
+    line-height: 1.35;
+  }
+}

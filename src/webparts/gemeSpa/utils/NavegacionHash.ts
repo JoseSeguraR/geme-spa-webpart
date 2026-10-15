@@ -1,17 +1,4 @@
-import { RutaInicio, type IdRuta } from '../models/RutaAplicacion';
-
-const RutasValidas = new Set<string>([
-  RutaInicio,
-  'cor-conecta/concentrador-solicitudes/solicitante',
-  'cor-conecta/concentrador-solicitudes/administrador',
-  'cor-conecta/concentrador-solicitudes/despachador',
-  'cor-conecta/sistema-monitoreo-datos',
-  'cor-conecta/control/permisos-usuarios',
-  'cor-conecta/control/mantenedores',
-  'adquisiciones/proveedores/solicitante',
-  'adquisiciones/proveedores/aprobadores',
-  'adquisiciones/abastecimiento'
-]);
+import { RutaInicio } from '../models/RutaAplicacion';
 
 export function NormalizarSegmentoHash(hash: string): string {
   return hash.replace(/^#/, '').replace(/^\//, '').trim();
@@ -23,10 +10,6 @@ export function ObtenerRutaDesdeHash(hash: string = window.location.hash): strin
     return RutaInicio;
   }
   return segmento;
-}
-
-export function EsRutaConocida(ruta: string): ruta is IdRuta {
-  return RutasValidas.has(ruta);
 }
 
 export function ConstruirHashDesdeRuta(ruta: string): string {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TextoAlternativoLogo, UrlLogoMarca } from '../../constants/MarcaCliente';
+import { TextoAlternativoLogo, UrlLogoMarcaWhite } from '../../constants/MarcaCliente';
 import type { NodoMenu } from '../../models/NodoMenu';
 import MenuArbol from '../navegacion/MenuArbol';
 
@@ -8,6 +8,7 @@ export type BarraLateralProps = {
   nodosMenu: NodoMenu[];
   rutaActual: string;
   versionWebPart: string;
+  urlColeccionSitio: string;
   onAlternarColapsada: () => void;
   onAlternarMovil: () => void;
   onEnlaceMenu?: () => void;
@@ -19,6 +20,7 @@ export default function BarraLateral(props: BarraLateralProps): React.ReactEleme
     nodosMenu,
     rutaActual,
     versionWebPart,
+    urlColeccionSitio,
     onAlternarColapsada,
     onAlternarMovil,
     onEnlaceMenu
@@ -28,7 +30,7 @@ export default function BarraLateral(props: BarraLateralProps): React.ReactEleme
     <aside className="cowork-barra-lateral" aria-label="Navegación principal">
       <div className="cowork-barra-lateral__cabecera">
         <div className="cowork-barra-lateral__logo">
-          <img src={UrlLogoMarca} alt={TextoAlternativoLogo} />
+          <img src={UrlLogoMarcaWhite} alt={TextoAlternativoLogo} />
         </div>
         <button
           type="button"
@@ -53,6 +55,7 @@ export default function BarraLateral(props: BarraLateralProps): React.ReactEleme
           nodos={nodosMenu}
           rutaActual={rutaActual}
           colapsada={colapsada}
+          urlColeccionSitio={urlColeccionSitio}
           onNavegar={onEnlaceMenu}
         />
       </div>

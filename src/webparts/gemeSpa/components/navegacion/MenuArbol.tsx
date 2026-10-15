@@ -4,12 +4,15 @@ import type { NodoMenu } from '../../models/NodoMenu';
 import { EsNodoMenuEnlaceExterno, EsNodoMenuEnlaceInterno, EsNodoMenuGrupo } from '../../models/NodoMenu';
 import { ObtenerGruposAncestrosParaRuta } from '../../utils/MenuNavegacion';
 import { EsNodoPrimerNivelActivo, ObtenerClaseIconoMenu } from '../../utils/MenuIconos';
+import { ObtenerAtributosEnlaceExternoMenu } from '../../utils/EnlaceExternoMenu';
+import { EsEnlaceMenuActivoParaRuta } from '../../utils/MenuRutaActiva';
 import { ConstruirHashDesdeRuta } from '../../utils/NavegacionHash';
 
 export type MenuArbolProps = {
   nodos: NodoMenu[];
   rutaActual: string;
   colapsada: boolean;
+  urlColeccionSitio: string;
   onNavegar?: () => void;
 };
 
@@ -43,13 +46,14 @@ type MenuArbolNodoProps = {
   nodo: NodoMenu;
   nivel: number;
   rutaActual: string;
+  urlColeccionSitio: string;
   gruposExpandidos: Set<string>;
   onAlternarGrupo: (idGrupo: string) => void;
   onNavegar?: () => void;
 };
 
 function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
-  const { nodo, nivel, rutaActual, gruposExpandidos, onAlternarGrupo, onNavegar } = props;
+  const { nodo, nivel, rutaActual, urlColeccionSitio, gruposExpandidos, onAlternarGrupo, onNavegar } = props;
 
   if (EsNodoMenuGrupo(nodo)) {
     const expandido = gruposExpandidos.has(nodo.id);
@@ -76,6 +80,7 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
                 nodo={hijo}
                 nivel={nivel + 1}
                 rutaActual={rutaActual}
+                urlColeccionSitio={urlColeccionSitio}
                 gruposExpandidos={gruposExpandidos}
                 onAlternarGrupo={onAlternarGrupo}
                 onNavegar={onNavegar}
@@ -88,13 +93,15 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
   }
 
   if (EsNodoMenuEnlaceExterno(nodo)) {
+    const atributosEnlace = ObtenerAtributosEnlaceExternoMenu(nodo.url, urlColeccionSitio);
+
     return (
       <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`}>
         <a
           className="cowork-menu-arbol__enlace"
-          href={nodo.url}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={atributosEnlace.href}
+          target={atributosEnlace.target}
+          rel={atributosEnlace.rel}
           onClick={onNavegar}
         >
           <span className="cowork-menu-arbol__etiqueta">{nodo.etiqueta}</span>
@@ -107,7 +114,7 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
     return <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`} />;
   }
 
-  const activo = nodo.rutaHash === rutaActual;
+  const activo = EsEnlaceMenuActivoParaRuta(nodo.rutaHash, rutaActual);
 
   return (
     <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`}>
@@ -124,7 +131,7 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
 }
 
 export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
-  const { nodos, rutaActual, colapsada, onNavegar } = props;
+  const { nodos, rutaActual, colapsada, urlColeccionSitio, onNavegar } = props;
   const [gruposExpandidosManual, setGruposExpandidosManual] = useState<Set<string>>(() => new Set());
   const [flyoutGrupoId, setFlyoutGrupoId] = useState<string | null>(null);
   const [flyoutPosicion, setFlyoutPosicion] = useState<PosicionFlyout | null>(null);
@@ -286,13 +293,15 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
               }
 
               if (EsNodoMenuEnlaceExterno(nodo)) {
+                const atributosEnlace = ObtenerAtributosEnlaceExternoMenu(nodo.url, urlColeccionSitio);
+
                 return (
                   <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
                     <a
                       className={claseIcono}
-                      href={nodo.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={atributosEnlace.href}
+                      target={atributosEnlace.target}
+                      rel={atributosEnlace.rel}
                       aria-label={nodo.etiqueta}
                       onClick={onNavegar}
                     >
@@ -343,6 +352,7 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
                     nodo={hijo}
                     nivel={1}
                     rutaActual={rutaActual}
+                    urlColeccionSitio={urlColeccionSitio}
                     gruposExpandidos={gruposExpandidosManual}
                     onAlternarGrupo={AlternarGrupo}
                     onNavegar={NavegarDesdeFlyout}
@@ -364,6 +374,7 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
               nodo={nodo}
               nivel={1}
               rutaActual={rutaActual}
+              urlColeccionSitio={urlColeccionSitio}
               gruposExpandidos={gruposExpandidosManual}
               onAlternarGrupo={AlternarGrupo}
               onNavegar={onNavegar}

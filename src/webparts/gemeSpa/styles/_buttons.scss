@@ -1,21 +1,62 @@
-// Botones corporativos: combinar con utilidades Bootstrap (.btn, .btn-sm, etc.).
-// Ejemplo: className="btn cowork-btn-primary btn-sm"
+// Botones corporativos: combinar con .btn y .btn-sm de Bootstrap.
+// Tokens: --cowork-color-btn-* en _tokens.scss
 
-$cowork-color-btn-primary-hover: #d12856 !default;
-$cowork-color-btn-primary-active: #b8244c !default;
+@mixin cowork-btn-relleno($nombre, $bg, $hover, $active) {
+  .btn.cowork-btn-#{$nombre} {
+    --bs-btn-color: var(--cowork-color-btn-texto-claro);
+    --bs-btn-bg: #{$bg};
+    --bs-btn-border-color: #{$bg};
+    --bs-btn-hover-color: var(--cowork-color-btn-texto-claro);
+    --bs-btn-hover-bg: #{$hover};
+    --bs-btn-hover-border-color: #{$hover};
+    --bs-btn-active-color: var(--cowork-color-btn-texto-claro);
+    --bs-btn-active-bg: #{$active};
+    --bs-btn-active-border-color: #{$active};
+    --bs-btn-disabled-color: var(--cowork-color-btn-texto-claro);
+    --bs-btn-disabled-bg: #{$bg};
+    --bs-btn-disabled-border-color: #{$bg};
+  }
+}
 
-.btn.cowork-btn-primary {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #{$cowork-color-sidebar-enlace-activo};
-  --bs-btn-border-color: #{$cowork-color-sidebar-enlace-activo};
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #{$cowork-color-btn-primary-hover};
-  --bs-btn-hover-border-color: #{$cowork-color-btn-primary-hover};
-  --bs-btn-focus-shadow-rgb: 233, 47, 97;
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #{$cowork-color-btn-primary-active};
-  --bs-btn-active-border-color: #{$cowork-color-btn-primary-active};
-  --bs-btn-disabled-color: #fff;
-  --bs-btn-disabled-bg: #{$cowork-color-sidebar-enlace-activo};
-  --bs-btn-disabled-border-color: #{$cowork-color-sidebar-enlace-activo};
+@include cowork-btn-relleno(
+  'primary',
+  var(--cowork-color-btn-primary-bg),
+  var(--cowork-color-btn-primary-hover),
+  var(--cowork-color-btn-primary-active)
+);
+
+@include cowork-btn-relleno(
+  'exito',
+  var(--cowork-color-btn-exito-bg),
+  var(--cowork-color-btn-exito-hover),
+  var(--cowork-color-btn-exito-active)
+);
+
+@include cowork-btn-relleno(
+  'acento',
+  var(--cowork-color-btn-acento-bg),
+  var(--cowork-color-btn-acento-hover),
+  var(--cowork-color-btn-acento-active)
+);
+
+@include cowork-btn-relleno(
+  'filtro',
+  var(--cowork-color-btn-filtro-bg),
+  var(--cowork-color-btn-filtro-hover),
+  var(--cowork-color-btn-filtro-active)
+);
+
+.btn.cowork-btn-filtro-alt {
+  --bs-btn-color: var(--cowork-color-btn-filtro-alt-texto);
+  --bs-btn-bg: var(--cowork-color-btn-filtro-alt-bg);
+  --bs-btn-border-color: var(--cowork-color-btn-filtro-alt-borde);
+  --bs-btn-hover-color: var(--cowork-color-btn-filtro-alt-hover-texto);
+  --bs-btn-hover-bg: var(--cowork-color-btn-filtro-alt-hover-bg);
+  --bs-btn-hover-border-color: var(--cowork-color-btn-filtro-alt-borde);
+  --bs-btn-active-color: var(--cowork-color-btn-filtro-alt-hover-texto);
+  --bs-btn-active-bg: var(--cowork-color-btn-filtro-alt-hover-bg);
+  --bs-btn-active-border-color: var(--cowork-color-btn-filtro-alt-borde);
+  --bs-btn-disabled-color: var(--cowork-color-btn-filtro-alt-texto);
+  --bs-btn-disabled-bg: var(--cowork-color-btn-filtro-alt-bg);
+  --bs-btn-disabled-border-color: var(--cowork-color-btn-filtro-alt-borde);
 }

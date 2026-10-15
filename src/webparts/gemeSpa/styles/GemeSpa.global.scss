@@ -10,6 +10,7 @@ $bootstrap-icons-font-dir: '~bootstrap-icons/font/fonts';
   font-size: var(--cowork-font-size-base);
   line-height: var(--cowork-line-height);
   @import 'layout';
+  @import 'vista';
   @import 'navigation';
   @import 'loading';
   @import 'buttons';
