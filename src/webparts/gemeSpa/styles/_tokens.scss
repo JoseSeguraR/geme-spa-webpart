@@ -143,4 +143,22 @@ $cowork-color-btn-filtro-alt-hover-texto: #565e64 !default;
   --cowork-color-btn-filtro-alt-borde: #{$cowork-color-btn-filtro-alt-borde};
   --cowork-color-btn-filtro-alt-hover-bg: #{$cowork-color-btn-filtro-alt-hover-bg};
   --cowork-color-btn-filtro-alt-hover-texto: #{$cowork-color-btn-filtro-alt-hover-texto};
+
+  /*
+   * Bootstrap define :root; al importarlo dentro de .gemeSpaBootstrap esas variables no aplican al Web Part.
+   * Utilidades text-primary, text-success, etc. requieren --bs-*-rgb en este alcance.
+   */
+  --bs-primary: #0d6efd;
+  --bs-primary-rgb: 13, 110, 253;
+  --bs-secondary: #6c757d;
+  --bs-secondary-rgb: 108, 117, 125;
+  --bs-success: #198754;
+  --bs-success-rgb: 25, 135, 84;
+  --bs-warning: #ffc107;
+  --bs-warning-rgb: 255, 193, 7;
+  --bs-danger: #dc3545;
+  --bs-danger-rgb: 220, 53, 69;
+  --bs-info: #0dcaf0;
+  --bs-info-rgb: 13, 202, 240;
+  --bs-text-opacity: 1;
 }

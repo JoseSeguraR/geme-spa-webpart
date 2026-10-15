@@ -18,6 +18,23 @@ type PosicionMenu = {
   izquierda: number;
 };
 
+/** Separación entre el botón de fila y el borde izquierdo del menú (px). */
+const DesplazamientoHorizontalMenuPx = 6;
+
+const EventoAbrirMenuAccionesFila = 'cowork-desplegable-acciones-fila-abrir';
+
+type DetalleEventoAbrirMenuAccionesFila = {
+  idRegistro: number;
+};
+
+function NotificarAperturaMenuAccionesFila(idRegistro: number): void {
+  document.dispatchEvent(
+    new CustomEvent<DetalleEventoAbrirMenuAccionesFila>(EventoAbrirMenuAccionesFila, {
+      detail: { idRegistro }
+    })
+  );
+}
+
 export default function DesplegableAccionesFila(props: DesplegableAccionesFilaProps): React.ReactElement {
   const { idRegistro, modoAcciones = 'completo', onVer, onClonar, onBitacora, onGestionar } = props;
   const accionesCompletas = modoAcciones === 'completo';
@@ -35,7 +52,7 @@ export default function DesplegableAccionesFila(props: DesplegableAccionesFilaPr
     const rect = disparadorRef.current.getBoundingClientRect();
     setPosicionMenu({
       superior: rect.bottom,
-      izquierda: rect.left
+      izquierda: rect.right + DesplazamientoHorizontalMenuPx
     });
   }, []);
 
@@ -93,10 +110,31 @@ export default function DesplegableAccionesFila(props: DesplegableAccionesFilaPr
     };
   }, [abierto]);
 
+  useEffect(() => {
+    const CerrarSiOtroMenuSeAbre = (evento: Event): void => {
+      const personalizado = evento as CustomEvent<DetalleEventoAbrirMenuAccionesFila>;
+      const idAbierto = personalizado.detail?.idRegistro;
+      if (idAbierto !== undefined && idAbierto !== idRegistro) {
+        setAbierto(false);
+      }
+    };
+
+    document.addEventListener(EventoAbrirMenuAccionesFila, CerrarSiOtroMenuSeAbre);
+    return () => {
+      document.removeEventListener(EventoAbrirMenuAccionesFila, CerrarSiOtroMenuSeAbre);
+    };
+  }, [idRegistro]);
+
   const AlternarMenu = (evento: React.MouseEvent<HTMLButtonElement>): void => {
     evento.stopPropagation();
     evento.preventDefault();
-    setAbierto((valor) => !valor);
+    setAbierto((estabaAbierto) => {
+      if (estabaAbierto) {
+        return false;
+      }
+      NotificarAperturaMenuAccionesFila(idRegistro);
+      return true;
+    });
   };
 
   const menuPortal =

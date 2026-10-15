@@ -202,6 +202,26 @@
   background-color: rgba(15, 23, 43, 0.06);
 }
 
+.cowork-desplegable-acciones__menu .dropdown-item .bi {
+  flex-shrink: 0;
+}
+
+.cowork-desplegable-acciones__menu .dropdown-item .bi.text-primary {
+  color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity, 1)) !important;
+}
+
+.cowork-desplegable-acciones__menu .dropdown-item .bi.text-success {
+  color: rgba(var(--bs-success-rgb), var(--bs-text-opacity, 1)) !important;
+}
+
+.cowork-desplegable-acciones__menu .dropdown-item .bi.text-warning {
+  color: rgba(var(--bs-warning-rgb), var(--bs-text-opacity, 1)) !important;
+}
+
+.cowork-desplegable-acciones__menu .dropdown-item .bi.text-danger {
+  color: rgba(var(--bs-danger-rgb), var(--bs-text-opacity, 1)) !important;
+}
+
 .cowork-formulario__asterisco,
 .cowork-formulario__etiqueta--obligatoria::after {
   color: var(--cowork-color-btn-acento-bg, #e56000);
