@@ -2,7 +2,7 @@ import {
   CampoEstadoTareaActualIl,
   CampoLookupTareaActualIl,
   type EstadoSolicitudIl
-} from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+} from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { EscaparValorXmlCaml } from './EscaparXmlCaml';
 
 export type ParametrosViewXmlSolicitudesIl = {

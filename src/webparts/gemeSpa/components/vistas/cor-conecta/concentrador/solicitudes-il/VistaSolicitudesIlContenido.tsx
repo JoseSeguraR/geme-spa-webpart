@@ -1,23 +1,23 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import type { PropsVistaSpa } from '../../../../constants/registro-vistas/TiposRegistroVistas';
-import type { CentralMantenedor, SolicitudIl } from '../../../../models/SolicitudIl';
-import { ObtenerCentralesDesdeSharePoint } from '../../../../services/sharepoint/solicitudesIl/CentralesServicio';
-import { ObtenerIdsInstalacionesUsuarioActual } from '../../../../services/sharepoint/solicitudesIl/UsuarioInstalacionesSolicitanteServicio';
-import type { RestriccionInstalacionesSolicitante } from './administrador/UseSolicitudesIlLista';
+import type { PropsVistaSpa } from '../../../../../constants/registro-vistas/TiposRegistroVistas';
+import type { CentralMantenedor, SolicitudIl } from '../../../../../models/SolicitudIl';
+import { ObtenerCentralesDesdeSharePoint } from '../../../../../services/sharepoint/solicitudesIl/CentralesServicio';
+import { ObtenerIdsInstalacionesUsuarioActual } from '../../../../../services/sharepoint/solicitudesIl/UsuarioInstalacionesSolicitanteServicio';
+import type { RestriccionInstalacionesSolicitante } from './UseSolicitudesIlLista';
 import {
   EstadosSolicitudIlRadio,
   SubtitulosPorEstadoSolicitudIl,
   type EstadoSolicitudIl
-} from './administrador/constantesSolicitudesIl';
-import { ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps } from '../../../../models/ConfiguracionSolicitudesIl';
-import BarraFiltrosDesplegableVista from '../../BarraFiltrosDesplegableVista';
-import ContenedorVista from '../../ContenedorVista';
-import GrillaSolicitudesIl from './administrador/GrillaSolicitudesIl';
-import ModalNuevaSolicitudIl from './administrador/ModalNuevaSolicitudIl';
-import ModalVerSolicitudIl from './administrador/ModalVerSolicitudIl';
-import ModalBitacoraSolicitudIl from './administrador/ModalBitacoraSolicitudIl';
-import ModalGestionarSolicitudIl from './administrador/ModalGestionarSolicitudIl';
+} from './constantesSolicitudesIl';
+import { ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps } from '../../../../../models/ConfiguracionSolicitudesIl';
+import BarraFiltrosDesplegableVista from '../../../BarraFiltrosDesplegableVista';
+import ContenedorVista from '../../../ContenedorVista';
+import GrillaSolicitudesIl from './GrillaSolicitudesIl';
+import ModalNuevaSolicitudIl from './ModalNuevaSolicitudIl';
+import ModalVerSolicitudIl from './ModalVerSolicitudIl';
+import ModalBitacoraSolicitudIl from './ModalBitacoraSolicitudIl';
+import ModalGestionarSolicitudIl from './ModalGestionarSolicitudIl';
 import {
   ObtenerEnlacesTabsSolicitudesIl,
   ObtenerModoAccionesGrillaPorPerfil,

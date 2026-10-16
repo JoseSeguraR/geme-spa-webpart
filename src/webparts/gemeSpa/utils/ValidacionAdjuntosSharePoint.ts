@@ -1,4 +1,4 @@
-import { TamanoMaximoAdjuntoBytes } from '../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+import { TamanoMaximoAdjuntoBytes } from '../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { SanearNombreArchivoAdjunto } from './SanearNombreArchivoAdjunto';
 
 /** Extensiones habitualmente bloqueadas en SharePoint Online (adjuntos de lista). */

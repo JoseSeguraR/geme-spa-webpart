@@ -3,7 +3,7 @@ import {
   CampoEstadoDestinoBitacoraIl,
   CampoTareaOrigenBitacoraIl,
   TipoRegistroBitacoraSolicitudIl
-} from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+} from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { EscaparValorXmlCaml } from './EscaparXmlCaml';
 
 const CamposViewBitacora = [

@@ -3,7 +3,7 @@ import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import {
   ModuloFiltroInstalacionConcentrador,
   NombreListaCentrales
-} from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+} from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import type { CentralMantenedor } from '../../../models/SolicitudIl';
 import type { RespuestaListaSharePoint } from '../RespuestaListaSharePoint';
 import { SharePointRestError } from '../SharePointRestError';

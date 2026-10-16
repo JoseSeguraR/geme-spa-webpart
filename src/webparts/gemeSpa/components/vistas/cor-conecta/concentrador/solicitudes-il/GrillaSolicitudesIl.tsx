@@ -12,7 +12,7 @@ import {
 } from './PresentacionEstadoSolicitudIl';
 import DesplegableAccionesFila, {
   type ModoAccionesFilaSolicitudesIl
-} from '../DesplegableAccionesFila';
+} from './DesplegableAccionesFila';
 import { FormatearFechaHoraVisible } from './UtilidadesFechaSolicitudIl';
 import { UseSolicitudesIlLista, type RestriccionInstalacionesSolicitante } from './UseSolicitudesIlLista';
 

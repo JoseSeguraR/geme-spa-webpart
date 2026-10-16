@@ -1,6 +1,6 @@
 import { SPHttpClient, type SPHttpClientResponse } from '@microsoft/sp-http';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
-import { NombreListaUsuariosInstalaciones } from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+import { NombreListaUsuariosInstalaciones } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import type { RespuestaListaSharePoint } from '../RespuestaListaSharePoint';
 import { SharePointRestError } from '../SharePointRestError';
 

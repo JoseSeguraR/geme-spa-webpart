@@ -1,6 +1,6 @@
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { ConfiguracionBitacoraSolicitudesIl } from '../../../models/ConfiguracionSolicitudesIl';
-import type { EstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+import type { EstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { CerrarRegistroBitacoraEngine, CrearRegistroBitacoraEngine } from './BitacoraEngineServicio';
 import { ActualizarTareaActualSolicitudIl } from './SolicitudesIlCrudServicio';
 

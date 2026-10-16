@@ -23,6 +23,9 @@ export type PropiedadesWebPartSolicitudesIl = {
   concSolicitudesIlIdAccionReactivar?: string;
   /** Enlace al Excel vinculado de Solicitudes IL (descarga / apertura en Office). */
   concSolicitudesIlUrlExcelVinculado?: string;
+  concSolicitudesIlUrlInsertSIOD?: string;
+  concSolicitudesIlUrlDeleteSIOD?: string;
+  concSolicitudesIlUrlUpdateSIOD?: string;
 };
 
 export function ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps(

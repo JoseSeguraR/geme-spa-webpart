@@ -1,7 +1,7 @@
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { ConfiguracionBitacoraSolicitudesIl } from '../../../models/ConfiguracionSolicitudesIl';
 import type { DatosNuevaSolicitudIl } from '../../../models/SolicitudIl';
-import type { EstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+import type { EstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { ArchivoConNombreSanitizado } from '../../../utils/SanearNombreArchivoAdjunto';
 import { ValidarArchivoAdjuntoSharePoint } from '../../../utils/ValidacionAdjuntosSharePoint';
 import { CrearRegistroBitacoraEngine } from './BitacoraEngineServicio';

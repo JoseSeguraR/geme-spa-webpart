@@ -3,6 +3,7 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   type IPropertyPaneConfiguration,
+  type IPropertyPanePage,
   PropertyPaneTextField
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
@@ -13,7 +14,23 @@ import './styles/GemeSpa.global.scss';
 
 export type GemeSpaWebPartProps = PropiedadesWebPartSolicitudesIl;
 
-const GrupoPropiedadesSolicitudesIl = 'Concentrador - Solicitudes IL';
+const GrupoFlujoBitacoraSolicitudesIl = 'Solicitudes IL · Flujo (bitácora)';
+const GrupoEnlacesSolicitudesIl = 'Solicitudes IL · Enlaces';
+const GrupoSiodSolicitudesIl = 'Solicitudes IL · SIOD (Azure Functions)';
+
+function CampoUrlPropertyPane(
+  clave: keyof PropiedadesWebPartSolicitudesIl,
+  label: string,
+  description: string
+): ReturnType<typeof PropertyPaneTextField> {
+  return PropertyPaneTextField(clave, {
+    label,
+    description,
+    placeholder: 'https://…',
+    multiline: true,
+    rows: 3
+  });
+}
 
 export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPartProps> {
 
@@ -32,7 +49,10 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
         concSolicitudesIlIdAccionFinalizar: this.properties.concSolicitudesIlIdAccionFinalizar,
         concSolicitudesIlIdAccionAnular: this.properties.concSolicitudesIlIdAccionAnular,
         concSolicitudesIlIdAccionReactivar: this.properties.concSolicitudesIlIdAccionReactivar,
-        concSolicitudesIlUrlExcelVinculado: this.properties.concSolicitudesIlUrlExcelVinculado
+        concSolicitudesIlUrlExcelVinculado: this.properties.concSolicitudesIlUrlExcelVinculado,
+        concSolicitudesIlUrlInsertSIOD: this.properties.concSolicitudesIlUrlInsertSIOD,
+        concSolicitudesIlUrlDeleteSIOD: this.properties.concSolicitudesIlUrlDeleteSIOD,
+        concSolicitudesIlUrlUpdateSIOD: this.properties.concSolicitudesIlUrlUpdateSIOD
       }
     });
 
@@ -60,47 +80,92 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
-    return {
-      pages: [
-        {
-          header: {
-            description: 'Configuración de la SPA GEME'
-          },
-          groups: [
+    const paginaCorConecta = {
+      displayName: 'COR Conecta',
+      header: {
+        description:
+          'Concentrador · Solicitudes IL. Expanda cada grupo según lo que deba configurar.'
+      },
+      displayGroupsAsAccordion: true,
+      groups: [
             {
-              groupName: GrupoPropiedadesSolicitudesIl,
+              groupName: GrupoFlujoBitacoraSolicitudesIl,
+              isCollapsed: true,
               groupFields: [
                 PropertyPaneTextField('concSolicitudesIlIdTareaCrear', {
-                  label: 'ID Tarea Crear'
+                  label: 'ID Tarea Crear',
+                  description: 'Ítem lookup en listas del motor (número entero).',
+                  placeholder: 'Ej.: 1'
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdTareaFinalizar', {
-                  label: 'ID Tarea Finalizar'
+                  label: 'ID Tarea Finalizar',
+                  description: 'Ítem lookup en listas del motor (número entero).',
+                  placeholder: 'Ej.: 2'
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdTareaAnular', {
-                  label: 'ID Tarea Anular'
+                  label: 'ID Tarea Anular',
+                  description: 'Ítem lookup en listas del motor (número entero).',
+                  placeholder: 'Ej.: 3'
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdTareaReactivar', {
-                  label: 'ID Tarea Reactivar'
+                  label: 'ID Tarea Reactivar',
+                  description: 'Ítem lookup en listas del motor (número entero).',
+                  placeholder: 'Ej.: 4'
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdAccionFinalizar', {
-                  label: 'ID Acción Finalizar'
+                  label: 'ID Acción Finalizar',
+                  description: 'Ítem lookup de acción de avance (número entero).',
+                  placeholder: 'Ej.: 5'
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdAccionAnular', {
-                  label: 'ID Acción Anular'
+                  label: 'ID Acción Anular',
+                  description: 'Ítem lookup de acción de avance (número entero).',
+                  placeholder: 'Ej.: 6'
                 }),
                 PropertyPaneTextField('concSolicitudesIlIdAccionReactivar', {
-                  label: 'ID Acción Reactivar'
-                }),
-                PropertyPaneTextField('concSolicitudesIlUrlExcelVinculado', {
-                  label: 'URL Excel vinculado Solicitudes IL',
-                  description:
-                    'Enlace al archivo Excel vinculado (URL absoluta o relativa al sitio).'
+                  label: 'ID Acción Reactivar',
+                  description: 'Ítem lookup de acción de avance (número entero).',
+                  placeholder: 'Ej.: 7'
                 })
+              ]
+            },
+            {
+              groupName: GrupoEnlacesSolicitudesIl,
+              isCollapsed: true,
+              groupFields: [
+                CampoUrlPropertyPane(
+                  'concSolicitudesIlUrlExcelVinculado',
+                  'URL Excel vinculado',
+                  'Enlace al archivo Excel vinculado (URL absoluta o relativa al sitio).'
+                )
+              ]
+            },
+            {
+              groupName: GrupoSiodSolicitudesIl,
+              isCollapsed: true,
+              groupFields: [
+                CampoUrlPropertyPane(
+                  'concSolicitudesIlUrlInsertSIOD',
+                  'URL Insert SIOD',
+                  'Endpoint de inserción en SIOD (Azure Function u otro servicio).'
+                ),
+                CampoUrlPropertyPane(
+                  'concSolicitudesIlUrlDeleteSIOD',
+                  'URL Delete SIOD',
+                  'Endpoint de eliminación en SIOD (Azure Function u otro servicio).'
+                ),
+                CampoUrlPropertyPane(
+                  'concSolicitudesIlUrlUpdateSIOD',
+                  'URL Update SIOD',
+                  'Endpoint de actualización en SIOD (Azure Function u otro servicio).'
+                )
               ]
             }
           ]
-        }
-      ]
+    } as IPropertyPanePage & { displayName: string };
+
+    return {
+      pages: [paginaCorConecta as IPropertyPanePage]
     };
   }
 }

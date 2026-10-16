@@ -1,4 +1,4 @@
-import type { EstadoSolicitudIl } from '../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+import type { EstadoSolicitudIl } from '../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 
 export type SolicitudIl = {
   id: number;

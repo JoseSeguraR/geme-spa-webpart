@@ -5,7 +5,7 @@ import {
   EsTareaPendienteBitacoraNo,
   NombreListaBitacoraEngine,
   TipoRegistroBitacoraSolicitudIl
-} from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+} from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { ExtraerMensajeErrorSharePoint } from '../ExtraerMensajeErrorSharePoint';
 import { SharePointRestError } from '../SharePointRestError';
 

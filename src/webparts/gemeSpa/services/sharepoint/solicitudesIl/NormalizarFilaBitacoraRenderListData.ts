@@ -3,7 +3,7 @@ import {
   CampoAccionAvanceBitacoraIl,
   CampoEstadoDestinoBitacoraIl,
   CampoTareaOrigenBitacoraIl
-} from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+} from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 
 type FilaRenderListData = Record<string, unknown>;
 

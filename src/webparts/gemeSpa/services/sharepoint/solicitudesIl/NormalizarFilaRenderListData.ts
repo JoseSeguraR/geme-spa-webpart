@@ -3,8 +3,8 @@ import {
   CampoEstadoTareaActualIl,
   CampoLookupTareaActualIl,
   type EstadoSolicitudIl
-} from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
-import { ResolverEstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/administrador/constantesSolicitudesIl';
+} from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
+import { ResolverEstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 
 type FilaRenderListData = Record<string, unknown>;
 
