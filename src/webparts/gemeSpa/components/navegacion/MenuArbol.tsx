@@ -2,7 +2,11 @@ import * as React from 'react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { NodoMenu } from '../../models/NodoMenu';
 import { EsNodoMenuEnlaceExterno, EsNodoMenuEnlaceInterno, EsNodoMenuGrupo } from '../../models/NodoMenu';
-import { ObtenerGruposAncestrosParaRuta } from '../../utils/MenuNavegacion';
+import {
+  ObtenerGrupoPrimerNivelParaRuta,
+  ObtenerGruposAncestrosParaRuta,
+  RutaPerteneceASubarbolMenu
+} from '../../utils/MenuNavegacion';
 import { EsNodoPrimerNivelActivo, ObtenerClaseIconoMenu } from '../../utils/MenuIconos';
 import { ObtenerAtributosEnlaceExternoMenu } from '../../utils/EnlaceExternoMenu';
 import { EsEnlaceMenuActivoParaRuta } from '../../utils/MenuRutaActiva';
@@ -49,20 +53,50 @@ type MenuArbolNodoProps = {
   urlColeccionSitio: string;
   gruposExpandidos: Set<string>;
   onAlternarGrupo: (idGrupo: string) => void;
+  onAbrirContextoGrupoRaiz?: (idGrupo: string) => void;
   onNavegar?: () => void;
 };
 
 function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
-  const { nodo, nivel, rutaActual, urlColeccionSitio, gruposExpandidos, onAlternarGrupo, onNavegar } = props;
+  const {
+    nodo,
+    nivel,
+    rutaActual,
+    urlColeccionSitio,
+    gruposExpandidos,
+    onAlternarGrupo,
+    onAbrirContextoGrupoRaiz,
+    onNavegar
+  } = props;
 
   if (EsNodoMenuGrupo(nodo)) {
+    const abrirContextoRaiz = nivel === 1 && onAbrirContextoGrupoRaiz !== undefined;
+
+    if (abrirContextoRaiz) {
+      return (
+        <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`}>
+          <button
+            type="button"
+            className="cowork-menu-arbol__grupo cowork-menu-arbol__grupo--entrada-contexto"
+            onClick={() => onAbrirContextoGrupoRaiz(nodo.id)}
+            aria-haspopup="menu"
+          >
+            <i className={`${ObtenerClaseIconoMenu(nodo)} cowork-menu-arbol__icono-modulo-raiz`} aria-hidden="true" />
+            <span className="cowork-menu-arbol__etiqueta">{nodo.etiqueta}</span>
+            <i className="bi bi-chevron-right cowork-menu-arbol__icono cowork-menu-arbol__icono--fin" aria-hidden="true" />
+          </button>
+        </li>
+      );
+    }
+
     const expandido = gruposExpandidos.has(nodo.id);
+    const contieneRutaActiva = RutaPerteneceASubarbolMenu(nodo, rutaActual);
 
     return (
       <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`}>
         <button
           type="button"
-          className="cowork-menu-arbol__grupo"
+          className={`cowork-menu-arbol__grupo ${contieneRutaActiva ? 'cowork-menu-arbol__grupo--contiene-activo' : ''}`}
           onClick={() => onAlternarGrupo(nodo.id)}
           aria-expanded={expandido}
         >
@@ -94,6 +128,7 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
 
   if (EsNodoMenuEnlaceExterno(nodo)) {
     const atributosEnlace = ObtenerAtributosEnlaceExternoMenu(nodo.url, urlColeccionSitio);
+    const iconoModuloRaiz = nivel === 1 && onAbrirContextoGrupoRaiz !== undefined;
 
     return (
       <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`}>
@@ -104,6 +139,12 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
           rel={atributosEnlace.rel}
           onClick={onNavegar}
         >
+          {iconoModuloRaiz ? (
+            <i
+              className={`${ObtenerClaseIconoMenu(nodo)} cowork-menu-arbol__icono-modulo-raiz`}
+              aria-hidden="true"
+            />
+          ) : null}
           <span className="cowork-menu-arbol__etiqueta">{nodo.etiqueta}</span>
         </a>
       </li>
@@ -133,6 +174,8 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
 export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
   const { nodos, rutaActual, colapsada, urlColeccionSitio, onNavegar } = props;
   const [gruposExpandidosManual, setGruposExpandidosManual] = useState<Set<string>>(() => new Set());
+  const [preferirMenuRaiz, setPreferirMenuRaiz] = useState(false);
+  const [grupoContextoManualId, setGrupoContextoManualId] = useState<string | null>(null);
   const [flyoutGrupoId, setFlyoutGrupoId] = useState<string | null>(null);
   const [flyoutPosicion, setFlyoutPosicion] = useState<PosicionFlyout | null>(null);
   const contenedorRailRef = useRef<HTMLElement>(null);
@@ -148,10 +191,51 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
     return candidato && EsNodoMenuGrupo(candidato) ? candidato : undefined;
   }, [flyoutGrupoId, nodos]);
 
-  const gruposPorRuta = useMemo(
-    () => ObtenerGruposAncestrosParaRuta(nodos, rutaActual),
+  const grupoContextoPorRuta = useMemo(
+    () => ObtenerGrupoPrimerNivelParaRuta(nodos, rutaActual),
     [nodos, rutaActual]
   );
+
+  const grupoContextoManual = useMemo(() => {
+    if (!grupoContextoManualId) {
+      return undefined;
+    }
+
+    const candidato = nodos.find((n) => n.id === grupoContextoManualId);
+    return candidato && EsNodoMenuGrupo(candidato) ? candidato : undefined;
+  }, [grupoContextoManualId, nodos]);
+
+  const grupoContextoActivo = useMemo(() => {
+    // Tras «Volver» la ruta puede seguir en el módulo anterior; el contexto elegido en raíz prevalece hasta navegar.
+    if (grupoContextoManual) {
+      return grupoContextoManual;
+    }
+
+    if (!preferirMenuRaiz && grupoContextoPorRuta) {
+      return grupoContextoPorRuta;
+    }
+
+    return undefined;
+  }, [preferirMenuRaiz, grupoContextoPorRuta, grupoContextoManual]);
+
+  const modoContextoMenuExpandido = !colapsada && grupoContextoActivo !== undefined;
+
+  const nodosMenuExpandido = modoContextoMenuExpandido ? grupoContextoActivo.hijos : nodos;
+
+  const gruposPorRuta = useMemo(() => {
+    const expandidos = ObtenerGruposAncestrosParaRuta(nodosMenuExpandido, rutaActual);
+
+    if (colapsada && grupoContextoPorRuta) {
+      ObtenerGruposAncestrosParaRuta(grupoContextoPorRuta.hijos, rutaActual).forEach((id) => expandidos.add(id));
+    }
+
+    return expandidos;
+  }, [colapsada, grupoContextoPorRuta, nodosMenuExpandido, rutaActual]);
+
+  useEffect(() => {
+    setPreferirMenuRaiz(false);
+    setGrupoContextoManualId(null);
+  }, [rutaActual]);
 
   useEffect(() => {
     setGruposExpandidosManual((previo) => {
@@ -217,6 +301,29 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
       document.removeEventListener('mousedown', CerrarSiClickFuera);
     };
   }, [flyoutGrupoId]);
+
+  const VolverAMenuRaiz = useCallback((): void => {
+    setPreferirMenuRaiz(true);
+    setGrupoContextoManualId(null);
+  }, []);
+
+  const AbrirContextoGrupoRaiz = useCallback(
+    (idGrupo: string): void => {
+      const nodoGrupo = nodos.find((n) => n.id === idGrupo);
+      if (nodoGrupo && EsNodoMenuGrupo(nodoGrupo)) {
+        const expandidosEnSubarbol = ObtenerGruposAncestrosParaRuta(nodoGrupo.hijos, rutaActual);
+        setGruposExpandidosManual((previo) => {
+          const combinado = new Set(previo);
+          expandidosEnSubarbol.forEach((id) => combinado.add(id));
+          return combinado;
+        });
+      }
+
+      setPreferirMenuRaiz(false);
+      setGrupoContextoManualId(idGrupo);
+    },
+    [nodos, rutaActual]
+  );
 
   const AlternarGrupo = (idGrupo: string): void => {
     setGruposExpandidosManual((previo) => {
@@ -342,9 +449,15 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
                 left: `${flyoutPosicion.izquierda}px`
               }}
             >
-              <p id={`cowork-menu-flyout-titulo-${nodoFlyoutGrupo.id}`} className="cowork-menu-flyout__titulo">
-                {nodoFlyoutGrupo.etiqueta}
-              </p>
+              <div
+                id={`cowork-menu-flyout-titulo-${nodoFlyoutGrupo.id}`}
+                className="cowork-menu-contexto__modulo cowork-menu-flyout__modulo"
+              >
+                <span className="cowork-menu-contexto__icono-modulo" aria-hidden="true">
+                  <i className={ObtenerClaseIconoMenu(nodoFlyoutGrupo)} />
+                </span>
+                <p className="cowork-menu-contexto__titulo">{nodoFlyoutGrupo.etiqueta}</p>
+              </div>
               <ul className="cowork-menu-arbol__lista cowork-menu-arbol__lista--flyout">
                 {nodoFlyoutGrupo.hijos.map((hijo) => (
                   <MenuArbolNodo
@@ -365,10 +478,24 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
       ) : null}
       <nav
         className={`cowork-menu-arbol cowork-menu-arbol--expandido ${colapsada ? 'cowork-menu-arbol--expandido-en-sidebar-colapsado' : ''}`}
-        aria-label="Menú de aplicación"
+        aria-label={modoContextoMenuExpandido ? `Menú · ${grupoContextoActivo.etiqueta}` : 'Menú de aplicación'}
       >
+        {modoContextoMenuExpandido ? (
+          <header className="cowork-menu-contexto">
+            <button type="button" className="cowork-menu-contexto__volver" onClick={VolverAMenuRaiz}>
+              <i className="bi bi-chevron-double-left cowork-menu-contexto__icono-volver" aria-hidden="true" />
+              Volver
+            </button>
+            <div className="cowork-menu-contexto__modulo">
+              <span className="cowork-menu-contexto__icono-modulo" aria-hidden="true">
+                <i className={ObtenerClaseIconoMenu(grupoContextoActivo)} />
+              </span>
+              <p className="cowork-menu-contexto__titulo">{grupoContextoActivo.etiqueta}</p>
+            </div>
+          </header>
+        ) : null}
         <ul className="cowork-menu-arbol__lista">
-          {nodos.map((nodo) => (
+          {nodosMenuExpandido.map((nodo) => (
             <MenuArbolNodo
               key={nodo.id}
               nodo={nodo}
@@ -377,6 +504,7 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
               urlColeccionSitio={urlColeccionSitio}
               gruposExpandidos={gruposExpandidosManual}
               onAlternarGrupo={AlternarGrupo}
+              onAbrirContextoGrupoRaiz={modoContextoMenuExpandido ? undefined : AbrirContextoGrupoRaiz}
               onNavegar={onNavegar}
             />
           ))}

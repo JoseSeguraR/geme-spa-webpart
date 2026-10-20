@@ -18,11 +18,14 @@ function ConstruirNodo(
 
   if (registro.tipo === 'Header') {
     const hijosRegistro = OrdenarHermanos(hijosPorPadre.get(registro.id) ?? []);
+    const segmentosHeader = ObtenerSegmentosHashKeyAncestros(registro, mapaPorId);
+    const prefijoRutaHash = ConstruirRutaHashDesdeSegmentos(segmentosHeader);
     return {
       tipo: 'grupo',
       id,
       etiqueta,
       icono,
+      prefijoRutaHash: prefijoRutaHash || undefined,
       hijos: hijosRegistro.map((hijo) => ConstruirNodo(hijo, mapaPorId, hijosPorPadre))
     };
   }

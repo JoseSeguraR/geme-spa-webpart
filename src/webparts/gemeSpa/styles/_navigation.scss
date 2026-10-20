@@ -5,6 +5,84 @@
   padding: var(--cowork-space-2) 0 var(--cowork-space-4);
 }
 
+.cowork-menu-contexto {
+  padding: var(--cowork-space-2) var(--cowork-space-3) var(--cowork-space-3);
+  margin: 0 0 var(--cowork-space-2);
+  border-bottom: 1px solid rgba(15, 23, 43, 0.1);
+  background: linear-gradient(180deg, rgba(15, 23, 43, 0.04) 0%, transparent 72%);
+}
+
+.cowork-menu-contexto__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  color: rgba(15, 23, 43, 0.62);
+  padding: var(--cowork-space-1) var(--cowork-space-2);
+  margin: 0 calc(var(--cowork-space-2) * -1);
+  font-size: var(--cowork-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-radius: var(--cowork-radius-md);
+  cursor: pointer;
+}
+
+.cowork-menu-contexto__volver:hover,
+.cowork-menu-contexto__volver:focus-visible {
+  color: var(--cowork-color-sidebar-enlace-activo);
+  background-color: rgba(233, 47, 97, 0.06);
+}
+
+.cowork-menu-contexto__volver:focus-visible {
+  outline: 2px solid rgba(15, 23, 43, 0.25);
+  outline-offset: 0;
+}
+
+.cowork-menu-contexto__icono-volver {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+.cowork-menu-contexto__modulo {
+  display: flex;
+  align-items: center;
+  gap: var(--cowork-space-3);
+  margin-top: var(--cowork-space-2);
+  padding: var(--cowork-space-2) var(--cowork-space-3);
+  border-radius: var(--cowork-radius-md);
+  background-color: rgba(233, 47, 97, 0.07);
+  border: 1px solid rgba(233, 47, 97, 0.14);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+.cowork-menu-contexto__icono-modulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--cowork-control-tamano);
+  height: var(--cowork-control-tamano);
+  border-radius: var(--cowork-radius-md);
+  background-color: rgba(233, 47, 97, 0.12);
+  color: var(--cowork-color-sidebar-enlace-activo);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.cowork-menu-contexto__titulo {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--cowork-font-size-base);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--cowork-color-sidebar-text);
+  overflow-wrap: anywhere;
+}
+
 .cowork-menu-arbol__lista {
   list-style: none;
   margin: 0;
@@ -34,7 +112,7 @@
   text-align: left;
   text-decoration: none;
   padding: var(--cowork-space-2) var(--cowork-space-3);
-  font-size: var(--cowork-font-size-xs);
+  font-size: var(--cowork-font-size-sm);
   line-height: var(--cowork-line-height);
   min-height: var(--cowork-control-altura);
   border-radius: 0;
@@ -59,10 +137,37 @@
   font-weight: 600;
 }
 
+.cowork-menu-arbol__grupo--contiene-activo {
+  color: var(--cowork-color-sidebar-enlace-activo);
+  background-color: rgba(233, 47, 97, 0.08);
+  font-weight: 600;
+}
+
 .cowork-menu-arbol__icono {
   flex: 0 0 auto;
   font-size: var(--cowork-font-size-sm);
   opacity: 0.85;
+}
+
+.cowork-menu-arbol__icono--fin {
+  margin-left: auto;
+  opacity: 0.55;
+}
+
+.cowork-menu-arbol__grupo--entrada-contexto {
+  font-weight: 600;
+}
+
+.cowork-menu-arbol__grupo--entrada-contexto:hover .cowork-menu-arbol__icono--fin,
+.cowork-menu-arbol__grupo--entrada-contexto:focus-visible .cowork-menu-arbol__icono--fin {
+  opacity: 0.85;
+}
+
+.cowork-menu-arbol__icono-modulo-raiz {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  opacity: 0.9;
+  color: var(--cowork-color-sidebar-enlace-activo);
 }
 
 .cowork-menu-arbol__etiqueta {
@@ -133,7 +238,7 @@ a.cowork-menu-arbol__icono-principal:focus-visible {
   max-width: min(20rem, calc(100vw - 6rem));
   max-height: min(24rem, calc(100vh - 6rem));
   overflow-y: auto;
-  padding: 0.75rem 0;
+  padding: var(--cowork-space-3) 0 var(--cowork-space-2);
   background-color: var(--cowork-color-sidebar-bg);
   color: var(--cowork-color-sidebar-text);
   border: 1px solid var(--cowork-color-sidebar-borde);
@@ -141,19 +246,16 @@ a.cowork-menu-arbol__icono-principal:focus-visible {
   box-shadow: 0 0.5rem 1.25rem rgba(15, 23, 43, 0.12);
 }
 
-.cowork-menu-flyout__titulo {
-  margin: 0;
-  padding: 0 1rem 0.5rem;
-  font-size: var(--cowork-font-size-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(15, 23, 43, 0.55);
-  border-bottom: 1px solid rgba(15, 23, 43, 0.08);
+.cowork-menu-flyout__modulo {
+  margin-top: 0;
+  margin-left: var(--cowork-space-3);
+  margin-right: var(--cowork-space-3);
+  margin-bottom: var(--cowork-space-2);
 }
 
 .cowork-menu-arbol__lista--flyout {
-  padding-top: 0.35rem;
+  padding-top: 0;
+  border-top: 1px solid rgba(15, 23, 43, 0.08);
 }
 
 @media (min-width: 768px) {

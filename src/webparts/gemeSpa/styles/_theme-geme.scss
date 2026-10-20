@@ -34,6 +34,11 @@
   background-color: rgba(255, 255, 255, 0.18);
 }
 
+.cowork-menu-arbol__grupo--contiene-activo {
+  color: inherit;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
 .cowork-menu-arbol__icono-principal:hover,
 .cowork-menu-arbol__icono-principal:focus-visible,
 a.cowork-menu-arbol__icono-principal:hover,
@@ -51,9 +56,39 @@ a.cowork-menu-arbol__icono-principal:focus-visible {
   outline-color: rgba(255, 255, 255, 0.45);
 }
 
-.cowork-menu-flyout__titulo {
-  color: rgba(255, 255, 255, 0.65);
+.cowork-menu-contexto {
   border-bottom-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 72%);
+}
+
+.cowork-menu-contexto__volver {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.cowork-menu-contexto__volver:hover,
+.cowork-menu-contexto__volver:focus-visible {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.cowork-menu-contexto__volver:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.45);
+}
+
+.cowork-menu-contexto__modulo {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+}
+
+.cowork-menu-contexto__icono-modulo,
+.cowork-menu-arbol__icono-modulo-raiz {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: inherit;
+}
+
+.cowork-menu-arbol__lista--flyout {
+  border-top-color: rgba(255, 255, 255, 0.12);
 }
 
 .cowork-menu-flyout {

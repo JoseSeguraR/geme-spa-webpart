@@ -20,6 +20,8 @@ export type NodoMenuGrupo = {
   etiqueta: string;
   hijos: NodoMenu[];
   icono?: string;
+  /** HASH_KEY acumulados del Header en SharePoint; alinea ruta SPA con ramas del menú. */
+  prefijoRutaHash?: string;
 };
 
 export type NodoMenu = NodoMenuGrupo | NodoMenuEnlaceInterno | NodoMenuEnlaceExterno;
