@@ -35,6 +35,27 @@ export function ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps(
   return url.length > 0 ? url : undefined;
 }
 
+export function ObtenerUrlInsertSiodSolicitudesIlDesdeProps(
+  props: PropiedadesWebPartSolicitudesIl
+): string | undefined {
+  const url = props.concSolicitudesIlUrlInsertSIOD?.trim() ?? '';
+  return url.length > 0 ? url : undefined;
+}
+
+export function ObtenerUrlUpdateSiodSolicitudesIlDesdeProps(
+  props: PropiedadesWebPartSolicitudesIl
+): string | undefined {
+  const url = props.concSolicitudesIlUrlUpdateSIOD?.trim() ?? '';
+  return url.length > 0 ? url : undefined;
+}
+
+export function ObtenerUrlDeleteSiodSolicitudesIlDesdeProps(
+  props: PropiedadesWebPartSolicitudesIl
+): string | undefined {
+  const url = props.concSolicitudesIlUrlDeleteSIOD?.trim() ?? '';
+  return url.length > 0 ? url : undefined;
+}
+
 function ParsearIdNumerico(valor: string | undefined, nombreCampo: string): number {
   const texto = valor?.trim() ?? '';
   if (!texto) {

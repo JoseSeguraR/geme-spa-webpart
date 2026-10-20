@@ -9,6 +9,7 @@ import type {
 } from '../../../models/SolicitudIl';
 import { ResolverEstadoSolicitudIl } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
 import { ExtraerMensajeErrorSharePoint } from '../ExtraerMensajeErrorSharePoint';
+import type { RespuestaListaSharePoint } from '../RespuestaListaSharePoint';
 import { SharePointRestError } from '../SharePointRestError';
 
 type ElementoCreadoSharePoint = {
@@ -73,6 +74,35 @@ export async function CrearSolicitudIlEnSharePoint(
     );
   }
   return json.Id;
+}
+
+export async function ExisteSolicitudIlConIdCen(
+  context: WebPartContext,
+  idCen: string,
+  excluirIdElemento?: number
+): Promise<boolean> {
+  const idNormalizado = idCen.trim();
+  if (!idNormalizado) {
+    return false;
+  }
+
+  const webUrl = context.pageContext.web.absoluteUrl;
+  const tituloLista = encodeURIComponent(NombreListaSolicitudesIl);
+  const idEscapado = idNormalizado.replace(/'/g, "''");
+  const filtro = `ID_CEN eq '${idEscapado}'`;
+  const url =
+    `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items` +
+    `?$select=Id&$filter=${encodeURIComponent(filtro)}&$top=2`;
+
+  const response = await context.spHttpClient.get(url, SPHttpClient.configurations.v1);
+  await ValidarRespuesta(response, 'ExisteSolicitudIlConIdCen', url);
+
+  const json = (await response.json()) as RespuestaListaSharePoint<{ Id: number }>;
+  if (excluirIdElemento === undefined) {
+    return json.value.length > 0;
+  }
+
+  return json.value.some((item) => item.Id !== excluirIdElemento);
 }
 
 type ItemSolicitudIlRest = {

@@ -5,11 +5,22 @@ import type { EstadoSolicitudIl } from '../../../components/vistas/cor-conecta/c
 import { ArchivoConNombreSanitizado } from '../../../utils/SanearNombreArchivoAdjunto';
 import { ValidarArchivoAdjuntoSharePoint } from '../../../utils/ValidacionAdjuntosSharePoint';
 import { CrearRegistroBitacoraEngine } from './BitacoraEngineServicio';
+import { IdCenDuplicadoSolicitudIlError } from './IdCenDuplicadoSolicitudIlError';
+import {
+  InsertarSolicitudFinalizadaEnSiod,
+  InsertarSolicitudVigenteEnSiod
+} from './SiodSolicitudIlApiServicio';
 import {
   ActualizarTareaActualSolicitudIl,
   AgregarAdjuntoSolicitudIl,
-  CrearSolicitudIlEnSharePoint
+  CrearSolicitudIlEnSharePoint,
+  ExisteSolicitudIlConIdCen
 } from './SolicitudesIlCrudServicio';
+
+export type OpcionesRegistroSiodSolicitudIl = {
+  urlInsertSiod: string;
+  idCentral: number;
+};
 
 export type ProgresoRegistroSolicitudIl = {
   mensaje: string;
@@ -71,6 +82,7 @@ export async function RegistrarNuevaSolicitudIlCompleta(
   datos: DatosNuevaSolicitudIl,
   archivos: File[],
   configBitacora: ConfiguracionBitacoraSolicitudesIl,
+  opcionesSiod: OpcionesRegistroSiodSolicitudIl,
   onProgreso?: (progreso: ProgresoRegistroSolicitudIl) => void
 ): Promise<number> {
   const informar = (mensaje: string): void => {
@@ -82,6 +94,11 @@ export async function RegistrarNuevaSolicitudIlCompleta(
     if (errorArchivo) {
       throw new Error(errorArchivo);
     }
+  }
+
+  informar('Validando ID CEN…');
+  if (await ExisteSolicitudIlConIdCen(context, datos.idCen)) {
+    throw new IdCenDuplicadoSolicitudIlError();
   }
 
   informar('Guardando la solicitud IL…');
@@ -106,6 +123,27 @@ export async function RegistrarNuevaSolicitudIlCompleta(
 
   informar('Actualizando tarea actual de la solicitud…');
   await ActualizarTareaActualSolicitudIl(context, idSolicitud, idBitacoraActual);
+
+  informar('Enviando orden a SIOD…');
+  try {
+    const cuerpoBase = {
+      idsolicitud: datos.idCen.trim(),
+      idCentral: opcionesSiod.idCentral,
+      descripcion: datos.descripcion.trim(),
+      fechainicio: datos.fechaInicioIso
+    };
+
+    if (datos.estadoFlujo === 'Finalizada' && datos.fechaFinIso) {
+      await InsertarSolicitudFinalizadaEnSiod(opcionesSiod.urlInsertSiod, {
+        ...cuerpoBase,
+        fechaFin: datos.fechaFinIso
+      });
+    } else {
+      await InsertarSolicitudVigenteEnSiod(opcionesSiod.urlInsertSiod, cuerpoBase);
+    }
+  } catch {
+    // Fire-and-forget: no afecta el resultado del alta en SharePoint.
+  }
 
   return idSolicitud;
 }

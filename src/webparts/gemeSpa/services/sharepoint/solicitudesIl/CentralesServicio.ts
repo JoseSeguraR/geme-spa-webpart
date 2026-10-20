@@ -11,6 +11,7 @@ import { SharePointRestError } from '../SharePointRestError';
 type ElementoInstalacionSharePoint = {
   Id: number;
   INSTALACION?: string;
+  CODIGO_SIOD?: string;
   MODULOS?: string | string[] | { results?: string[] };
 };
 
@@ -41,7 +42,7 @@ export async function ObtenerCentralesDesdeSharePoint(context: WebPartContext): 
   const filtroModulos = `MODULOS eq '${ModuloFiltroInstalacionConcentrador.replace(/'/g, "''")}'`;
   const url =
     `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items` +
-    `?$select=Id,INSTALACION,MODULOS&$filter=${encodeURIComponent(filtroModulos)}` +
+    `?$select=Id,INSTALACION,CODIGO_SIOD,MODULOS&$filter=${encodeURIComponent(filtroModulos)}` +
     `&$orderby=${encodeURIComponent('INSTALACION asc')}&$top=5000`;
 
   const response = await context.spHttpClient.get(url, SPHttpClient.configurations.v1);
@@ -52,7 +53,8 @@ export async function ObtenerCentralesDesdeSharePoint(context: WebPartContext): 
     .filter((elemento) => typeof elemento.Id === 'number' && ModulosIncluyenConcentrador(elemento.MODULOS))
     .map((elemento) => ({
       id: elemento.Id,
-      central: (elemento.INSTALACION ?? '').trim()
+      central: (elemento.INSTALACION ?? '').trim(),
+      codigoSiod: (elemento.CODIGO_SIOD ?? '').trim()
     }))
     .filter((central) => central.central.length > 0);
 }

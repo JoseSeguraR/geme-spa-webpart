@@ -1,10 +1,15 @@
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { EstadoSolicitudIl } from './constantesSolicitudesIl';
 import type { CentralMantenedor, DatosNuevaSolicitudIl, SolicitudIl } from '../../../../../models/SolicitudIl';
 import type { PropiedadesWebPartSolicitudesIl } from '../../../../../models/ConfiguracionSolicitudesIl';
-import { ConstruirConfiguracionSolicitudesIlDesdeProps } from '../../../../../models/ConfiguracionSolicitudesIl';
+import {
+  ConstruirConfiguracionSolicitudesIlDesdeProps,
+  ObtenerUrlInsertSiodSolicitudesIlDesdeProps
+} from '../../../../../models/ConfiguracionSolicitudesIl';
+import { IdCenDuplicadoSolicitudIlError } from '../../../../../services/sharepoint/solicitudesIl/IdCenDuplicadoSolicitudIlError';
+import { ParsearIdCentralDesdeCodigoSiod } from '../../../../../services/sharepoint/solicitudesIl/ParsearIdCentralSiod';
 import { RegistrarNuevaSolicitudIlCompleta } from '../../../../../services/sharepoint/solicitudesIl/RegistrarNuevaSolicitudIlServicio';
 import { SharePointRestError } from '../../../../../services/sharepoint/SharePointRestError';
 import { ConvertirEntradaLocalAIsoUtc, ConvertirIsoAFechaLocalInput } from './UtilidadesFechaSolicitudIl';
@@ -50,6 +55,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
   const [guardando, setGuardando] = useState(false);
   const [mensajeProgreso, setMensajeProgreso] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
+  const refIdCen = useRef<HTMLInputElement>(null);
 
   const estadoCalculado = useMemo(() => ObtenerEstadoDesdeFechas(finLocal), [finLocal]);
   const finHabilitado = inicioLocal.trim().length > 0;
@@ -71,7 +77,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
       return;
     }
     if (solicitudOrigenClon) {
-      setIdCen(solicitudOrigenClon.idCen ?? '');
+      setIdCen('');
       setCentralId(
         solicitudOrigenClon.centralId !== undefined ? String(solicitudOrigenClon.centralId) : ''
       );
@@ -151,6 +157,23 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
       setError('Seleccione una central.');
       return;
     }
+
+    const centralSeleccionada = centrales.find((central) => String(central.id) === centralId);
+    if (!centralSeleccionada) {
+      setError('No se encontró la central seleccionada.');
+      return;
+    }
+
+    let idCentral: number;
+    try {
+      idCentral = ParsearIdCentralDesdeCodigoSiod(centralSeleccionada.codigoSiod, centralSeleccionada.central);
+    } catch (errCentral) {
+      setError(errCentral instanceof Error ? errCentral.message : 'Código SIOD de central inválido.');
+      return;
+    }
+
+    const urlInsertSiod = ObtenerUrlInsertSiodSolicitudesIlDesdeProps(propiedadesSolicitudesIl) ?? '';
+
     if (!descripcion.trim()) {
       setError('Indique la descripción.');
       return;
@@ -216,12 +239,22 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
         datos,
         archivos,
         configuracion.bitacora,
+        {
+          urlInsertSiod,
+          idCentral
+        },
         (progreso) => setMensajeProgreso(progreso.mensaje)
       );
       LimpiarFormulario();
       onCreado();
       onCerrar();
     } catch (err) {
+      if (err instanceof IdCenDuplicadoSolicitudIlError) {
+        setError(err.message);
+        refIdCen.current?.focus();
+        return;
+      }
+
       const mensaje =
         err instanceof SharePointRestError
           ? err.message
@@ -258,8 +291,8 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
               {error ? <div className="alert alert-danger py-2">{error}</div> : null}
               {esClon ? (
                 <div className="alert alert-info py-2 small mb-3" role="status">
-                  Formulario pre-llenado desde la solicitud origen. No se copian adjuntos ni fecha fin; puede
-                  completarlos antes de guardar.
+                  Formulario pre-llenado desde la solicitud origen (excepto ID CEN). No se copian adjuntos ni
+                  fecha fin; puede completarlos antes de guardar.
                 </div>
               ) : null}
               <p className="form-text cowork-formulario__nota-obligatorios mb-3">
@@ -273,6 +306,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
                       ID CEN
                     </EtiquetaCampo>
                     <input
+                      ref={refIdCen}
                       id="nueva-solicitud-id-cen"
                       className="form-control form-control-sm"
                       value={idCen}

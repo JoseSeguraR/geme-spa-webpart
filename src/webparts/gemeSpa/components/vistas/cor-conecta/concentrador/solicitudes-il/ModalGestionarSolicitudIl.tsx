@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { EstadoSolicitudIl } from './constantesSolicitudesIl';
 import type {
@@ -9,12 +9,22 @@ import type {
   SolicitudIl
 } from '../../../../../models/SolicitudIl';
 import type { PropiedadesWebPartSolicitudesIl } from '../../../../../models/ConfiguracionSolicitudesIl';
-import { ConstruirConfiguracionSolicitudesIlDesdeProps } from '../../../../../models/ConfiguracionSolicitudesIl';
+import {
+  ConstruirConfiguracionSolicitudesIlDesdeProps,
+  ObtenerUrlDeleteSiodSolicitudesIlDesdeProps,
+  ObtenerUrlInsertSiodSolicitudesIlDesdeProps,
+  ObtenerUrlUpdateSiodSolicitudesIlDesdeProps
+} from '../../../../../models/ConfiguracionSolicitudesIl';
 import {
   ObtenerAdjuntosSolicitudIl,
   ObtenerDetalleSolicitudIlPorId
 } from '../../../../../services/sharepoint/solicitudesIl/SolicitudesIlCrudServicio';
 import { GuardarGestionSolicitudIlCompleta } from '../../../../../services/sharepoint/solicitudesIl/GuardarGestionSolicitudIlServicio';
+import { IdCenDuplicadoSolicitudIlError } from '../../../../../services/sharepoint/solicitudesIl/IdCenDuplicadoSolicitudIlError';
+import {
+  CrearResolverIdCentralDesdeCentrales,
+  type SnapshotCamposSiodSolicitudIl
+} from '../../../../../services/sharepoint/solicitudesIl/SincronizarSiodGestionSolicitudIlServicio';
 import { SharePointRestError } from '../../../../../services/sharepoint/SharePointRestError';
 import {
   ConvertirEntradaLocalAIsoUtc,
@@ -74,6 +84,9 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
   const [errorCarga, setErrorCarga] = useState<string | undefined>();
   const [idBitacoraActual, setIdBitacoraActual] = useState<number | undefined>(undefined);
   const [estadoInicial, setEstadoInicial] = useState<EstadoSolicitudIl>('Vigente');
+  const [snapshotSiodInicial, setSnapshotSiodInicial] = useState<SnapshotCamposSiodSolicitudIl | undefined>(
+    undefined
+  );
   const [teniaFechaFinAlCargar, setTeniaFechaFinAlCargar] = useState(false);
 
   const [idCen, setIdCen] = useState('');
@@ -91,6 +104,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
   const [guardando, setGuardando] = useState(false);
   const [mensajeProgreso, setMensajeProgreso] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
+  const refIdCen = useRef<HTMLInputElement>(null);
 
   const modoEdicion = estadoInicial === 'Vigente';
   const finHabilitado = modoEdicion && inicioLocal.trim().length > 0 && !anularMarcado;
@@ -135,6 +149,13 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
         setInicioLocal(ConvertirIsoAFechaLocalInput(detalle.fechaInicio));
         setFinLocal(ConvertirIsoAFechaLocalInput(detalle.fechaFin));
         setTeniaFechaFinAlCargar(Boolean(detalle.fechaFin));
+        setSnapshotSiodInicial({
+          idCen: detalle.idCen,
+          centralId: detalle.centralId ?? 0,
+          descripcion: detalle.descripcion,
+          fechaInicioIso: detalle.fechaInicio ?? '',
+          fechaFinIso: detalle.fechaFin
+        });
         setAdjuntosExistentes(adjuntos);
         setAdjuntosMarcadosEliminar([]);
         setArchivosNuevos([]);
@@ -329,6 +350,17 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
       limpiarFechaFin: limpiarFechaFin || undefined
     };
 
+    if (!snapshotSiodInicial) {
+      setError('No se pudo determinar el estado inicial de la solicitud para SIOD.');
+      return;
+    }
+
+    const urlInsertSiod = ObtenerUrlInsertSiodSolicitudesIlDesdeProps(propiedadesSolicitudesIl) ?? '';
+    const urlUpdateSiod = ObtenerUrlUpdateSiodSolicitudesIlDesdeProps(propiedadesSolicitudesIl) ?? '';
+    const urlDeleteSiod = ObtenerUrlDeleteSiodSolicitudesIlDesdeProps(propiedadesSolicitudesIl) ?? '';
+
+    const resolverIdCentralSiod = CrearResolverIdCentralDesdeCentrales(centrales);
+
     setGuardando(true);
     setMensajeProgreso('Guardando cambios…');
     try {
@@ -341,7 +373,14 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
           estadoNuevo,
           datos,
           archivosNuevos: modoEdicion ? archivosNuevos : [],
-          nombresAdjuntosEliminar: modoEdicion ? adjuntosMarcadosEliminar : []
+          nombresAdjuntosEliminar: modoEdicion ? adjuntosMarcadosEliminar : [],
+          snapshotSiodInicial,
+          urlsSiod: {
+            urlInsertSiod,
+            urlUpdateSiod,
+            urlDeleteSiod
+          },
+          resolverIdCentralSiod
         },
         configuracion.bitacora,
         (progreso) => setMensajeProgreso(progreso.mensaje)
@@ -349,6 +388,12 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
       onGuardado();
       onCerrar();
     } catch (err) {
+      if (err instanceof IdCenDuplicadoSolicitudIlError) {
+        setError(err.message);
+        refIdCen.current?.focus();
+        return;
+      }
+
       const mensaje =
         err instanceof SharePointRestError
           ? err.message
@@ -467,6 +512,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
                         ID CEN
                       </EtiquetaCampo>
                       <input
+                        ref={refIdCen}
                         id="gestionar-solicitud-id-cen"
                         className="form-control form-control-sm"
                         value={idCen}

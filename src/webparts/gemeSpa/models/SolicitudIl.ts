@@ -14,6 +14,7 @@ export type SolicitudIl = {
 export type CentralMantenedor = {
   id: number;
   central: string;
+  codigoSiod: string;
 };
 
 export type DatosNuevaSolicitudIl = {

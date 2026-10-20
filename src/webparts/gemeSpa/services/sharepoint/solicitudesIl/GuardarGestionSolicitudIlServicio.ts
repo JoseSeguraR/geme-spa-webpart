@@ -8,11 +8,19 @@ import {
   EjecutarFlujoCambioEstadoSolicitudIl,
   ResolverTransicionEstadoSolicitudIl
 } from './CambioEstadoSolicitudIlServicio';
+import { IdCenDuplicadoSolicitudIlError } from './IdCenDuplicadoSolicitudIlError';
 import {
   ActualizarSolicitudIlEnSharePoint,
   AgregarAdjuntoSolicitudIl,
-  EliminarAdjuntoSolicitudIl
+  EliminarAdjuntoSolicitudIl,
+  ExisteSolicitudIlConIdCen
 } from './SolicitudesIlCrudServicio';
+import {
+  type OpcionesUrlsSiodSolicitudIl,
+  type ResolverIdCentralSiod,
+  type SnapshotCamposSiodSolicitudIl,
+  SincronizarSiodTrasGestionSolicitudIl
+} from './SincronizarSiodGestionSolicitudIlServicio';
 
 export type ProgresoGestionSolicitudIl = {
   mensaje: string;
@@ -26,6 +34,9 @@ export type ParametrosGuardarGestionSolicitudIl = {
   datos: DatosActualizarSolicitudIl;
   archivosNuevos: File[];
   nombresAdjuntosEliminar: string[];
+  snapshotSiodInicial: SnapshotCamposSiodSolicitudIl;
+  urlsSiod: OpcionesUrlsSiodSolicitudIl;
+  resolverIdCentralSiod: ResolverIdCentralSiod;
 };
 
 export async function GuardarGestionSolicitudIlCompleta(
@@ -42,6 +53,14 @@ export async function GuardarGestionSolicitudIlCompleta(
     const errorArchivo = ValidarArchivoAdjuntoSharePoint(archivo);
     if (errorArchivo) {
       throw new Error(errorArchivo);
+    }
+  }
+
+  const idCenNuevo = params.datos.idCen.trim();
+  const idCenAnterior = params.snapshotSiodInicial.idCen.trim();
+  if (idCenNuevo !== idCenAnterior) {
+    if (await ExisteSolicitudIlConIdCen(context, idCenNuevo, params.idSolicitud)) {
+      throw new IdCenDuplicadoSolicitudIlError();
     }
   }
 
@@ -65,22 +84,36 @@ export async function GuardarGestionSolicitudIlCompleta(
   }
 
   const transicion = ResolverTransicionEstadoSolicitudIl(params.estadoInicial, params.estadoNuevo);
-  if (!transicion) {
-    return;
-  }
+  if (transicion) {
+    if (!params.idBitacoraActual) {
+      throw new Error(
+        'La solicitud no tiene registro de bitácora actual (TAREAACTUAL). No se puede aplicar el cambio de estado.'
+      );
+    }
 
-  if (!params.idBitacoraActual) {
-    throw new Error(
-      'La solicitud no tiene registro de bitácora actual (TAREAACTUAL). No se puede aplicar el cambio de estado.'
+    informar('Registrando cambio de estado en bitácora…');
+    await EjecutarFlujoCambioEstadoSolicitudIl(
+      context,
+      params.idSolicitud,
+      params.idBitacoraActual,
+      transicion,
+      configBitacora
     );
   }
 
-  informar('Registrando cambio de estado en bitácora…');
-  await EjecutarFlujoCambioEstadoSolicitudIl(
-    context,
-    params.idSolicitud,
-    params.idBitacoraActual,
-    transicion,
-    configBitacora
+  informar('Enviando orden a SIOD…');
+  await SincronizarSiodTrasGestionSolicitudIl(
+    params.estadoInicial,
+    params.estadoNuevo,
+    params.snapshotSiodInicial,
+    {
+      idCen: params.datos.idCen,
+      centralId: params.datos.centralId,
+      descripcion: params.datos.descripcion,
+      fechaInicioIso: params.datos.fechaInicioIso,
+      fechaFinIso: params.datos.limpiarFechaFin ? undefined : params.datos.fechaFinIso
+    },
+    params.urlsSiod,
+    params.resolverIdCentralSiod
   );
 }
