@@ -351,7 +351,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
     };
 
     if (!snapshotSiodInicial) {
-      setError('No se pudo determinar el estado inicial de la solicitud para SIOD.');
+      setError('No se pudo determinar el estado inicial de la solicitud.');
       return;
     }
 

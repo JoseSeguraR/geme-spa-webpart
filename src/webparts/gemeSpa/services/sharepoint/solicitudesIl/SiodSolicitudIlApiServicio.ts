@@ -19,6 +19,23 @@ type CuerpoUpdateSiod = {
   limpiarFechaFin?: boolean;
 };
 
+const LimiteEsperaRespuestaSiodMs = 1500;
+
+/**
+ * Espera como máximo {@link LimiteEsperaRespuestaSiodMs} ms; la petición puede seguir en segundo plano.
+ */
+function EsperarFetchSiod(fetchIniciado: Promise<Response>): Promise<void> {
+  return Promise.race([
+    fetchIniciado.then(
+      () => undefined,
+      () => undefined
+    ),
+    new Promise<void>((resolve) => {
+      window.setTimeout(resolve, LimiteEsperaRespuestaSiodMs);
+    })
+  ]);
+}
+
 /**
  * Envía POST a SIOD sin interpretar la respuesta ni afectar el flujo de guardado en SharePoint.
  */
@@ -41,7 +58,7 @@ async function EnviarPostSiod(urlPlantilla: string, cuerpo?: unknown): Promise<v
   }
 
   try {
-    await fetch(url, init);
+    await EsperarFetchSiod(fetch(url, init));
   } catch {
     // Fire-and-forget: errores de red no se propagan a la UI.
   }
@@ -54,12 +71,14 @@ async function EnviarDeleteSiod(url: string): Promise<void> {
   }
 
   try {
-    await fetch(destino, {
-      method: 'DELETE',
-      headers: {
-        Accept: 'application/json'
-      }
-    });
+    await EsperarFetchSiod(
+      fetch(destino, {
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/json'
+        }
+      })
+    );
   } catch {
     // Fire-and-forget: errores de red no se propagan a la UI.
   }

@@ -54,6 +54,11 @@
 .cowork-vista__tabs {
   border-bottom-color: var(--cowork-color-topbar-borde);
   margin-bottom: var(--cowork-space-4);
+
+  .nav-link {
+    font-size: var(--cowork-font-size-sm);
+    line-height: 1.35;
+  }
 }
 
 .cowork-vista__encabezado {
@@ -171,6 +176,12 @@
 .cowork-vista-tabla-mui {
   width: 100%;
   min-width: 0;
+
+  .cowork-badge-estado {
+    font-size: var(--cowork-font-size-xs);
+    padding: 0.2rem 0.65rem;
+    line-height: 1.2;
+  }
 }
 
 .cowork-desplegable-acciones {
@@ -190,16 +201,28 @@
   border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
   border-radius: var(--cowork-radius-md, 0.375rem);
   box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 43, 0.12);
+  --bs-dropdown-link-color: var(--cowork-color-texto-principal, #0f172b);
+  --bs-dropdown-link-hover-color: var(--cowork-color-texto-principal, #0f172b);
+  --bs-dropdown-link-hover-bg: rgba(15, 23, 43, 0.08);
+  --bs-dropdown-link-active-color: var(--cowork-color-texto-principal, #0f172b);
+  --bs-dropdown-link-active-bg: rgba(15, 23, 43, 0.08);
 }
 
 .cowork-desplegable-acciones__menu .dropdown-item {
   font-size: var(--cowork-font-size-sm);
   padding: 0.4rem 0.75rem;
+  color: var(--cowork-color-texto-principal, #0f172b);
+  background-color: transparent;
 }
 
+.cowork-desplegable-acciones__menu .dropdown-item:hover,
 .cowork-desplegable-acciones__menu .dropdown-item:focus,
-.cowork-desplegable-acciones__menu .dropdown-item:hover {
-  background-color: rgba(15, 23, 43, 0.06);
+.cowork-desplegable-acciones__menu .dropdown-item:focus-visible,
+.cowork-desplegable-acciones__menu .dropdown-item:active,
+.cowork-desplegable-acciones__menu .dropdown-item.active {
+  color: var(--cowork-color-texto-principal, #0f172b);
+  background-color: rgba(15, 23, 43, 0.08);
+  box-shadow: none;
 }
 
 .cowork-desplegable-acciones__menu .dropdown-item .bi {
@@ -261,19 +284,19 @@
   line-height: 1.25;
   padding: 0.4rem 1rem;
   border-radius: 2rem;
-  color: var(--cowork-color-btn-texto-claro, #ffffff);
+  color: #ffffff;
 }
 
 .cowork-estado-solicitud-il--vigente.cowork-badge-estado {
-  background-color: var(--cowork-color-btn-primary-bg, #003773);
+  background-color: #007bff;
 }
 
 .cowork-estado-solicitud-il--finalizada.cowork-badge-estado {
-  background-color: var(--cowork-color-btn-filtro-bg, #6c757d);
+  background-color: #343a40;
 }
 
 .cowork-estado-solicitud-il--anulada.cowork-badge-estado {
-  background-color: #b42318;
+  background-color: #dc3545;
 }
 
 .cowork-formulario-estado {
@@ -289,18 +312,18 @@
 }
 
 .cowork-formulario-estado.cowork-estado-solicitud-il--vigente {
-  border-left-color: var(--cowork-color-btn-primary-bg, #003773);
-  background: rgba(0, 55, 115, 0.06);
+  border-left-color: #007bff;
+  background: rgba(0, 123, 255, 0.06);
 }
 
 .cowork-formulario-estado.cowork-estado-solicitud-il--finalizada {
-  border-left-color: var(--cowork-color-btn-filtro-bg, #6c757d);
-  background: rgba(108, 117, 125, 0.1);
+  border-left-color: #343a40;
+  background: rgba(52, 58, 64, 0.08);
 }
 
 .cowork-formulario-estado.cowork-estado-solicitud-il--anulada {
-  border-left-color: #b42318;
-  background: rgba(180, 35, 24, 0.08);
+  border-left-color: #dc3545;
+  background: rgba(220, 53, 69, 0.08);
 }
 
 .cowork-formulario-estado__principal {

@@ -124,26 +124,30 @@ export async function RegistrarNuevaSolicitudIlCompleta(
   informar('Actualizando tarea actual de la solicitud…');
   await ActualizarTareaActualSolicitudIl(context, idSolicitud, idBitacoraActual);
 
-  informar('Enviando orden a SIOD…');
-  try {
-    const cuerpoBase = {
-      idsolicitud: datos.idCen.trim(),
-      idCentral: opcionesSiod.idCentral,
-      descripcion: datos.descripcion.trim(),
-      fechainicio: datos.fechaInicioIso
-    };
-
-    if (datos.estadoFlujo === 'Finalizada' && datos.fechaFinIso) {
-      await InsertarSolicitudFinalizadaEnSiod(opcionesSiod.urlInsertSiod, {
-        ...cuerpoBase,
-        fechaFin: datos.fechaFinIso
-      });
-    } else {
-      await InsertarSolicitudVigenteEnSiod(opcionesSiod.urlInsertSiod, cuerpoBase);
-    }
-  } catch {
+  InsertarSiodTrasAltaSolicitudIl(datos, opcionesSiod).catch(() => {
     // Fire-and-forget: no afecta el resultado del alta en SharePoint.
-  }
+  });
 
   return idSolicitud;
+}
+
+async function InsertarSiodTrasAltaSolicitudIl(
+  datos: DatosNuevaSolicitudIl,
+  opcionesSiod: OpcionesRegistroSiodSolicitudIl
+): Promise<void> {
+  const cuerpoBase = {
+    idsolicitud: datos.idCen.trim(),
+    idCentral: opcionesSiod.idCentral,
+    descripcion: datos.descripcion.trim(),
+    fechainicio: datos.fechaInicioIso
+  };
+
+  if (datos.estadoFlujo === 'Finalizada' && datos.fechaFinIso) {
+    await InsertarSolicitudFinalizadaEnSiod(opcionesSiod.urlInsertSiod, {
+      ...cuerpoBase,
+      fechaFin: datos.fechaFinIso
+    });
+  } else {
+    await InsertarSolicitudVigenteEnSiod(opcionesSiod.urlInsertSiod, cuerpoBase);
+  }
 }

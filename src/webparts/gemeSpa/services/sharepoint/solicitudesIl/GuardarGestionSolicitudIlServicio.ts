@@ -101,8 +101,7 @@ export async function GuardarGestionSolicitudIlCompleta(
     );
   }
 
-  informar('Enviando orden a SIOD…');
-  await SincronizarSiodTrasGestionSolicitudIl(
+  SincronizarSiodTrasGestionSolicitudIl(
     params.estadoInicial,
     params.estadoNuevo,
     params.snapshotSiodInicial,
@@ -115,5 +114,7 @@ export async function GuardarGestionSolicitudIlCompleta(
     },
     params.urlsSiod,
     params.resolverIdCentralSiod
-  );
+  ).catch(() => {
+    // Fire-and-forget: SIOD en segundo plano, sin impacto en la UI.
+  });
 }

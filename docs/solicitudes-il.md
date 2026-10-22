@@ -99,7 +99,7 @@ La bitácora de solo lectura (`ModalBitacoraSolicitudIl`) consulta `ENGINE_BITAC
 
 ## SIOD
 
-Las llamadas a Azure Functions (Insert, Update, Delete) son **fire-and-forget**: Insert y Update usan `POST` con JSON; Delete usa `DELETE` sin body. **No se interpreta la respuesta** ni se muestra error al usuario si falla la red o el HTTP. El guardado en SharePoint y la bitácora no dependen del resultado SIOD.
+Las llamadas a Azure Functions (Insert, Update, Delete) son **transparentes para el usuario**: no hay mensajes de progreso ni errores SIOD en pantalla. Insert y Update usan `POST` con JSON; Delete usa `DELETE` sin body. Tras guardar en SharePoint, la orden SIOD se lanza en segundo plano; cada petición espera como máximo **1,5 s** la respuesta (la consulta puede seguir en vuelo). **No se interpreta el HTTP**. El guardado en SharePoint y la bitácora no dependen del resultado SIOD.
 
 `idCentral` es el valor numérico de `CODIGO_SIOD` en `CONC_MANTENEDOR_INSTALACIONES`. Las fechas van en ISO 8601 (mismo criterio que en la lista).
 

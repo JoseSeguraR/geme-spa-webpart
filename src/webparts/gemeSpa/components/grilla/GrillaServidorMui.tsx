@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import {
@@ -109,6 +109,29 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
   } = props;
 
   const [textoBusquedaLocal, setTextoBusquedaLocal] = useState(busqueda?.valorEnConsulta ?? '');
+  const contenedorGrillaRef = useRef<HTMLDivElement>(null);
+
+  const ObtenerContenedorPortalWebPart = useCallback((): HTMLElement => {
+    const ancestroWebPart = contenedorGrillaRef.current?.closest('.gemeSpaBootstrap');
+    if (ancestroWebPart instanceof HTMLElement) {
+      return ancestroWebPart;
+    }
+    return document.body;
+  }, []);
+
+  const slotPropsGrilla = useMemo(
+    () => ({
+      basePopper: {
+        container: ObtenerContenedorPortalWebPart
+      },
+      baseSelect: {
+        MenuProps: {
+          container: ObtenerContenedorPortalWebPart
+        }
+      }
+    }),
+    [ObtenerContenedorPortalWebPart]
+  );
 
   useEffect(() => {
     if (busqueda) {
@@ -148,6 +171,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
 
   return (
     <ThemeProvider theme={TemaGrillaGeme}>
+      <div ref={contenedorGrillaRef} className="cowork-grilla-servidor-mui">
       {busqueda || accionesBarra ? (
         <Box className="cowork-grilla-toolbar mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
           {busqueda ? (
@@ -208,6 +232,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
                   }
                 : undefined
             }
+            slotProps={slotPropsGrilla}
             sx={{ height: alturaPx }}
           />
         </div>
@@ -216,6 +241,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
       {estadoCarga === 'vacio' ? (
         <p className="text-muted mb-0">{hayBusquedaActiva ? mensajeSinRegistrosBusqueda : mensajeSinRegistros}</p>
       ) : null}
+      </div>
     </ThemeProvider>
   );
 }
