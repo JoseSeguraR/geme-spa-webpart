@@ -117,6 +117,8 @@ Colocar subcomponentes, hooks y datos dummy de la feature **en la misma carpeta 
 
 **Layout visual:** envolver pantallas de negocio en `ContenedorVista` (`components/vistas/ContenedorVista.tsx`), que aplica `cowork-vista` y los logos corporativos arriba a la derecha. Usar el bloque BEM `cowork-vista__*` (`styles/_vista.scss`): tabs, encabezado, título, subtítulo, descripción, barra de filtros, barra de acciones, radios de estado. Combinar con utilidades Bootstrap (`d-flex`, `gap-*`, botones) sin duplicar estilos por pantalla.
 
+**Tipografía:** usar tokens `--cowork-font-size-titulo-vista` (título de vista), `--cowork-font-size-sm` (tabs, subtítulo, botones, radios, grilla MUI) y `--cowork-font-size-xs` (labels de filtros, badges en grilla). Detalle en `docs/arquitectura-spa.md`. Grillas: `TemaGrillaMui.ts` + portal acotado a `.gemeSpaBootstrap` en `GrillaServidorMui.tsx`. Lista vacía: `MensajeVacioGrillaMui` / `cowork-grilla-vacio` vía `GrillaServidorMui` (`mensajeSinRegistros`, `mensajeSinRegistrosBusqueda`).
+
 **Botones:** clases `cowork-btn-*` con tokens `--cowork-color-btn-*` en `_tokens.scss` (`styles/_buttons.scss`): `cowork-btn-primary` (formularios/nuevo), `cowork-btn-exito` (descargas), `cowork-btn-acento` (naranja corporativo), `cowork-btn-filtro` / `cowork-btn-filtro-alt` (zona de filtros). Siempre junto con `.btn` y tamaño (p. ej. `.btn-sm`).
 
 ### Rutas globales vs pantallas de negocio

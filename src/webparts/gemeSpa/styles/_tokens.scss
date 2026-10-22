@@ -20,6 +20,11 @@ $cowork-color-grilla-borde: #dee2e6 !default;
 $cowork-font-size-base: 0.9375rem !default;
 $cowork-font-size-sm: 0.875rem !default;
 $cowork-font-size-xs: 0.8125rem !default;
+/**
+ * Título compacto de vista (jerarquía 1). Ver tipografía en docs/arquitectura-spa.md.
+ * Banda operativa (tabs, botones, grilla): $cowork-font-size-sm; metadatos densos: $cowork-font-size-xs.
+ */
+$cowork-font-size-titulo-vista: 1.25rem !default;
 $cowork-line-height: 1.45 !default;
 
 $cowork-heading-vista: 1.75rem !default;
@@ -93,6 +98,7 @@ $cowork-color-btn-filtro-alt-hover-texto: #565e64 !default;
   --cowork-font-size-base: #{$cowork-font-size-base};
   --cowork-font-size-sm: #{$cowork-font-size-sm};
   --cowork-font-size-xs: #{$cowork-font-size-xs};
+  --cowork-font-size-titulo-vista: #{$cowork-font-size-titulo-vista};
   --cowork-line-height: #{$cowork-line-height};
 
   --cowork-heading-vista: #{$cowork-heading-vista};

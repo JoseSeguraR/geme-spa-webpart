@@ -41,6 +41,19 @@ Mientras el menú carga se muestra `CargandoInicial`. Si la inicialización fall
 
 Los estilos viven en `src/webparts/gemeSpa/styles/`. `GemeSpa.global.scss` importa Bootstrap y el resto de parciales **dentro** de `.gemeSpaBootstrap`, para no alterar la página de SharePoint. Los tokens (`_tokens.scss`) definen tipografía, densidades y colores de marca (barra superior `#003773`, sidebar `#4B4B49`).
 
+### Tipografía en vistas (convención)
+
+Usar siempre variables CSS `--cowork-font-size-*`, no tamaños sueltos en pantallas nuevas.
+
+| Nivel | Token | Uso típico |
+| --- | --- | --- |
+| Título compacto de vista | `--cowork-font-size-titulo-vista` (1.25rem) | Cabecera principal (p. ej. `cowork-vista__titulo-il`); color corporativo `--cowork-color-btn-primary-bg` |
+| Cuerpo / controles | `--cowork-font-size-sm` (0.875rem) | Tabs, subtítulos de vista, botones `.btn-sm`, radios de estado, celdas de grilla MUI, encabezados de columna |
+| Metadatos densos | `--cowork-font-size-xs` (0.8125rem) | Labels de filtros en panel, badges de estado dentro de la grilla |
+| Texto general SPA | `--cowork-font-size-base` (0.9375rem) | Herencia en `.gemeSpaBootstrap`; evitar usarlo como título |
+
+Jerarquía: un escalón claro entre título de vista (1.25rem) y la banda operativa (sm). Subtítulos alineados con tabs y acciones (sm), no por debajo en xs. Pantallas con tabs clásicos + cabecera propia: `ContenedorVista` con `layoutCabeceraSobreTabs` y fila `cowork-vista__fila-cabecera` (referencia: Solicitudes IL).
+
 Botones de negocio: clase `cowork-btn-*` junto con `.btn` y un tamaño de Bootstrap (por ejemplo `.btn-sm`).
 
 | Clase | Uso |
@@ -122,7 +135,11 @@ Las anclas cubren pestañas hermanas que no comparten el segmento del ítem de m
 
 ## Grilla de servidor
 
-`components/grilla/GrillaServidorMui.tsx` es la grilla reutilizable. Usa MUI Data Grid; el resto de la interfaz sigue en Bootstrap.
+`components/grilla/GrillaServidorMui.tsx` es la grilla reutilizable. Usa MUI Data Grid; el resto de la interfaz sigue en Bootstrap. El tema está en `TemaGrillaMui.ts`: celdas, encabezados, paginación e inputs usan `--cowork-font-size-sm`; chips o badges en celdas pueden ir en xs vía estilos de vista (`.cowork-vista-tabla-mui`).
+
+Los poppers del Data Grid (menú de columna, etc.) se montan dentro de `.gemeSpaBootstrap` (`slotProps.basePopper` / `baseSelect.MenuProps.container`), no en `document.body`, para que no queden huérfanos al salir de la SPA por enlaces externos en la misma pestaña.
+
+Lista vacía: `GrillaServidorMui` usa `MensajeVacioGrillaMui` (`cowork-grilla-vacio`): mensaje centrado, ancho completo, borde `1px solid var(--cowork-color-grilla-borde)` y la misma altura mínima que la grilla cuando no se renderiza el DataGrid (`estadoCarga === 'vacio'`). Con grilla visible y cero filas, el slot `noRowsOverlay` reutiliza el mismo componente en variante `overlay`. Personalizar textos con `mensajeSinRegistros` y `mensajeSinRegistrosBusqueda`.
 
 La grilla no consulta SharePoint. El padre le entrega filas ya normalizadas y el estado de carga (`inicial`, `cargando`, `listo`, `vacio`, `error`). La paginación es por páginas conocidas: el padre indica `paginaActual`, `tamanoPagina` y `hayPaginaSiguiente`. El orden se notifica con `onCambioOrdenamiento`. La búsqueda es opcional (`ConfigBusquedaGrillaServidor`) y la aplica quien consulta.
 

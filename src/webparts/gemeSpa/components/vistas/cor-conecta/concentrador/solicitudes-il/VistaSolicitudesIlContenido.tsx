@@ -13,6 +13,7 @@ import {
 import { ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps } from '../../../../../models/ConfiguracionSolicitudesIl';
 import BarraFiltrosDesplegableVista from '../../../BarraFiltrosDesplegableVista';
 import ContenedorVista from '../../../ContenedorVista';
+import LogosMarcaVista from '../../../LogosMarcaVista';
 import GrillaSolicitudesIl from './GrillaSolicitudesIl';
 import ModalNuevaSolicitudIl from './ModalNuevaSolicitudIl';
 import ModalVerSolicitudIl from './ModalVerSolicitudIl';
@@ -21,6 +22,7 @@ import ModalGestionarSolicitudIl from './ModalGestionarSolicitudIl';
 import {
   ObtenerEnlacesTabsSolicitudesIl,
   ObtenerModoAccionesGrillaPorPerfil,
+  ObtenerTituloVistaSolicitudesIlPorPerfil,
   PermitirCreacionSolicitudesIlPorPerfil,
   type PerfilVistaSolicitudesIlConcentrador
 } from './PerfilVistaSolicitudesIl';
@@ -152,8 +154,21 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
     setRecargarToken((valor) => valor + 1);
   };
 
+  const tituloVista = ObtenerTituloVistaSolicitudesIlPorPerfil(perfil);
+
   return (
-    <ContenedorVista>
+    <ContenedorVista layoutCabeceraSobreTabs>
+      <div className="cowork-vista__fila-cabecera">
+        <header className="cowork-vista__encabezado cowork-vista__encabezado--solicitudes-il">
+          <h2 className="cowork-vista__titulo-il">
+            <i className="bi bi-inbox cowork-vista__titulo-il-icono" aria-hidden="true" />
+            <span>{tituloVista}</span>
+          </h2>
+          <p className="cowork-vista__subtitulo-il mb-0">{SubtitulosPorEstadoSolicitudIl[estadoAplicado]}</p>
+        </header>
+        <LogosMarcaVista />
+      </div>
+
       <ul className="nav nav-tabs cowork-vista__tabs" role="tablist">
         <li className="nav-item" role="presentation">
           <a className="nav-link" href={enlacesTabs.urlTabSolicitudes}>
@@ -171,13 +186,6 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
           </span>
         </li>
       </ul>
-
-      <header className="cowork-vista__encabezado">
-        <h2 className="cowork-vista__titulo cowork-vista__titulo--compacto">
-          Solicitudes IL:{' '}
-          <span className="cowork-vista__subtitulo">{SubtitulosPorEstadoSolicitudIl[estadoAplicado]}</span>
-        </h2>
-      </header>
 
       <BarraFiltrosDesplegableVista
         panelVisible={filtrosVisibles}

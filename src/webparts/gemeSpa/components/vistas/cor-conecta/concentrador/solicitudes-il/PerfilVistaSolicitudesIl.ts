@@ -37,3 +37,15 @@ export function ObtenerModoAccionesGrillaPorPerfil(
 export function PermitirCreacionSolicitudesIlPorPerfil(perfil: PerfilVistaSolicitudesIlConcentrador): boolean {
   return perfil !== 'solicitante';
 }
+
+const TituloVistaPorPerfil: Record<PerfilVistaSolicitudesIlConcentrador, string> = {
+  administrador: 'Administrador - Solicitudes IL',
+  solicitante: 'Solicitante - Solicitudes IL',
+  despachador: 'Despachador - Solicitudes IL'
+};
+
+export function ObtenerTituloVistaSolicitudesIlPorPerfil(
+  perfil: PerfilVistaSolicitudesIlConcentrador
+): string {
+  return TituloVistaPorPerfil[perfil];
+}
