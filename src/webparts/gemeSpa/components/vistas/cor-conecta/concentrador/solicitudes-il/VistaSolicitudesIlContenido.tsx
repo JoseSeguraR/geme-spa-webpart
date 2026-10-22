@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { PropsVistaSpa } from '../../../../../constants/registro-vistas/TiposRegistroVistas';
 import type { CentralMantenedor, SolicitudIl } from '../../../../../models/SolicitudIl';
 import { ObtenerCentralesDesdeSharePoint } from '../../../../../services/sharepoint/solicitudesIl/CentralesServicio';
@@ -41,7 +41,11 @@ export type VistaSolicitudesIlContenidoProps = PropsVistaSpa & {
 
 export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlContenidoProps): React.ReactElement {
   const { context, propiedadesSolicitudesIl, perfil } = props;
-  const enlacesTabs = ObtenerEnlacesTabsSolicitudesIl(perfil);
+  const prefijoRutaServidorSitio = context.pageContext.site.serverRelativeUrl;
+  const enlacesTabs = useMemo(
+    () => ObtenerEnlacesTabsSolicitudesIl(perfil, prefijoRutaServidorSitio),
+    [perfil, prefijoRutaServidorSitio]
+  );
   const modoAccionesGrilla = ObtenerModoAccionesGrillaPorPerfil(perfil);
   const permitirCreacion = PermitirCreacionSolicitudesIlPorPerfil(perfil);
   const urlExcelVinculado = ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps(propiedadesSolicitudesIl);

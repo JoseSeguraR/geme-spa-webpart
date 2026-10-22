@@ -4,6 +4,24 @@ export type AtributosEnlaceExternoMenu = {
   rel?: 'noopener noreferrer';
 };
 
+/**
+ * Une el prefijo de la colección (p. ej. `context.pageContext.site.serverRelativeUrl`) con una ruta bajo el web raíz.
+ */
+export function ConstruirRutaServidorRelativa(
+  prefijoRutaServidorSitio: string,
+  rutaDesdeRaizWebColeccion: string
+): string {
+  const base = prefijoRutaServidorSitio.trim().replace(/\/$/, '');
+  const segmento = rutaDesdeRaizWebColeccion.trim().replace(/^\//, '');
+  if (!base) {
+    return `/${segmento}`;
+  }
+  if (!segmento) {
+    return base;
+  }
+  return `${base}/${segmento}`;
+}
+
 function ResolverUrlAbsoluta(url: string, urlColeccionSitio: string): URL | undefined {
   const trimmed = url.trim();
   if (!trimmed) {
