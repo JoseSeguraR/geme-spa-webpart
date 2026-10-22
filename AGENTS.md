@@ -18,6 +18,20 @@ Stack principal:
 
 La aplicación se ejecutará principalmente en una única página moderna de un Sitio de Grupo o Sitio de Comunicación de SharePoint Online.
 
+## Versionado del producto
+
+Documentación completa: [`docs/versionado.md`](docs/versionado.md).
+
+Resumen obligatorio para agentes y desarrolladores:
+
+- La versión de **producto desplegable** (App Catalog / `.sppkg`) es **`config/package-solution.json`** → **`solution.version`**, formato **`X.Y.Z.B`**.
+- **`package.json`** → **`version`**: semver **`X.Y.Z`**, alineado con los tres primeros segmentos de `solution.version`. El segmento **B** no se refleja en npm.
+- **Regla operativa:** todo **`.sppkg` subido al tenant** debe llevar un `solution.version` **estrictamente mayor** que el paquete anterior en **ese** catálogo.
+- Al incrementar **X**, **Y** o **Z** en la solución, actualizar **`package.json`** en el mismo cambio de release.
+- Incrementar **solo B** para un nuevo despliegue al catálogo **no** exige cambiar `package.json` si X.Y.Z no cambió.
+- No confundir con: versión del framework SPFx en dependencias, `dataVersion` del Web Part, `"version": "*"` del manifest, ni claves `version` de caché en `localStorage`.
+- No modificar `package.json` ni `config/**` salvo tarea explícita de versión, dependencias o toolchain (véase Archivos protegidos).
+
 ## Principios de implementación
 
 Priorizar soluciones simples, explícitas y mantenibles.
