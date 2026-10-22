@@ -32,6 +32,61 @@
   min-width: 0;
 }
 
+.cowork-vista--cabecera-sobre-tabs > .cowork-vista__fila-cabecera {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--cowork-space-2) var(--cowork-space-3);
+  margin-bottom: var(--cowork-space-2);
+}
+
+.cowork-vista--cabecera-sobre-tabs > .cowork-vista__tabs {
+  grid-column: 1 / -1;
+  grid-row: auto;
+}
+
+.cowork-vista--cabecera-sobre-tabs .cowork-vista__fila-cabecera .cowork-vista__logos-marca {
+  height: auto;
+  margin-bottom: 0;
+}
+
+.cowork-vista--cabecera-sobre-tabs .cowork-vista__fila-cabecera .cowork-vista__logo-marca {
+  height: 2.75rem;
+  max-height: 2.75rem;
+}
+
+.cowork-vista__encabezado--solicitudes-il {
+  margin-bottom: 0;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.cowork-vista__titulo-il {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.2rem;
+  font-size: var(--cowork-font-size-titulo-vista);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--cowork-color-btn-primary-bg, #003773);
+}
+
+.cowork-vista__titulo-il-icono {
+  flex-shrink: 0;
+  font-size: 1em;
+  color: var(--cowork-color-btn-primary-bg, #003773);
+}
+
+.cowork-vista__subtitulo-il {
+  font-size: var(--cowork-font-size-sm);
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--cowork-color-texto-apoyo, #64748b);
+}
+
 .cowork-vista__logos-marca {
   display: flex;
   flex-direction: row;
@@ -171,6 +226,40 @@
   background: var(--cowork-color-contenido-bg, #f1f5f9);
   border-radius: var(--cowork-radius-md, 0.375rem);
   padding: var(--cowork-space-2) var(--cowork-space-3) !important;
+
+  .form-check-label {
+    font-size: var(--cowork-font-size-sm);
+    line-height: 1.35;
+  }
+}
+
+.cowork-grilla-vacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: var(--cowork-space-4);
+  text-align: center;
+  background-color: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+}
+
+.cowork-grilla-vacio--overlay {
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.cowork-grilla-vacio__texto {
+  margin: 0;
+  max-width: 36rem;
+  font-size: var(--cowork-font-size-sm);
+  line-height: var(--cowork-line-height);
+  color: var(--cowork-color-texto-apoyo, #64748b);
 }
 
 .cowork-vista-tabla-mui {

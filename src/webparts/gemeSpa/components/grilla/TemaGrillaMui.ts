@@ -5,7 +5,8 @@ import type {} from '@mui/x-data-grid/themeAugmentation';
 import { AlturaEncabezadoGrillaPx, AlturaFilaGrillaPx } from '../../models/GrillaServidor';
 
 /**
- * Valores alineados con los defaults de `styles/_tokens.scss`.
+ * Valores alineados con `styles/_tokens.scss` y `docs/arquitectura-spa.md` (tipografía en vistas).
+ * Celdas, encabezados de columna, paginación e inputs: `--cowork-font-size-sm`.
  * La palette de MUI no admite `var(--cowork-*)` en todos los campos: el tema parsea colores en runtime.
  * La grilla usa fondo claro de contenido (no el azul del sidebar).
  */
@@ -51,7 +52,7 @@ export const TemaGrillaGeme = createTheme(
             '--DataGrid-headerHeight': `${AlturaEncabezadoGrillaPx}px`
           },
           columnHeader: {
-            fontSize: 'var(--cowork-font-size-xs)',
+            fontSize: 'var(--cowork-font-size-sm)',
             fontWeight: 600
           },
           columnHeaderTitle: {

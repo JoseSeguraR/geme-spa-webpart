@@ -11,6 +11,7 @@ import {
   type GridValidRowModel
 } from '@mui/x-data-grid';
 import CampoBusquedaGrillaMui from './CampoBusquedaGrillaMui';
+import MensajeVacioGrillaMui from './MensajeVacioGrillaMui';
 import {
   AlturaGrillaPredeterminadaPx,
   OpcionesTamanoPaginaGrillaPredeterminadas,
@@ -168,6 +169,22 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
   const estaCargando = cargando ?? (estadoCarga === 'cargando' || estadoCarga === 'inicial');
   const ocultarGrilla = estadoCarga === 'vacio' && filas.length === 0;
   const hayBusquedaActiva = textoBusquedaActiva.trim().length > 0;
+  const mensajeVacio = hayBusquedaActiva ? mensajeSinRegistrosBusqueda : mensajeSinRegistros;
+
+  const slotsGrilla = useMemo(
+    () => ({
+      loadingOverlay: OverlayCargaGrilla,
+      noRowsOverlay: function OverlaySinFilas(): React.ReactElement {
+        return <MensajeVacioGrillaMui mensaje={mensajeVacio} variante="overlay" />;
+      },
+      noResultsOverlay: function OverlaySinResultados(): React.ReactElement {
+        return (
+          <MensajeVacioGrillaMui mensaje={mensajeSinRegistrosBusqueda} variante="overlay" />
+        );
+      }
+    }),
+    [mensajeVacio, mensajeSinRegistrosBusqueda]
+  );
 
   return (
     <ThemeProvider theme={TemaGrillaGeme}>
@@ -199,7 +216,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
             rowHeight={AlturaFilaGrillaPx}
             columnHeaderHeight={AlturaEncabezadoGrillaPx}
             loading={estaCargando}
-            slots={{ loadingOverlay: OverlayCargaGrilla }}
+            slots={slotsGrilla}
             paginationMode="server"
             sortingMode="server"
             rowCount={totalFilas}
@@ -239,7 +256,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
       )}
 
       {estadoCarga === 'vacio' ? (
-        <p className="text-muted mb-0">{hayBusquedaActiva ? mensajeSinRegistrosBusqueda : mensajeSinRegistros}</p>
+        <MensajeVacioGrillaMui mensaje={mensajeVacio} alturaMinimaPx={alturaPx} />
       ) : null}
       </div>
     </ThemeProvider>
