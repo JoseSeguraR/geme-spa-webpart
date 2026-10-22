@@ -1,3 +1,4 @@
+import { ConstruirRutaServidorRelativa } from '../../../../../utils/EnlaceExternoMenu';
 import type { ModoAccionesFilaSolicitudesIl } from './DesplegableAccionesFila';
 
 export type PerfilVistaSolicitudesIlConcentrador = 'administrador' | 'solicitante' | 'despachador';
@@ -7,25 +8,36 @@ export type EnlacesTabsSolicitudesIl = {
   urlTabGuiasManiobra: string;
 };
 
-const EnlacesTabsPorPerfil: Record<PerfilVistaSolicitudesIlConcentrador, EnlacesTabsSolicitudesIl> = {
+type RutasRelativasTabsSolicitudesIl = {
+  rutaTabSolicitudes: string;
+  rutaTabGuiasManiobra: string;
+};
+
+/** Rutas bajo el web raíz de la colección (SitePages clásicas); el prefijo `/sites/...` viene del contexto SPFx. */
+const RutasTabsPorPerfil: Record<PerfilVistaSolicitudesIlConcentrador, RutasRelativasTabsSolicitudesIl> = {
   administrador: {
-    urlTabSolicitudes: '/sites/geme/SitePages/CONC/Solicitudes/Administrador.aspx',
-    urlTabGuiasManiobra: '/sites/geme/SitePages/CONC/Solicitudes/GuiaManiobrasAdministrador.aspx'
+    rutaTabSolicitudes: 'SitePages/CONC/Solicitudes/Administrador.aspx',
+    rutaTabGuiasManiobra: 'SitePages/CONC/Solicitudes/GuiaManiobrasAdministrador.aspx'
   },
   solicitante: {
-    urlTabSolicitudes: '/sites/geme/SitePages/CONC/Solicitudes/Solicitante.aspx',
-    urlTabGuiasManiobra: '/sites/geme/SitePages/CONC/Solicitudes/GuiaManiobrasSolicitante.aspx'
+    rutaTabSolicitudes: 'SitePages/CONC/Solicitudes/Solicitante.aspx',
+    rutaTabGuiasManiobra: 'SitePages/CONC/Solicitudes/GuiaManiobrasSolicitante.aspx'
   },
   despachador: {
-    urlTabSolicitudes: '/sites/geme/SitePages/CONC/Solicitudes/Despachador.aspx',
-    urlTabGuiasManiobra: '/sites/geme/SitePages/CONC/Solicitudes/GuiaManiobrasDespachador.aspx'
+    rutaTabSolicitudes: 'SitePages/CONC/Solicitudes/Despachador.aspx',
+    rutaTabGuiasManiobra: 'SitePages/CONC/Solicitudes/GuiaManiobrasDespachador.aspx'
   }
 };
 
 export function ObtenerEnlacesTabsSolicitudesIl(
-  perfil: PerfilVistaSolicitudesIlConcentrador
+  perfil: PerfilVistaSolicitudesIlConcentrador,
+  prefijoRutaServidorSitio: string
 ): EnlacesTabsSolicitudesIl {
-  return EnlacesTabsPorPerfil[perfil];
+  const rutas = RutasTabsPorPerfil[perfil];
+  return {
+    urlTabSolicitudes: ConstruirRutaServidorRelativa(prefijoRutaServidorSitio, rutas.rutaTabSolicitudes),
+    urlTabGuiasManiobra: ConstruirRutaServidorRelativa(prefijoRutaServidorSitio, rutas.rutaTabGuiasManiobra)
+  };
 }
 
 export function ObtenerModoAccionesGrillaPorPerfil(
