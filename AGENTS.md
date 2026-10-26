@@ -18,6 +18,31 @@ Stack principal:
 
 La aplicación se ejecutará principalmente en una única página moderna de un Sitio de Grupo o Sitio de Comunicación de SharePoint Online.
 
+## Versionado del producto
+
+Documentación completa: [`docs/versionado.md`](docs/versionado.md).
+
+Resumen obligatorio para agentes y desarrolladores:
+
+- La versión de **producto desplegable** (App Catalog / `.sppkg`) es **`config/package-solution.json`** → **`solution.version`**, formato **`X.Y.Z.B`**.
+- **`package.json`** → **`version`**: semver **`X.Y.Z`**, alineado con los tres primeros segmentos de `solution.version`. El segmento **B** no se refleja en npm.
+- **Regla operativa:** todo **`.sppkg` subido al tenant** debe llevar un `solution.version` **estrictamente mayor** que el paquete anterior en **ese** catálogo.
+- Al incrementar **X**, **Y** o **Z** en la solución, actualizar **`package.json`** en el mismo cambio de release.
+- Incrementar **solo B** para un nuevo despliegue al catálogo **no** exige cambiar `package.json` si X.Y.Z no cambió.
+- No confundir con: versión del framework SPFx en dependencias, `dataVersion` del Web Part, `"version": "*"` del manifest, ni claves `version` de caché en `localStorage`.
+- No modificar `package.json` ni `config/**` salvo tarea explícita de versión, dependencias o toolchain (véase Archivos protegidos).
+
+### Mensaje de commit para GitHub
+
+Cuando el usuario pida un **mensaje para commit** (o preparar commit / push a GitHub), es el **momento acordado de evaluar el versionado**:
+
+1. Revisar el diff pendiente y la versión actual (`solution.version`, `package.json`).
+2. **Recomendar** el incremento (X, Y, Z o B) según `docs/versionado.md`, con una frase de justificación.
+3. Proponer el mensaje de commit.
+4. **Esperar confirmación** del usuario sobre la versión antes de editar `config/package-solution.json` / `package.json`. Tras acordarla, incluir el bump en el mismo commit que el código (alinear `package.json` si cambió X, Y o Z).
+
+Si el usuario pide explícitamente solo el mensaje sin subir versión, omitir el bump.
+
 ## Principios de implementación
 
 Priorizar soluciones simples, explícitas y mantenibles.
@@ -115,7 +140,7 @@ La SPA puede crecer a decenas o cientos de pantallas. Mantener un modelo simple:
 
 Colocar subcomponentes, hooks y datos dummy de la feature **en la misma carpeta del módulo**, no en carpetas técnicas sueltas en la raíz de `vistas/`.
 
-**Layout visual:** envolver pantallas de negocio en `ContenedorVista` (`components/vistas/ContenedorVista.tsx`), que aplica `cowork-vista` y los logos corporativos arriba a la derecha. Usar el bloque BEM `cowork-vista__*` (`styles/_vista.scss`): tabs, encabezado, título, subtítulo, descripción, barra de filtros, barra de acciones, radios de estado. Combinar con utilidades Bootstrap (`d-flex`, `gap-*`, botones) sin duplicar estilos por pantalla.
+**Layout visual:** envolver pantallas de negocio en `ContenedorVista` (`components/vistas/ContenedorVista.tsx`), que aplica `cowork-vista`. Los logos GM Services / Centro de Operaciones solo en módulo COR Conecta: `ContenedorVistaCorConecta` y `LogosMarcaVista` bajo `components/vistas/cor-conecta/`. Usar el bloque BEM `cowork-vista__*` (`styles/_vista.scss`): tabs, encabezado, título, subtítulo, descripción, barra de filtros, barra de acciones, radios de estado. Combinar con utilidades Bootstrap (`d-flex`, `gap-*`, botones) sin duplicar estilos por pantalla.
 
 **Tipografía:** usar tokens `--cowork-font-size-titulo-vista` (título de vista), `--cowork-font-size-sm` (tabs, subtítulo, botones, radios, grilla MUI) y `--cowork-font-size-xs` (labels de filtros, badges en grilla). Detalle en `docs/arquitectura-spa.md`. Grillas: `TemaGrillaMui.ts` + portal acotado a `.gemeSpaBootstrap` en `GrillaServidorMui.tsx`. Lista vacía: `MensajeVacioGrillaMui` / `cowork-grilla-vacio` vía `GrillaServidorMui` (`mensajeSinRegistros`, `mensajeSinRegistrosBusqueda`).
 
@@ -367,6 +392,8 @@ Para cada tarea:
    - cambio realizado;
    - validación ejecutada;
    - problemas pendientes, si existen.
+
+Si el usuario pide **mensaje de commit para GitHub**, seguir además la sección **Mensaje de commit para GitHub** (versionado).
 
 No generar documentación, tests, abstracciones, wrappers, archivos auxiliares o refactors adicionales salvo que aporten valor concreto a la tarea o sean solicitados explícitamente.
 

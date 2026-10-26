@@ -12,8 +12,8 @@ import {
 } from './constantesSolicitudesIl';
 import { ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps } from '../../../../../models/ConfiguracionSolicitudesIl';
 import BarraFiltrosDesplegableVista from '../../../BarraFiltrosDesplegableVista';
-import ContenedorVista from '../../../ContenedorVista';
-import LogosMarcaVista from '../../../LogosMarcaVista';
+import ContenedorVistaCorConecta from '../../ContenedorVistaCorConecta';
+import LogosMarcaVista from '../../LogosMarcaVista';
 import GrillaSolicitudesIl from './GrillaSolicitudesIl';
 import ModalNuevaSolicitudIl from './ModalNuevaSolicitudIl';
 import ModalVerSolicitudIl from './ModalVerSolicitudIl';
@@ -161,7 +161,7 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
   const tituloVista = ObtenerTituloVistaSolicitudesIlPorPerfil(perfil);
 
   return (
-    <ContenedorVista layoutCabeceraSobreTabs>
+    <ContenedorVistaCorConecta layoutCabeceraSobreTabs>
       <div className="cowork-vista__fila-cabecera">
         <header className="cowork-vista__encabezado cowork-vista__encabezado--solicitudes-il">
           <h2 className="cowork-vista__titulo-il">
@@ -334,6 +334,6 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
           />
         </>
       ) : null}
-    </ContenedorVista>
+    </ContenedorVistaCorConecta>
   );
 }

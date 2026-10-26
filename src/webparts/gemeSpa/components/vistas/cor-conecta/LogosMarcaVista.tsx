@@ -4,7 +4,7 @@ import {
   TextoAlternativoLogoGmServices,
   UrlLogoCentroOperacionesVista,
   UrlLogoGmServicesVista
-} from '../../constants/MarcaCliente';
+} from '../../../constants/MarcaCliente';
 
 export default function LogosMarcaVista(): React.ReactElement {
   return (

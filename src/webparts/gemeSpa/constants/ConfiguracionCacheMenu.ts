@@ -1,4 +1,4 @@
-export const VERSION_CACHE_SISTEMA_ACCESOS = 'v4';
+export const VERSION_CACHE_SISTEMA_ACCESOS = 'v6';
 export const VERSION_CACHE_GRUPOS_USUARIO = 'v3';
 
 /** TTL SISTEMA_ACCESOS: 45 minutos (rango sugerido 30–60). */

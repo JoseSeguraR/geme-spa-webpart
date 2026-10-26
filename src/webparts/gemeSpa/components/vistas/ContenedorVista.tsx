@@ -1,13 +1,12 @@
 import * as React from 'react';
-import LogosMarcaVista from './LogosMarcaVista';
 
 export type ContenedorVistaProps = {
   children: React.ReactNode;
-  /** Cabecera propia (p. ej. título + logos en fila) encima de tabs; no duplica logos flotantes. */
+  /** Cabecera propia (p. ej. título + logos en fila) encima de tabs. */
   layoutCabeceraSobreTabs?: boolean;
 };
 
-/** Envoltorio estándar de pantallas de negocio: `cowork-vista` + logos corporativos arriba a la derecha. */
+/** Envoltorio estándar de pantallas de negocio: bloque `cowork-vista` (sin logos; ver COR Conecta). */
 export default function ContenedorVista(props: ContenedorVistaProps): React.ReactElement {
   const { children, layoutCabeceraSobreTabs = false } = props;
 
@@ -15,10 +14,5 @@ export default function ContenedorVista(props: ContenedorVistaProps): React.Reac
     .filter(Boolean)
     .join(' ');
 
-  return (
-    <div className={clasesVista}>
-      {children}
-      {layoutCabeceraSobreTabs ? null : <LogosMarcaVista />}
-    </div>
-  );
+  return <div className={clasesVista}>{children}</div>;
 }

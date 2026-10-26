@@ -37,7 +37,7 @@ Mientras el menú carga se muestra `CargandoInicial`. Si la inicialización fall
 | `BarraLateral` | Árbol de menú, versión del Web Part y enlace a la colección de sitios. |
 | `BarraSuperior` | Usuario y cierre de sesión. |
 | `main.cowork-contenido` | Zona donde el enrutador pinta la vista. |
-| `ContenedorVista` | Envoltorio de una pantalla de negocio: bloque `cowork-vista` y logos corporativos. |
+| `ContenedorVista` | Envoltorio de una pantalla de negocio: bloque `cowork-vista`. Logos de marca solo en COR Conecta (`ContenedorVistaCorConecta`). |
 
 Los estilos viven en `src/webparts/gemeSpa/styles/`. `GemeSpa.global.scss` importa Bootstrap y el resto de parciales **dentro** de `.gemeSpaBootstrap`, para no alterar la página de SharePoint. Los tokens (`_tokens.scss`) definen tipografía, densidades y colores de marca (barra superior `#003773`, sidebar `#4B4B49`).
 
@@ -52,7 +52,7 @@ Usar siempre variables CSS `--cowork-font-size-*`, no tamaños sueltos en pantal
 | Metadatos densos | `--cowork-font-size-xs` (0.8125rem) | Labels de filtros en panel, badges de estado dentro de la grilla |
 | Texto general SPA | `--cowork-font-size-base` (0.9375rem) | Herencia en `.gemeSpaBootstrap`; evitar usarlo como título |
 
-Jerarquía: un escalón claro entre título de vista (1.25rem) y la banda operativa (sm). Subtítulos alineados con tabs y acciones (sm), no por debajo en xs. Pantallas con tabs clásicos + cabecera propia: `ContenedorVista` con `layoutCabeceraSobreTabs` y fila `cowork-vista__fila-cabecera` (referencia: Solicitudes IL).
+Jerarquía: un escalón claro entre título de vista (1.25rem) y la banda operativa (sm). Subtítulos alineados con tabs y acciones (sm), no por debajo en xs. Pantallas COR Conecta con tabs clásicos + cabecera propia: `ContenedorVistaCorConecta` con `layoutCabeceraSobreTabs` y fila `cowork-vista__fila-cabecera` (referencia: Solicitudes IL).
 
 Botones de negocio: clase `cowork-btn-*` junto con `.btn` y un tamaño de Bootstrap (por ejemplo `.btn-sm`).
 
@@ -67,7 +67,7 @@ Iconos: Bootstrap Icons. Un icono decorativo lleva `aria-hidden="true"`. Un cont
 
 ## Menú
 
-El menú sale de la lista `SISTEMA_ACCESOS`. Al normalizar, se omiten los ítems con `ACTIVO` apagado y los que tienen un `TIPOACCESO` distinto de `Header`, `Route` o `ExternalLink`. Cada ítem que queda (`RegistroSistemaAccesoNormalizado`) tiene tipo, padre, orden, título, `HASH_KEY`, grupos de audiencia e icono.
+El menú sale de la lista `SISTEMA_ACCESOS`. Al normalizar, se omiten los ítems con `ACTIVO` apagado y los que tienen un `TIPOACCESO` distinto de `Header`, `Route` o `ExternalLink`. Cada ítem que queda (`RegistroSistemaAccesoNormalizado`) tiene tipo, padres (`PADRE` lookup multivalor → `padreIds`), orden, título, `HASH_KEY`, grupos de audiencia e icono.
 
 | Tipo en lista | Nodo en el árbol |
 | --- | --- |
@@ -88,7 +88,7 @@ Caché (`constants/ConfiguracionCacheMenu.ts`):
 
 | Dato | Versión | TTL |
 | --- | --- | --- |
-| `SISTEMA_ACCESOS` | `v4` | 45 minutos |
+| `SISTEMA_ACCESOS` | `v6` | 45 minutos |
 | Grupos del usuario | `v3` | 20 minutos |
 
 `InvalidarCacheMenu` borra ambas entradas de `localStorage` y el resultado en memoria. Subir la constante de versión invalida entradas viejas al leerlas.

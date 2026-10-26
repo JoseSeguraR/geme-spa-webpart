@@ -1,22 +1,5 @@
 import type { RegistroSistemaAccesoNormalizado } from '../../models/SistemaAcceso';
-
-function ConstruirMapaHijosPorPadre(
-  registros: RegistroSistemaAccesoNormalizado[]
-): Map<number | undefined, RegistroSistemaAccesoNormalizado[]> {
-  const hijosPorPadre = new Map<number | undefined, RegistroSistemaAccesoNormalizado[]>();
-
-  for (const registro of registros) {
-    const clavePadre = registro.padreId;
-    const hermanos = hijosPorPadre.get(clavePadre);
-    if (hermanos) {
-      hermanos.push(registro);
-    } else {
-      hijosPorPadre.set(clavePadre, [registro]);
-    }
-  }
-
-  return hijosPorPadre;
-}
+import { ConstruirMapaHijosPorPadre, RegistroTieneAlgunPadreEnMapa } from './MapaJerarquiaMenu';
 
 function OrdenarHermanos(registros: RegistroSistemaAccesoNormalizado[]): RegistroSistemaAccesoNormalizado[] {
   return [...registros].sort((a, b) => a.orden - b.orden || a.id - b.id);
@@ -69,7 +52,7 @@ export function ObtenerIdsRegistrosVisibles(
   }
 
   for (const registro of registrosFiltradosAudiencia) {
-    if (registro.padreId !== undefined && mapaPorId.has(registro.padreId)) {
+    if (RegistroTieneAlgunPadreEnMapa(registro, mapaPorId)) {
       continue;
     }
     Evaluar(registro);

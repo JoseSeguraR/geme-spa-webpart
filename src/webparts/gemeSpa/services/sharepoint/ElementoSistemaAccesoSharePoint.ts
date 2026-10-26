@@ -6,11 +6,15 @@ export type LookupSharePointBasico = {
   HASH_TITLE?: string;
 };
 
+export type LookupSharePointMultivalor = {
+  results?: (number | LookupSharePointBasico)[];
+};
+
 export type ElementoSistemaAccesoSharePoint = {
   Id: number;
   TIPOACCESO: TipoSistemaAcceso;
-  PADREId?: number;
-  PADRE?: LookupSharePointBasico;
+  PADREId?: number | string | number[] | LookupSharePointMultivalor;
+  PADRE?: LookupSharePointBasico | LookupSharePointMultivalor | string | number[];
   ORDEN: number;
   HASH_TITLE: string;
   HASH_KEY: string;

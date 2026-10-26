@@ -4,6 +4,19 @@ function SegmentoValido(segmento: string): boolean {
   return segmento.length > 0;
 }
 
+function ResolverPadreJerarquia(
+  registro: RegistroSistemaAccesoNormalizado,
+  mapaPorId: ReadonlyMap<number, RegistroSistemaAccesoNormalizado>
+): RegistroSistemaAccesoNormalizado | undefined {
+  for (const padreId of registro.padreIds) {
+    const padre = mapaPorId.get(padreId);
+    if (padre) {
+      return padre;
+    }
+  }
+  return undefined;
+}
+
 export function ObtenerSegmentosHashKeyAncestros(
   registro: RegistroSistemaAccesoNormalizado,
   mapaPorId: ReadonlyMap<number, RegistroSistemaAccesoNormalizado>
@@ -22,10 +35,11 @@ export function ObtenerSegmentosHashKeyAncestros(
       segmentos.unshift(actual.hashKey);
     }
 
-    if (!actual.padreId) {
+    const padre = ResolverPadreJerarquia(actual, mapaPorId);
+    if (!padre) {
       break;
     }
-    actual = mapaPorId.get(actual.padreId);
+    actual = padre;
   }
 
   return segmentos;
