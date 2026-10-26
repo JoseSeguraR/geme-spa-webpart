@@ -1,6 +1,7 @@
 import type { NodoMenu } from '../../models/NodoMenu';
 import type { RegistroSistemaAccesoNormalizado } from '../../models/SistemaAcceso';
 import { ConstruirRutaHashDesdeSegmentos, ObtenerSegmentosHashKeyAncestros } from './ConstruirRutaHashAcumulada';
+import { ConstruirMapaHijosPorPadre, RegistroTieneAlgunPadreEnMapa } from './MapaJerarquiaMenu';
 import { NormalizarIconoMenu } from './NormalizarIconoMenu';
 
 function OrdenarHermanos(registros: RegistroSistemaAccesoNormalizado[]): RegistroSistemaAccesoNormalizado[] {
@@ -54,22 +55,12 @@ function ConstruirNodo(
 
 export function ConstruirArbolMenu(registrosVisibles: RegistroSistemaAccesoNormalizado[]): NodoMenu[] {
   const mapaPorId = new Map(registrosVisibles.map((registro) => [registro.id, registro]));
-  const hijosPorPadre = new Map<number | undefined, RegistroSistemaAccesoNormalizado[]>();
-
-  for (const registro of registrosVisibles) {
-    const clavePadre = registro.padreId;
-    const hermanos = hijosPorPadre.get(clavePadre);
-    if (hermanos) {
-      hermanos.push(registro);
-    } else {
-      hijosPorPadre.set(clavePadre, [registro]);
-    }
-  }
+  const hijosPorPadre = ConstruirMapaHijosPorPadre(registrosVisibles);
 
   const raicesDirectas = OrdenarHermanos(hijosPorPadre.get(undefined) ?? []);
   const raicesHuerfanas = OrdenarHermanos(
     registrosVisibles.filter(
-      (registro) => registro.padreId !== undefined && !mapaPorId.has(registro.padreId)
+      (registro) => registro.padreIds.length > 0 && !RegistroTieneAlgunPadreEnMapa(registro, mapaPorId)
     )
   );
 

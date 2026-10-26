@@ -56,6 +56,14 @@ Incrementar **solo B** para un nuevo despliegue al catálogo **no** obliga a cam
 | Claves `version` en caché `localStorage` (menú, grilla, etc.) | Versión de **formato de datos** en el navegador, no release del `.sppkg`. |
 | Versión en sidebar (`versionWebPart`) | Proviene del manifiesto en runtime; en producción debe reflejar el paquete desplegado. |
 
+## Commit a GitHub y decisión de versión
+
+Acuerdo del equipo con asistencia del agente:
+
+- Pedir un **mensaje para commit** (o preparar commit / push) dispara la **revisión de versión**, no solo el texto del commit.
+- El agente resume el diff, indica la versión actual y **recomienda** el siguiente `solution.version` (segmento X, Y, Z o B según la tabla de arriba).
+- La versión definitiva la **confirma el desarrollador**; solo entonces se actualizan `config/package-solution.json` y, si corresponde, `package.json`, en el **mismo commit** que los cambios funcionales.
+
 ## Flujo recomendado para contribuidores
 
 1. Desarrollo en rama; builds locales no requieren subir versión salvo que se prepare un paquete para catálogo.

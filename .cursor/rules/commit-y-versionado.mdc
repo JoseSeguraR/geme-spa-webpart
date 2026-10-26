@@ -1,0 +1,20 @@
+---
+description: Al pedir mensaje de commit para GitHub, proponer bump de versión según el diff
+alwaysApply: true
+---
+
+# Commit a GitHub y versionado
+
+Cuando el usuario pida un **mensaje para commit** (o equivalente: preparar commit / subir a GitHub), tratarlo como **momento de release** y actuar en este orden:
+
+1. Revisar cambios pendientes (`git status`, `git diff`) y la versión actual en `config/package-solution.json` → `solution.version` y `package.json` → `version`.
+2. **Recomendar** el siguiente valor según [`docs/versionado.md`](../../docs/versionado.md):
+   - **Z**: correcciones, UX, refactors sin contrato, docs, ajustes de entorno (p. ej. URLs desde contexto).
+   - **Y**: funcionalidad nueva compatible (vistas, servicios, módulos).
+   - **X**: cambios incompatibles (contratos REST, listas, props del web part, migración).
+   - **B**: solo nuevo `.sppkg` al catálogo con mismo X.Y.Z (re-empaquetado).
+3. Explicar brevemente **por qué** ese segmento; ofrecer alternativa si el diff mezcla tipos de cambio.
+4. Redactar el **mensaje de commit** propuesto.
+5. **No** modificar `package.json` ni `config/package-solution.json` hasta que el usuario **confirme** la versión acordada. Tras confirmación, aplicar bump en el **mismo commit** que el código (alinear `package.json` si cambió X, Y o Z).
+
+Si el usuario solo quería el texto del commit sin versionar, respetarlo cuando lo diga explícitamente.

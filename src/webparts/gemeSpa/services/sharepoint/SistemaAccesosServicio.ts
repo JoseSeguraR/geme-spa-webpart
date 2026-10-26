@@ -16,11 +16,8 @@ const CamposSelect = [
   'HASH_KEY',
   'GRUPOACCESOId',
   'ACTIVO',
-  'ICONO',
-  'PADRE/Id'
+  'ICONO'
 ].join(',');
-
-const ExpandLookup = 'PADRE';
 
 async function ValidarRespuesta(
   response: SPHttpClientResponse,
@@ -40,7 +37,7 @@ export async function ObtenerRegistrosSistemaAccesosDesdeSharePoint(
   const tituloLista = encodeURIComponent(NOMBRE_LISTA_SISTEMA_ACCESOS);
   const urlInicial =
     `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items` +
-    `?$select=${CamposSelect}&$expand=${ExpandLookup}&$filter=ACTIVO eq 1&$orderby=ORDEN asc`;
+    `?$select=${CamposSelect}&$filter=ACTIVO eq 1&$orderby=ORDEN asc`;
 
   const elementos: ElementoSistemaAccesoSharePoint[] = [];
   let urlSiguiente: string | undefined = urlInicial;

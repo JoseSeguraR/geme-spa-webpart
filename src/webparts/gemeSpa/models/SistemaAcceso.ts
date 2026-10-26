@@ -3,7 +3,8 @@ export type TipoSistemaAcceso = 'Header' | 'Route' | 'ExternalLink';
 export type RegistroSistemaAccesoNormalizado = {
   id: number;
   tipo: TipoSistemaAcceso;
-  padreId?: number;
+  /** Ids de ítems PADRE (lookup multivalor); vacío = raíz del menú. */
+  padreIds: number[];
   orden: number;
   hashTitle: string;
   hashKey: string;
