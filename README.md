@@ -1,6 +1,6 @@
-# GEME SPA Webpart
+# GM SPA
 
-Web Part de SharePoint Framework que hospeda la aplicación de una sola página (SPA) de Generadora Metropolitana en una página moderna de SharePoint Online.
+**GM SPA** es la solución SPFx (Web Part) que hospeda la aplicación de una sola página de Generadora Metropolitana en una página moderna de SharePoint Online.
 
 La carcasa, el menú, la navegación y la grilla son comunes a todos los módulos. Cada pantalla de negocio se registra aparte y vive en su propia carpeta. El primer módulo implementado es Solicitudes IL del Concentrador (COR Conecta).
 
@@ -40,12 +40,12 @@ Paquete de solución:
 npm run build
 ```
 
-Salida: `sharepoint/solution/GEME SPA Webpart.sppkg`.
+Salida: `sharepoint/solution/GM SPA.sppkg`.
 
 ### Versión del producto
 
-- **Fuente de verdad:** `config/package-solution.json` → `solution.version` (formato `X.Y.Z.B`). Actualmente **`1.0.0.0`**.
-- **`package.json` → `version`:** semver `X.Y.Z`, alineado con los tres primeros segmentos de la solución (el segmento **B** solo vive en `package-solution.json`). Actualmente **`1.0.0`**.
+- **Fuente de verdad:** `config/package-solution.json` → `solution.version` (formato `X.Y.Z.B`). Actualmente **`1.0.2.0`**.
+- **`package.json` → `version`:** semver `X.Y.Z`, alineado con los tres primeros segmentos de la solución (el segmento **B** solo vive en `package-solution.json`). Actualmente **`1.0.2`**.
 - **Regla de despliegue:** cada `.sppkg` subido al App Catalog del tenant debe incrementar `solution.version` respecto al paquete anterior en ese catálogo.
 
 Detalle y flujo para el equipo: [docs/versionado.md](docs/versionado.md).
@@ -60,7 +60,7 @@ Detalle y flujo para el equipo: [docs/versionado.md](docs/versionado.md).
 
 | Campo | Valor |
 | --- | --- |
-| Nombre | GEME SPA Webpart |
+| Nombre | GM SPA |
 | `solution.id` | `7df70f14-42fe-45db-b2a9-6158f2714ac4` |
 
 La versión desplegable no se fija en esta tabla; consultar `solution.version` y [Versionado](docs/versionado.md).
