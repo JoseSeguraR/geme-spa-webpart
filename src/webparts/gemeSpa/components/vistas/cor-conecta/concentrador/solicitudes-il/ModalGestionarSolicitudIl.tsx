@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
-import type { EstadoSolicitudIl } from './constantesSolicitudesIl';
+import { MaxLongitudDescripcionSolicitudIl, type EstadoSolicitudIl } from './constantesSolicitudesIl';
 import type {
   AdjuntoSolicitudIl,
   CentralMantenedor,
@@ -278,8 +278,8 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
         setError('Indique la descripción.');
         return;
       }
-      if (descripcion.length > 230) {
-        setError('La descripción no puede superar 230 caracteres.');
+      if (descripcion.length > MaxLongitudDescripcionSolicitudIl) {
+        setError(`La descripción no puede superar ${MaxLongitudDescripcionSolicitudIl} caracteres.`);
         return;
       }
     }
@@ -551,14 +551,18 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
                         id="gestionar-solicitud-descripcion"
                         className="form-control form-control-sm"
                         rows={3}
-                        maxLength={230}
+                        maxLength={MaxLongitudDescripcionSolicitudIl}
                         value={descripcion}
                         onChange={(evento) => setDescripcion(evento.target.value)}
                         readOnly={!modoEdicion}
                         disabled={!modoEdicion}
                         required={modoEdicion}
                       />
-                      {modoEdicion ? <div className="form-text">{descripcion.length}/230</div> : null}
+                      {modoEdicion ? (
+                        <div className="form-text">
+                          {descripcion.length}/{MaxLongitudDescripcionSolicitudIl}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="col-md-6">
                       <EtiquetaCampo htmlFor="gestionar-solicitud-inicio" obligatorio={modoEdicion}>

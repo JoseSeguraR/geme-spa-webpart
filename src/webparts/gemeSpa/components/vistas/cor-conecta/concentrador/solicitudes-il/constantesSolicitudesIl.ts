@@ -40,3 +40,6 @@ export const SubtitulosPorEstadoSolicitudIl: Record<EstadoSolicitudIl, string> =
 };
 
 export const TamanoMaximoAdjuntoBytes = 10 * 1024 * 1024;
+
+/** Límite de caracteres del campo DESCRIPCION (lista y formularios alta / edición / clon). */
+export const MaxLongitudDescripcionSolicitudIl = 200;

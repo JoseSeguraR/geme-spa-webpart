@@ -44,8 +44,8 @@ Salida: `sharepoint/solution/GM SPA.sppkg`.
 
 ### Versión del producto
 
-- **Fuente de verdad:** `config/package-solution.json` → `solution.version` (formato `X.Y.Z.B`). Actualmente **`1.0.2.0`**.
-- **`package.json` → `version`:** semver `X.Y.Z`, alineado con los tres primeros segmentos de la solución (el segmento **B** solo vive en `package-solution.json`). Actualmente **`1.0.2`**.
+- **Fuente de verdad:** `config/package-solution.json` → `solution.version` (formato `X.Y.Z.B`). Actualmente **`1.0.3.0`**.
+- **`package.json` → `version`:** semver `X.Y.Z`, alineado con los tres primeros segmentos de la solución (el segmento **B** solo vive en `package-solution.json`). Actualmente **`1.0.3`**.
 - **Regla de despliegue:** cada `.sppkg` subido al App Catalog del tenant debe incrementar `solution.version` respecto al paquete anterior en ese catálogo.
 
 Detalle y flujo para el equipo: [docs/versionado.md](docs/versionado.md).

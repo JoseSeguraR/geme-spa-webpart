@@ -3,7 +3,7 @@
   "solution": {
     "name": "GM SPA",
     "id": "7df70f14-42fe-45db-b2a9-6158f2714ac4",
-    "version": "1.0.2.0",
+    "version": "1.0.3.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
