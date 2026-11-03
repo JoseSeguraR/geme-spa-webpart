@@ -3,9 +3,9 @@
   "solution": {
     "name": "GM SPA",
     "id": "7df70f14-42fe-45db-b2a9-6158f2714ac4",
-    "version": "1.0.3.0",
+    "version": "1.1.0.0",
     "includeClientSideAssets": true,
-    "skipFeatureDeployment": true,
+    "skipFeatureDeployment": false,
     "isDomainIsolated": false,
     "developer": {
       "name": "",
@@ -22,6 +22,7 @@
         "default": "GM SPA - Solución de despliegue de los módulos de Generadora Metropolitana"
       },
       "screenshotPaths": [],
+      
       "videoUrl": "",
       "categories": []
     },

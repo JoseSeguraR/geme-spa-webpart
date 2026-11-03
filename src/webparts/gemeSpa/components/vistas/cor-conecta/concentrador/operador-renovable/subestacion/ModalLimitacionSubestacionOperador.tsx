@@ -1,0 +1,355 @@
+import * as React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { WebPartContext } from '@microsoft/sp-webpart-base';
+import type { CentralMantenedor } from '../../../../../../models/concentradorComun/CentralMantenedor';
+import type {
+  DatosFormularioLimitacionSubestacion,
+  LimitacionSubestacionOperador
+} from '../../../../../../models/operadorRenovable/LimitacionSubestacionOperador';
+import {
+  MotivoIndisponibilidadFalla,
+  MotivoIndisponibilidadTrabajo
+} from '../../../../../../services/sharepoint/operadorRenovable/CamposOperadorRenovable';
+import {
+  ObtenerOpcionesSolicitudConcentradorPgl,
+  ObtenerOpcionesSolicitudFallaPgl,
+  type OpcionSolicitudVinculadaPgl
+} from '../../../../../../services/sharepoint/operadorRenovable/SolicitudesVinculadasPglServicio';
+import {
+  ActualizarLimitacionRedConBitacora,
+  CrearLimitacionRedConBitacora
+} from '../../../../../../services/sharepoint/operadorRenovable/LimitacionesRedServicio';
+import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
+import {
+  ConvertirEntradaLocalAIsoUtc,
+  ConvertirIsoAFechaLocalInput
+} from '../../solicitudes-il/UtilidadesFechaSolicitudIl';
+
+export type ModalLimitacionSubestacionOperadorProps = {
+  context: WebPartContext;
+  centrales: CentralMantenedor[];
+  limitacion?: LimitacionSubestacionOperador;
+  visible: boolean;
+  onCerrar: () => void;
+  onGuardado: () => void;
+};
+
+export default function ModalLimitacionSubestacionOperador(
+  props: ModalLimitacionSubestacionOperadorProps
+): React.ReactElement {
+  const { context, centrales, limitacion, visible, onCerrar, onGuardado } = props;
+  const esEdicion = limitacion !== undefined;
+
+  const [instalacionId, setInstalacionId] = useState('');
+  const [potenciaMw, setPotenciaMw] = useState('');
+  const [fechaInicioLocal, setFechaInicioLocal] = useState('');
+  const [fechaFinLocal, setFechaFinLocal] = useState('');
+  const [motivo, setMotivo] = useState(MotivoIndisponibilidadTrabajo);
+  const [descripcion, setDescripcion] = useState('');
+  const [solicitudVinculadaId, setSolicitudVinculadaId] = useState('');
+  const [opcionesVinculo, setOpcionesVinculo] = useState<OpcionSolicitudVinculadaPgl[]>([]);
+  const [cargandoVinculos, setCargandoVinculos] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const mapaCentrales = useMemo(() => new Map(centrales.map((c) => [c.id, c.central])), [centrales]);
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+    setError(undefined);
+    setGuardando(false);
+    if (limitacion) {
+      setInstalacionId(String(limitacion.instalacionId));
+      setPotenciaMw(String(limitacion.potenciaLimitadaMw));
+      setFechaInicioLocal(
+        ConvertirIsoAFechaLocalInput(limitacion.fechaInicioIso) ||
+          ConvertirIsoAFechaLocalInput(new Date().toISOString())
+      );
+      setFechaFinLocal(ConvertirIsoAFechaLocalInput(limitacion.fechaFinIso));
+      setMotivo(limitacion.motivo || MotivoIndisponibilidadTrabajo);
+      setDescripcion(limitacion.descripcion);
+      if (limitacion.motivo === MotivoIndisponibilidadFalla && limitacion.solicitudFallaId) {
+        setSolicitudVinculadaId(String(limitacion.solicitudFallaId));
+      } else if (limitacion.solicitudConcentradorId) {
+        setSolicitudVinculadaId(String(limitacion.solicitudConcentradorId));
+      } else {
+        setSolicitudVinculadaId('');
+      }
+    } else {
+      const primera = centrales[0];
+      setInstalacionId(primera ? String(primera.id) : '');
+      setPotenciaMw('');
+      setFechaInicioLocal(ConvertirIsoAFechaLocalInput(new Date().toISOString()));
+      setFechaFinLocal('');
+      setMotivo(MotivoIndisponibilidadTrabajo);
+      setDescripcion('');
+      setSolicitudVinculadaId('');
+    }
+  }, [visible, limitacion, centrales]);
+
+  useEffect(() => {
+    if (!visible) {
+      setOpcionesVinculo([]);
+      return undefined;
+    }
+    const idInst = Number.parseInt(instalacionId, 10);
+    if (!Number.isFinite(idInst)) {
+      setOpcionesVinculo([]);
+      return undefined;
+    }
+    let cancelado = false;
+    setCargandoVinculos(true);
+    const promesa =
+      motivo === MotivoIndisponibilidadFalla
+        ? ObtenerOpcionesSolicitudFallaPgl(context, idInst)
+        : ObtenerOpcionesSolicitudConcentradorPgl(context, idInst);
+    promesa
+      .then((lista) => {
+        if (!cancelado) {
+          setOpcionesVinculo(lista);
+        }
+      })
+      .catch(() => {
+        if (!cancelado) {
+          setOpcionesVinculo([]);
+        }
+      })
+      .then(() => {
+        if (!cancelado) {
+          setCargandoVinculos(false);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelado = true;
+    };
+  }, [visible, context, instalacionId, motivo]);
+
+  const potenciaKw = useMemo(() => {
+    const mw = Number.parseFloat(potenciaMw.replace(',', '.'));
+    return Number.isFinite(mw) ? mw * 1000 : undefined;
+  }, [potenciaMw]);
+
+  if (!visible) {
+    return <></>;
+  }
+
+  const ConstruirDatosFormulario = (): DatosFormularioLimitacionSubestacion | undefined => {
+    const idInst = Number.parseInt(instalacionId, 10);
+    const mw = Number.parseFloat(potenciaMw.replace(',', '.'));
+    const inicioIso = ConvertirEntradaLocalAIsoUtc(fechaInicioLocal);
+    const finIso = fechaFinLocal.trim() ? ConvertirEntradaLocalAIsoUtc(fechaFinLocal) : undefined;
+
+    if (!Number.isFinite(idInst) || !mapaCentrales.has(idInst)) {
+      setError('Seleccione una central válida.');
+      return undefined;
+    }
+    if (!Number.isFinite(mw) || mw <= 0) {
+      setError('Indique potencia limitada mayor a 0 MW.');
+      return undefined;
+    }
+    if (!inicioIso) {
+      setError('Indique fecha y hora de inicio.');
+      return undefined;
+    }
+    if (finIso && new Date(finIso).getTime() < new Date(inicioIso).getTime()) {
+      setError('La fecha de fin debe ser posterior al inicio.');
+      return undefined;
+    }
+
+    const idVinculo = solicitudVinculadaId.trim()
+      ? Number.parseInt(solicitudVinculadaId, 10)
+      : undefined;
+    const datos: DatosFormularioLimitacionSubestacion = {
+      instalacionId: idInst,
+      potenciaLimitadaMw: mw,
+      fechaInicioIso: inicioIso,
+      fechaFinIso: finIso,
+      motivo,
+      descripcion: descripcion.trim() || undefined
+    };
+    if (Number.isFinite(idVinculo)) {
+      if (motivo === MotivoIndisponibilidadFalla) {
+        datos.solicitudFallaId = idVinculo;
+      } else {
+        datos.solicitudConcentradorId = idVinculo;
+      }
+    }
+    return datos;
+  };
+
+  const GuardarYEnviar = async (): Promise<void> => {
+    const datos = ConstruirDatosFormulario();
+    if (!datos) {
+      return;
+    }
+    const nombreCentral = mapaCentrales.get(datos.instalacionId) ?? 'Central';
+
+    setGuardando(true);
+    setError(undefined);
+    try {
+      if (esEdicion && limitacion) {
+        await ActualizarLimitacionRedConBitacora(context, limitacion, datos, nombreCentral, true);
+      } else {
+        await CrearLimitacionRedConBitacora(context, datos, nombreCentral, true);
+      }
+      onGuardado();
+      onCerrar();
+    } catch (err) {
+      const mensaje =
+        err instanceof SharePointRestError ? err.message : 'No se pudo guardar la limitación.';
+      setError(mensaje);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="modal fade show d-block" role="dialog" aria-modal="true">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2 className="modal-title h5">
+                {esEdicion ? 'Modificar limitación por subestación' : 'Nueva limitación por subestación'}
+              </h2>
+              <button type="button" className="btn-close" aria-label="Cerrar" onClick={onCerrar} />
+            </div>
+            <div className="modal-body">
+              {error ? <div className="alert alert-danger py-2">{error}</div> : null}
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="pgl-central">
+                    Central
+                  </label>
+                  <select
+                    id="pgl-central"
+                    className="form-select form-select-sm"
+                    value={instalacionId}
+                    onChange={(e) => setInstalacionId(e.target.value)}
+                  >
+                    {centrales.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.central}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="pgl-mw">
+                    Potencia limitada (MW)
+                  </label>
+                  <input
+                    id="pgl-mw"
+                    type="number"
+                    min={0.01}
+                    step={0.01}
+                    className="form-control form-control-sm"
+                    value={potenciaMw}
+                    onChange={(e) => setPotenciaMw(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="pgl-inicio">
+                    Inicio
+                  </label>
+                  <input
+                    id="pgl-inicio"
+                    type="datetime-local"
+                    className="form-control form-control-sm"
+                    value={fechaInicioLocal}
+                    onChange={(e) => setFechaInicioLocal(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="pgl-fin">
+                    Fin (opcional)
+                  </label>
+                  <input
+                    id="pgl-fin"
+                    type="datetime-local"
+                    className="form-control form-control-sm"
+                    value={fechaFinLocal}
+                    onChange={(e) => setFechaFinLocal(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="pgl-motivo">
+                    Motivo
+                  </label>
+                  <select
+                    id="pgl-motivo"
+                    className="form-select form-select-sm"
+                    value={motivo}
+                    onChange={(e) => {
+                      setMotivo(e.target.value);
+                      setSolicitudVinculadaId('');
+                    }}
+                  >
+                    <option value={MotivoIndisponibilidadFalla}>{MotivoIndisponibilidadFalla}</option>
+                    <option value={MotivoIndisponibilidadTrabajo}>{MotivoIndisponibilidadTrabajo}</option>
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="pgl-solicitud-vinculada">
+                    {motivo === MotivoIndisponibilidadFalla ? 'Solicitud de falla' : 'Solicitud concentrador'}
+                  </label>
+                  <select
+                    id="pgl-solicitud-vinculada"
+                    className="form-select form-select-sm"
+                    value={solicitudVinculadaId}
+                    onChange={(e) => setSolicitudVinculadaId(e.target.value)}
+                    disabled={cargandoVinculos}
+                  >
+                    <option value="">Sin vínculo</option>
+                    {opcionesVinculo.map((op) => (
+                      <option key={op.id} value={op.id}>
+                        {op.etiqueta}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {potenciaKw !== undefined ? (
+                  <div className="col-md-6">
+                    <span className="form-label d-block">Potencia (kW)</span>
+                    <span className="small text-muted">{potenciaKw.toFixed(0)} kW</span>
+                  </div>
+                ) : null}
+                <div className="col-12">
+                  <label className="form-label" htmlFor="pgl-desc">
+                    Descripción
+                  </label>
+                  <textarea
+                    id="pgl-desc"
+                    className="form-control form-control-sm"
+                    rows={3}
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={onCerrar} disabled={guardando}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm cowork-btn-primary"
+                onClick={() => {
+                  GuardarYEnviar().catch(() => undefined);
+                }}
+                disabled={guardando}
+              >
+                {guardando ? 'Guardando…' : 'Guardar y enviar a Meteológica'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="modal-backdrop fade show" />
+    </>
+  );
+}

@@ -50,6 +50,8 @@ export type GrillaServidorMuiProps<Row extends GridValidRowModel & { id: GridRow
   textoBusquedaActiva?: string;
   alturaPx?: number;
   opcionesTamanoPagina?: readonly number[];
+  /** Clase CSS adicional por fila (p. ej. resaltado de alerta en operador renovable). */
+  obtenerClaseFila?: (fila: Row) => string | undefined;
 };
 
 function OverlayCargaGrilla(): React.ReactElement {
@@ -106,7 +108,8 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     mensajeSinRegistrosBusqueda = 'No hay registros para la búsqueda indicada.',
     textoBusquedaActiva = '',
     alturaPx = AlturaGrillaPredeterminadaPx,
-    opcionesTamanoPagina = OpcionesTamanoPaginaGrillaPredeterminadas
+    opcionesTamanoPagina = OpcionesTamanoPaginaGrillaPredeterminadas,
+    obtenerClaseFila
   } = props;
 
   const [textoBusquedaLocal, setTextoBusquedaLocal] = useState(busqueda?.valorEnConsulta ?? '');
@@ -242,6 +245,11 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
               onCambioOrdenamiento(primero.field, primero.sort);
             }}
             disableRowSelectionOnClick
+            getRowClassName={
+              obtenerClaseFila
+                ? (params) => obtenerClaseFila(params.row as Row) ?? ''
+                : undefined
+            }
             onColumnWidthChange={
               onCambioAnchoColumna
                 ? (params) => {

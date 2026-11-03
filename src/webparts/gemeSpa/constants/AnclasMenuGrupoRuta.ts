@@ -10,6 +10,10 @@ import {
   RutaHashAnclaSolicitudesSolicitante,
   RutasHashGrupoTabsSolicitudesSolicitante
 } from '../components/vistas/cor-conecta/concentrador/solicitante/rutas';
+import {
+  RutaHashAnclaOperadorRenovable,
+  RutasHashGrupoTabsOperadorRenovable
+} from '../components/vistas/cor-conecta/concentrador/operador-renovable/rutas';
 
 type AnclaMenuGrupoTabs = {
   rutaEnlaceMenu: string;
@@ -32,6 +36,10 @@ const anclasMenuGrupoTabs: readonly AnclaMenuGrupoTabs[] = [
   {
     rutaEnlaceMenu: RutaHashAnclaSolicitudesDespachador,
     rutasRelacionadas: RutasHashGrupoTabsSolicitudesDespachador
+  },
+  {
+    rutaEnlaceMenu: RutaHashAnclaOperadorRenovable,
+    rutasRelacionadas: RutasHashGrupoTabsOperadorRenovable
   }
 ];
 
