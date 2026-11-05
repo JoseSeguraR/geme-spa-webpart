@@ -273,6 +273,44 @@
   }
 }
 
+/* Grilla con `alturaAutomatica`: sin scroll vertical, el texto se parte solo entre palabras. */
+.cowork-vista-tabla-mui--multilinea {
+  .MuiDataGrid-cell {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-overflow: clip;
+    line-height: var(--cowork-line-height);
+  }
+
+  .MuiDataGrid-row {
+    min-height: 42px !important; /* AlturaFilaGrillaPx */
+  }
+
+  /* Respeta los saltos de línea escritos por el usuario (p. ej. descripción). */
+  .cowork-celda-texto-largo {
+    white-space: pre-line;
+  }
+
+  /* Columnas de `columnasAutoajustables`: miden su contenido y nunca parten línea. */
+  .MuiDataGrid-cell.cowork-celda-autoajustada,
+  .cowork-badge-estado {
+    white-space: nowrap;
+  }
+}
+
+.cowork-campo-fecha-hora24__selector {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .cowork-desplegable-acciones {
   position: relative;
 }

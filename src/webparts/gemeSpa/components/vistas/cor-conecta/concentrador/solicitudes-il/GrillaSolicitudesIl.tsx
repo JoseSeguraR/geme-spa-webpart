@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { GridColDef, GridRowId } from '@mui/x-data-grid';
-import { GrillaServidorMui } from '../../../../grilla';
+import { GrillaServidorMui, TamanoPaginaTodos, type OpcionTamanoPaginaGrilla } from '../../../../grilla';
 import { CeldaAccionesCentrada, ObtenerOpcionesBaseColumnaAccionesGrilla } from '../../../../grilla/ColumnaAccionesGrilla';
 import type { SolicitudIl } from '../../../../../models/SolicitudIl';
 import type { EstadoSolicitudIl } from './constantesSolicitudesIl';
@@ -13,7 +13,7 @@ import {
 import DesplegableAccionesFila, {
   type ModoAccionesFilaSolicitudesIl
 } from './DesplegableAccionesFila';
-import { FormatearFechaHoraVisible } from './UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../../../utils/FechaHoraCorConecta';
 import { UseSolicitudesIlLista, type RestriccionInstalacionesSolicitante } from './UseSolicitudesIlLista';
 
 export type GrillaSolicitudesIlProps = {
@@ -32,6 +32,17 @@ export type GrillaSolicitudesIlProps = {
 };
 
 type FilaGrilla = SolicitudIl & { id: GridRowId };
+
+const OpcionesTamanoPaginaSolicitudesIl: readonly OpcionTamanoPaginaGrilla[] = [
+  10,
+  25,
+  50,
+  100,
+  { value: TamanoPaginaTodos, label: 'Mostrar todo' }
+];
+
+/** Columnas cortas que se ajustan al contenido; Central y Descripción ocupan el resto y parten el texto. */
+const ColumnasAutoajustablesSolicitudesIl: readonly string[] = ['id', 'idCen', 'fechaInicio', 'fechaFin', 'estado'];
 
 export default function GrillaSolicitudesIl(props: GrillaSolicitudesIlProps): React.ReactElement {
   const {
@@ -125,28 +136,37 @@ export default function GrillaSolicitudesIl(props: GrillaSolicitudesIlProps): Re
         )
       },
       { field: 'id', headerName: 'ID', width: 72 },
-      { field: 'idCen', headerName: 'ID CEN', minWidth: 110, flex: 0.8 },
-      { field: 'centralEtiqueta', headerName: 'Central', minWidth: 140, flex: 1 },
-      { field: 'descripcion', headerName: 'Descripción', minWidth: 180, flex: 1.2 },
+      { field: 'idCen', headerName: 'ID CEN', width: 110 },
+      {
+        field: 'centralEtiqueta',
+        headerName: 'Central',
+        minWidth: 120,
+        flex: 1,
+        cellClassName: 'cowork-celda-texto-largo'
+      },
+      {
+        field: 'descripcion',
+        headerName: 'Descripción',
+        minWidth: 160,
+        flex: 3,
+        cellClassName: 'cowork-celda-texto-largo'
+      },
       {
         field: 'fechaInicio',
         headerName: 'Fecha inicio',
-        minWidth: 150,
-        flex: 1,
+        width: 140,
         renderCell: (params) => FormatearFechaHoraVisible(params.row.fechaInicio)
       },
       {
         field: 'fechaFin',
         headerName: 'Fecha fin',
-        minWidth: 150,
-        flex: 1,
+        width: 140,
         renderCell: (params) => FormatearFechaHoraVisible(params.row.fechaFin)
       },
       {
         field: 'estado',
         headerName: 'Estado',
-        minWidth: 120,
-        flex: 0.7,
+        width: 110,
         renderCell: (params) => (
           <span className={ClaseInsigniaEstadoSolicitudIl(ResolverEstadoSolicitudIl(String(params.value)))}>
             {params.value}
@@ -188,6 +208,9 @@ export default function GrillaSolicitudesIl(props: GrillaSolicitudesIlProps): Re
         onCambioConsulta: onCambioBusqueda
       }}
       textoBusquedaActiva={textoBusqueda}
+      alturaAutomatica
+      columnasAutoajustables={ColumnasAutoajustablesSolicitudesIl}
+      opcionesTamanoPagina={OpcionesTamanoPaginaSolicitudesIl}
       mensajeSinRegistros="No hay solicitudes IL para mostrar."
       mensajeSinRegistrosBusqueda="No hay solicitudes que coincidan con la búsqueda."
     />

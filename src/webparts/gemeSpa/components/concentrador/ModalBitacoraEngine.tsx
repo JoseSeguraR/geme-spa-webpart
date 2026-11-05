@@ -5,7 +5,7 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { TemaGrillaGeme } from '../grilla/TemaGrillaMui';
 import { AlturaEncabezadoGrillaPx, AlturaFilaGrillaPx } from '../../models/GrillaServidor';
 import type { FilaBitacoraEngine } from '../../models/concentradorComun/FilaBitacoraEngine';
-import { FormatearFechaHoraVisible } from '../vistas/cor-conecta/concentrador/solicitudes-il/UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../utils/FechaHoraCorConecta';
 
 export type ModalBitacoraEngineProps = {
   visible: boolean;

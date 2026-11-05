@@ -12,10 +12,11 @@ import { IdCenDuplicadoSolicitudIlError } from '../../../../../services/sharepoi
 import { ParsearIdCentralDesdeCodigoSiod } from '../../../../../services/sharepoint/solicitudesIl/ParsearIdCentralSiod';
 import { RegistrarNuevaSolicitudIlCompleta } from '../../../../../services/sharepoint/solicitudesIl/RegistrarNuevaSolicitudIlServicio';
 import { SharePointRestError } from '../../../../../services/sharepoint/SharePointRestError';
-import { ConvertirEntradaLocalAIsoUtc, ConvertirIsoAFechaLocalInput } from './UtilidadesFechaSolicitudIl';
+import { ConvertirEntradaLocalAIsoUtc, ConvertirIsoAFechaLocalInput } from '../../../../../utils/FechaHoraCorConecta';
 import { BloqueEstadoFormularioSolicitudIl } from './PresentacionEstadoSolicitudIl';
 import { ArchivoConNombreSanitizado } from '../../../../../utils/SanearNombreArchivoAdjunto';
 import { ValidarArchivoAdjuntoSharePoint } from '../../../../../utils/ValidacionAdjuntosSharePoint';
+import CampoFechaHora24 from '../../../../concentrador/CampoFechaHora24';
 
 export type ModalNuevaSolicitudIlProps = {
   context: WebPartContext;
@@ -104,8 +105,7 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
     onCerrar();
   };
 
-  const OnCambioInicio = (evento: React.ChangeEvent<HTMLInputElement>): void => {
-    const valor = evento.target.value;
+  const OnCambioInicio = (valor: string): void => {
     setInicioLocal(valor);
     if (!valor.trim()) {
       setFinLocal('');
@@ -355,25 +355,21 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
                     <EtiquetaCampo htmlFor="nueva-solicitud-inicio" obligatorio>
                       Fecha inicio
                     </EtiquetaCampo>
-                    <input
+                    <CampoFechaHora24
                       id="nueva-solicitud-inicio"
-                      type="datetime-local"
-                      className="form-control form-control-sm"
-                      value={inicioLocal}
-                      onChange={OnCambioInicio}
+                      valor={inicioLocal}
+                      onCambio={OnCambioInicio}
                       required
                     />
                   </div>
                   <div className="col-md-6">
                     <EtiquetaCampo htmlFor="nueva-solicitud-fin">Fecha fin</EtiquetaCampo>
-                    <input
+                    <CampoFechaHora24
                       id="nueva-solicitud-fin"
-                      type="datetime-local"
-                      className="form-control form-control-sm"
-                      value={finLocal}
+                      valor={finLocal}
                       min={inicioLocal || undefined}
                       disabled={!finHabilitado}
-                      onChange={(evento) => setFinLocal(evento.target.value)}
+                      onCambio={setFinLocal}
                       aria-describedby="nueva-solicitud-fin-ayuda"
                     />
                     <div id="nueva-solicitud-fin-ayuda" className="form-text">

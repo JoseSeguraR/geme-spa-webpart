@@ -23,7 +23,8 @@ import { SharePointRestError } from '../../../../../../services/sharepoint/Share
 import {
   ConvertirEntradaLocalAIsoUtc,
   ConvertirIsoAFechaLocalInput
-} from '../../solicitudes-il/UtilidadesFechaSolicitudIl';
+} from '../../../../../../utils/FechaHoraCorConecta';
+import CampoFechaHora24 from '../../../../../concentrador/CampoFechaHora24';
 
 export type ModalLimitacionSubestacionOperadorProps = {
   context: WebPartContext;
@@ -255,24 +256,20 @@ export default function ModalLimitacionSubestacionOperador(
                   <label className="form-label" htmlFor="pgl-inicio">
                     Inicio
                   </label>
-                  <input
+                  <CampoFechaHora24
                     id="pgl-inicio"
-                    type="datetime-local"
-                    className="form-control form-control-sm"
-                    value={fechaInicioLocal}
-                    onChange={(e) => setFechaInicioLocal(e.target.value)}
+                    valor={fechaInicioLocal}
+                    onCambio={setFechaInicioLocal}
                   />
                 </div>
                 <div className="col-md-6">
                   <label className="form-label" htmlFor="pgl-fin">
                     Fin (opcional)
                   </label>
-                  <input
+                  <CampoFechaHora24
                     id="pgl-fin"
-                    type="datetime-local"
-                    className="form-control form-control-sm"
-                    value={fechaFinLocal}
-                    onChange={(e) => setFechaFinLocal(e.target.value)}
+                    valor={fechaFinLocal}
+                    onCambio={setFechaFinLocal}
                   />
                 </div>
                 <div className="col-md-6">

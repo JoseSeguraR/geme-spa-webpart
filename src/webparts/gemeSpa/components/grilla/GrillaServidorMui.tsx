@@ -8,14 +8,17 @@ import {
   type GridPaginationModel,
   type GridRowId,
   type GridSortModel,
-  type GridValidRowModel
+  type GridValidRowModel,
+  useGridApiRef
 } from '@mui/x-data-grid';
 import CampoBusquedaGrillaMui from './CampoBusquedaGrillaMui';
 import MensajeVacioGrillaMui from './MensajeVacioGrillaMui';
 import {
   AlturaGrillaPredeterminadaPx,
   OpcionesTamanoPaginaGrillaPredeterminadas,
-  type EstadoCargaGrillaServidor
+  TamanoPaginaTodos,
+  type EstadoCargaGrillaServidor,
+  type OpcionTamanoPaginaGrilla
 } from './TiposGrillaServidor';
 import { TemaGrillaGeme } from './TemaGrillaMui';
 import { AlturaEncabezadoGrillaPx, AlturaFilaGrillaPx } from '../../models/GrillaServidor';
@@ -49,7 +52,12 @@ export type GrillaServidorMuiProps<Row extends GridValidRowModel & { id: GridRow
   mensajeSinRegistrosBusqueda?: string;
   textoBusquedaActiva?: string;
   alturaPx?: number;
-  opcionesTamanoPagina?: readonly number[];
+  /** Tamaños de página; `{ value: TamanoPaginaTodos, label }` agrega la opción de ver todo. */
+  opcionesTamanoPagina?: readonly OpcionTamanoPaginaGrilla[];
+  /** Sin scroll vertical: la grilla crece con las filas y cada fila con su contenido (texto multilínea). */
+  alturaAutomatica?: boolean;
+  /** Columnas cuyo ancho se ajusta al contenido cada vez que cambian las filas. */
+  columnasAutoajustables?: readonly string[];
   /** Clase CSS adicional por fila (p. ej. resaltado de alerta en operador renovable). */
   obtenerClaseFila?: (fila: Row) => string | undefined;
 };
@@ -109,8 +117,12 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     textoBusquedaActiva = '',
     alturaPx = AlturaGrillaPredeterminadaPx,
     opcionesTamanoPagina = OpcionesTamanoPaginaGrillaPredeterminadas,
+    alturaAutomatica = false,
+    columnasAutoajustables,
     obtenerClaseFila
   } = props;
+
+  const apiRef = useGridApiRef();
 
   const [textoBusquedaLocal, setTextoBusquedaLocal] = useState(busqueda?.valorEnConsulta ?? '');
   const contenedorGrillaRef = useRef<HTMLDivElement>(null);
@@ -168,7 +180,54 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     [paginaActual, tamanoPagina]
   );
 
-  const totalFilas = hayPaginaSiguiente ? -1 : paginaActual * tamanoPagina + filas.length;
+  useEffect(() => {
+    if (!columnasAutoajustables?.length || filas.length === 0) {
+      return;
+    }
+    // autosizeColumns mide solo celdas ya dibujadas: se espera a que existan (con altura automática
+    // MUI dibuja las filas algunos cuadros después), si no mediría solo el encabezado.
+    let id = 0;
+    const Autoajustar = (intentosRestantes: number): void => {
+      const raiz = apiRef.current?.rootElementRef?.current;
+      const hayCeldas = raiz?.querySelector(`.MuiDataGrid-cell[data-field="${columnasAutoajustables[0]}"]`);
+      if (!hayCeldas && intentosRestantes > 0) {
+        id = window.requestAnimationFrame(() => Autoajustar(intentosRestantes - 1));
+        return;
+      }
+      apiRef.current?.autosizeColumns({
+        columns: [...columnasAutoajustables],
+        includeHeaders: true,
+        includeOutliers: true
+      }).catch(() => undefined);
+    };
+    id = window.requestAnimationFrame(() => Autoajustar(30));
+    return () => window.cancelAnimationFrame(id);
+  }, [apiRef, columnasAutoajustables, filas]);
+
+  const columnasGrilla = useMemo(() => {
+    if (!columnasAutoajustables?.length) {
+      return columnas;
+    }
+    return columnas.map((columna): GridColDef<Row> => {
+      if (columnasAutoajustables.indexOf(columna.field) === -1) {
+        return columna;
+      }
+      const claseOriginal = columna.cellClassName;
+      return {
+        ...columna,
+        cellClassName: (params) => {
+          const clase = typeof claseOriginal === 'function' ? claseOriginal(params) : claseOriginal;
+          return clase ? `${clase} cowork-celda-autoajustada` : 'cowork-celda-autoajustada';
+        }
+      };
+    });
+  }, [columnas, columnasAutoajustables]);
+
+  const totalFilas = hayPaginaSiguiente
+    ? -1
+    : tamanoPagina === TamanoPaginaTodos
+      ? filas.length
+      : paginaActual * tamanoPagina + filas.length;
   const estaCargando = cargando ?? (estadoCarga === 'cargando' || estadoCarga === 'inicial');
   const ocultarGrilla = estadoCarga === 'vacio' && filas.length === 0;
   const hayBusquedaActiva = textoBusquedaActiva.trim().length > 0;
@@ -212,11 +271,14 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
       ) : null}
 
       {ocultarGrilla ? null : (
-        <div className="cowork-vista-tabla-mui">
+        <div className={`cowork-vista-tabla-mui${alturaAutomatica ? ' cowork-vista-tabla-mui--multilinea' : ''}`}>
           <DataGrid
+            apiRef={apiRef}
             rows={filas}
-            columns={columnas}
+            columns={columnasGrilla}
             rowHeight={AlturaFilaGrillaPx}
+            autoHeight={alturaAutomatica}
+            getRowHeight={alturaAutomatica ? () => 'auto' : undefined}
             columnHeaderHeight={AlturaEncabezadoGrillaPx}
             loading={estaCargando}
             slots={slotsGrilla}
@@ -258,7 +320,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
                 : undefined
             }
             slotProps={slotPropsGrilla}
-            sx={{ height: alturaPx }}
+            sx={alturaAutomatica ? undefined : { height: alturaPx }}
           />
         </div>
       )}

@@ -1,6 +1,6 @@
 import { SPHttpClient, type SPHttpClientResponse } from '@microsoft/sp-http';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
-import { FormatearFechaHoraVisible } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../utils/FechaHoraCorConecta';
 import type {
   DatosFormularioLimitacionSubestacion,
   LimitacionSubestacionOperador

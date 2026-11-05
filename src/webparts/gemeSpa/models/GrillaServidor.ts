@@ -1,6 +1,11 @@
 export type EstadoCargaGrillaServidor = 'inicial' | 'cargando' | 'listo' | 'vacio' | 'error';
 
-export const OpcionesTamanoPaginaGrillaPredeterminadas = [10, 25, 50, 100] as const;
+/** Tamaño de página que significa «todos los registros» (convención de MUI Data Grid). */
+export const TamanoPaginaTodos = -1;
+
+export type OpcionTamanoPaginaGrilla = number | { value: number; label: string };
+
+export const OpcionesTamanoPaginaGrillaPredeterminadas: readonly OpcionTamanoPaginaGrilla[] = [10, 25, 50, 100];
 
 export const AlturaGrillaPredeterminadaPx = 480;
 

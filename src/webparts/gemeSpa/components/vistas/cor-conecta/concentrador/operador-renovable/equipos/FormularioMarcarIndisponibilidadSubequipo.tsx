@@ -12,7 +12,8 @@ import { SharePointRestError } from '../../../../../../services/sharepoint/Share
 import {
   ConvertirEntradaLocalAIsoUtc,
   ConvertirIsoAFechaLocalInput
-} from '../../solicitudes-il/UtilidadesFechaSolicitudIl';
+} from '../../../../../../utils/FechaHoraCorConecta';
+import CampoFechaHora24 from '../../../../../concentrador/CampoFechaHora24';
 
 export type FormularioMarcarIndisponibilidadSubequipoProps = {
   context: WebPartContext;
@@ -133,12 +134,10 @@ export default function FormularioMarcarIndisponibilidadSubequipo(
         <label className="form-label" htmlFor="or-indisp-fecha">
           Fecha indisponibilidad
         </label>
-        <input
+        <CampoFechaHora24
           id="or-indisp-fecha"
-          type="datetime-local"
-          className="form-control form-control-sm"
-          value={fechaLocal}
-          onChange={(e) => setFechaLocal(e.target.value)}
+          valor={fechaLocal}
+          onCambio={setFechaLocal}
           disabled={guardando}
         />
       </div>

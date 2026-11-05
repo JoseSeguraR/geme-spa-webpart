@@ -58,7 +58,13 @@ El estado que pinta la grilla es la columna adicional `TAREAACTUAL:TAREAORIGEN_E
 - `OrderBy` del campo elegido y, como desempate, `ID` ascendente.
 - `RowLimit` paginado.
 
+**Mostrar todo.** El selector de la grilla ofrece 10, 25, 50, 100 y «Mostrar todo» (`TamanoPaginaTodos = -1`, de `components/grilla`). Con `-1`, `UseSolicitudesIlLista` no usa la paginación por tokens: pide lotes de `TamanoLoteCargaCompletaSolicitudesIl` (500, en `constantesSolicitudesIl.ts`) siguiendo `NextHref` hasta agotar la consulta, con los mismos filtros, búsqueda y orden, y entrega todas las filas con `hayPaginaSiguiente = false`. Si el efecto se cancela entre lotes (cambio de filtro), descarta el resultado.
+
+**Presentación.** `GrillaSolicitudesIl` activa `alturaAutomatica` (sin scroll vertical; las filas crecen con el texto) y `columnasAutoajustables` para `id`, `idCen`, `fechaInicio`, `fechaFin` y `estado`. `centralEtiqueta` y `descripcion` son `flex` con `cellClassName: 'cowork-celda-texto-largo'` (`white-space: pre-line`), así el texto se parte entre palabras y respeta saltos de línea sin scroll horizontal.
+
 Mapa de columnas de la grilla a campos de lista: `id` → `ID`, `idCen` → `ID_CEN`, `centralEtiqueta` → `INSTALACION`, `descripcion` → `DESCRIPCION`, `inicioProgramado` → `FECHA_INICIO`, `finProgramado` → `FECHA_FIN`, `estado` → columna de estado de la tarea actual.
+
+Fechas: la grilla, los modales y la bitácora formatean con `FormatearFechaHoraVisible` y los formularios usan `CampoFechaHora24`; ambos en formato `dd/mm/aaaa hh:mm` de 24 h (ver «Fecha y hora» en [arquitectura-spa.md](arquitectura-spa.md)). Los valores se guardan en ISO UTC (`ConvertirEntradaLocalAIsoUtc`).
 
 La paginación guarda el token de continuación de SharePoint por número de página. Un error HTTP deja la grilla en estado `error` con el mensaje; no se muestra como lista vacía.
 
@@ -117,6 +123,12 @@ Las llamadas a Azure Functions (Insert, Update, Delete) son **transparentes para
 En gestión con solicitud **Vigente**, si el usuario cambia `ID_CEN`, antes de actualizar SharePoint se valida unicidad (`ExisteSolicitudIlConIdCen`, excluyendo el ítem actual). En Finalizada o Anulada el ID CEN no es editable en pantalla; la reactivación usa el ID ya guardado en la lista.
 
 Servicios: `SiodSolicitudIlApiServicio.ts`, `SincronizarSiodGestionSolicitudIlServicio.ts`, orquestados desde `RegistrarNuevaSolicitudIlServicio` y `GuardarGestionSolicitudIlServicio`.
+
+## Datos de prueba
+
+`scripts/datos-prueba/cargar-solicitudes-il-prueba.js` carga solicitudes de prueba en el sitio de **desarrollo** desde la consola del navegador (con la sesión del usuario, sin despliegue). Replica el alta: crea el ítem en `CONC_LISTA_SOLICITUDES_IL` (`ID_CEN` con prefijo `PRUEBA-IL-`, central rotando entre las de `CONC_MANTENEDOR_INSTALACIONES`, descripciones cortas, largas y con saltos de línea, fechas entre −120 y +60 días), sus registros en `ENGINE_BITACORA` y `TAREAACTUAL`. Reparte 60 % Vigente, 25 % Finalizada (con `FECHA_FIN`) y 15 % Anulada. **No llama a SIOD.**
+
+Necesita los IDs del grupo «Solicitudes IL · Flujo (bitácora)» del panel de propiedades (tareas Crear, Finalizar y Anular; acciones Finalizar y Anular). Si en `CONFIG` quedan en `null`, los detecta: primero desde las propiedades del web part guardadas en la página abierta (`CanvasContent1`, atributo `data-sp-webpartdata`) y, si no, desde `ENGINE_BITACORA` (el registro más antiguo de `SOLICITUDES_IL` da la tarea Crear; los registros en estado Finalizada/Anulada dan esas tareas, y los que llegan a ellas, sus acciones). `cargarSolicitudesIlPrueba()` crea `CONFIG.cantidad` (100) y se niega si ya hay solicitudes con el prefijo; `eliminarSolicitudesIlPrueba()` borra las de prueba y su bitácora (por `Title` = `SOLICITUDES_IL {id}`).
 
 ## Panel de propiedades
 

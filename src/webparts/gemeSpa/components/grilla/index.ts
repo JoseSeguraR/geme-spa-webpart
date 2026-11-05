@@ -11,3 +11,5 @@ export {
   ObtenerOpcionesBaseColumnaAccionesGrilla,
   TituloColumnaAccionesGrilla
 } from './ColumnaAccionesGrilla';
+export { TamanoPaginaTodos } from './TiposGrillaServidor';
+export type { OpcionTamanoPaginaGrilla } from './TiposGrillaServidor';

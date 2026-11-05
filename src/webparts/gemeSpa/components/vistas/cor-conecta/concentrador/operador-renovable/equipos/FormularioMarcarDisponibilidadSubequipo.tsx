@@ -7,7 +7,8 @@ import { SharePointRestError } from '../../../../../../services/sharepoint/Share
 import {
   ConvertirEntradaLocalAIsoUtc,
   ConvertirIsoAFechaLocalInput
-} from '../../solicitudes-il/UtilidadesFechaSolicitudIl';
+} from '../../../../../../utils/FechaHoraCorConecta';
+import CampoFechaHora24 from '../../../../../concentrador/CampoFechaHora24';
 
 export type FormularioMarcarDisponibilidadSubequipoProps = {
   context: WebPartContext;
@@ -87,12 +88,10 @@ export default function FormularioMarcarDisponibilidadSubequipo(
         <label className="form-label" htmlFor="or-disp-fecha">
           Fecha retorno a servicio
         </label>
-        <input
+        <CampoFechaHora24
           id="or-disp-fecha"
-          type="datetime-local"
-          className="form-control form-control-sm"
-          value={fechaLocal}
-          onChange={(e) => setFechaLocal(e.target.value)}
+          valor={fechaLocal}
+          onCambio={setFechaLocal}
           disabled={guardando}
         />
       </div>

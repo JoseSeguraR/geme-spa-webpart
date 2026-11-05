@@ -7,7 +7,7 @@ import type {
 } from '../../../../../../models/operadorRenovable/LimitacionSubestacionOperador';
 import { ObtenerBitacoraLimitacionSubestacion } from '../../../../../../services/sharepoint/operadorRenovable/BitacoraSubestacionServicio';
 import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
-import { FormatearFechaHoraVisible } from '../../solicitudes-il/UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../../../../utils/FechaHoraCorConecta';
 
 export type ModalBitacoraLimitacionSubestacionProps = {
   context: WebPartContext;

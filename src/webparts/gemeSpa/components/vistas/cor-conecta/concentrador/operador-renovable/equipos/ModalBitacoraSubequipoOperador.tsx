@@ -4,7 +4,7 @@ import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { FilaBitacoraOperadorSubequipo, SubequipoOperador } from '../../../../../../models/operadorRenovable/CatalogoEquiposOperador';
 import { ObtenerBitacoraSubequipoOperador } from '../../../../../../services/sharepoint/operadorRenovable/BitacoraOperadorServicio';
 import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
-import { FormatearFechaHoraVisible } from '../../solicitudes-il/UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../../../../utils/FechaHoraCorConecta';
 
 export type ModalBitacoraSubequipoOperadorProps = {
   context: WebPartContext;

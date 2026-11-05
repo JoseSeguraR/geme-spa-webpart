@@ -32,6 +32,8 @@ Mientras el menú carga se muestra `CargandoInicial`. Si la inicialización fall
 
 `CarcasaSpa` arma la clase raíz `gemeSpaBootstrap` y el estado visual de la barra lateral (colapsada en escritorio, abierta en móvil).
 
+Al hacer scroll solo se desplaza el contenido: en escritorio la barra lateral y la barra superior son `position: sticky` (`top: 0`) dentro del contenedor con scroll de SharePoint. La barra lateral mide `var(--cowork-alto-visible-host)`, que `CarcasaSpa` calcula (`UseAltoVisibleHost`) como el `clientHeight` del primer ancestro con `overflow-y: auto/scroll` (o `window.innerHeight`) y actualiza al redimensionar; así entra entera bajo la barra del sitio de SharePoint. Ningún ancestro entre la carcasa y ese contenedor puede tener `overflow: hidden`, o el sticky deja de funcionar. En móvil la barra lateral sigue siendo `position: fixed`.
+
 | Pieza | Rol |
 | --- | --- |
 | `BarraLateral` | Árbol de menú, versión del Web Part y enlace a la colección de sitios. |
@@ -144,6 +146,21 @@ Lista vacía: `GrillaServidorMui` usa `MensajeVacioGrillaMui` (`cowork-grilla-va
 La grilla no consulta SharePoint. El padre le entrega filas ya normalizadas y el estado de carga (`inicial`, `cargando`, `listo`, `vacio`, `error`). La paginación es por páginas conocidas: el padre indica `paginaActual`, `tamanoPagina` y `hayPaginaSiguiente`. El orden se notifica con `onCambioOrdenamiento`. La búsqueda es opcional (`ConfigBusquedaGrillaServidor`) y la aplica quien consulta.
 
 Alturas y tamaños de página predeterminados están en `models/GrillaServidor.ts` (10, 25, 50 y 100 filas; altura 480 px). `ColumnaAccionesGrilla` concentra el ancho y las opciones de la columna de acciones. `PreferenciasAnchoColumnasGrilla` recuerda anchos en el cliente.
+
+Opciones de la grilla (todas opcionales; sin ellas se comporta como antes):
+
+| Prop | Efecto |
+| --- | --- |
+| `alturaAutomatica` | Sin scroll vertical: `autoHeight` y `getRowHeight={() => 'auto'}`. Agrega `cowork-vista-tabla-mui--multilinea` (`styles/_vista.scss`): las celdas parten el texto solo entre palabras y la fila conserva 42 px de mínimo. Para respetar saltos de línea en una columna, `cellClassName: 'cowork-celda-texto-largo'`. |
+| `columnasAutoajustables` | Campos cuyo ancho se recalcula con `apiRef.autosizeColumns` (incluye encabezados) cada vez que cambian las filas. MUI mide solo celdas ya dibujadas, así que la grilla espera (hasta 30 cuadros) a que existan antes de medir; si no, mediría solo el encabezado. Esas celdas llevan `cowork-celda-autoajustada` y nunca parten línea. Úsalo en columnas cortas y deja las de texto largo en `flex`, para no generar scroll horizontal. |
+| `opcionesTamanoPagina` | Números o `{ value, label }`. `{ value: TamanoPaginaTodos, label: 'Mostrar todo' }` (`-1`) pide todas las filas; quien consulta debe traerlas todas y responder `hayPaginaSiguiente = false`. |
+
+## Fecha y hora (COR Conecta)
+
+Regla del workspace (`CLAUDE.md` y `.cursor/rules/fecha-hora-cor-conecta.mdc`): en COR Conecta las fechas con hora van en `dd/mm/aaaa hh:mm`, de 00 a 23 h, sin AM/PM.
+
+- `utils/FechaHoraCorConecta.ts`: `FormatearFechaHoraVisible` (ISO → texto visible), `ConvertirEntradaLocalAIsoUtc` / `ConvertirIsoAFechaLocalInput` (valor local `AAAA-MM-DDTHH:mm` ↔ ISO UTC), `InterpretarFechaHoraPegada` (acepta `dd/mm/aaaa hh:mm`, `dd-mm-aaaa hh:mm` y `aaaa-mm-ddThh:mm`; sin hora usa la actual; rechaza horas > 23 y fechas inexistentes) y `FormatearValorLocalParaEdicion`. El texto visible se arma a mano: `toLocaleString('es-CL')` separa con guiones y puede usar AM/PM según el navegador.
+- `components/concentrador/CampoFechaHora24.tsx`: reemplaza a `<input type="datetime-local">`. Mismo contrato de valor (`valor`/`onCambio` con `AAAA-MM-DDTHH:mm`, `min`, `disabled`, `readOnly`, `required`). Campo de texto que interpreta al salir, con Enter o al pegar; marca `is-invalid` si el formato o el mínimo no se cumplen y no propaga el valor. El botón de calendario abre un `input type="date"` oculto (`showPicker`) que solo cambia el día y conserva la hora.
 
 ## Carpetas estructurales
 

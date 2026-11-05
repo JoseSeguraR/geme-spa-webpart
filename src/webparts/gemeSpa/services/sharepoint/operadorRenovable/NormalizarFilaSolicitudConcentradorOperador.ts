@@ -1,5 +1,5 @@
 import type { SolicitudOperadorRenovableFila } from '../../../models/operadorRenovable/SolicitudOperadorRenovable';
-import { FormatearFechaHoraVisible } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../utils/FechaHoraCorConecta';
 import {
   CampoEmpresaSolicitanteConcentrador,
   CampoEstadoTareaActualConcentrador,
