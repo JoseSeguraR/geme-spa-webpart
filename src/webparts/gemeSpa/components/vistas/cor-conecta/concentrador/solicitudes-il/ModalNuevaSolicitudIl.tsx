@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
-import type { EstadoSolicitudIl } from './constantesSolicitudesIl';
+import { MaxLongitudDescripcionSolicitudIl, type EstadoSolicitudIl } from './constantesSolicitudesIl';
 import type { CentralMantenedor, DatosNuevaSolicitudIl, SolicitudIl } from '../../../../../models/SolicitudIl';
 import type { PropiedadesWebPartSolicitudesIl } from '../../../../../models/ConfiguracionSolicitudesIl';
 import {
@@ -178,8 +178,8 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
       setError('Indique la descripción.');
       return;
     }
-    if (descripcion.length > 230) {
-      setError('La descripción no puede superar 230 caracteres.');
+    if (descripcion.length > MaxLongitudDescripcionSolicitudIl) {
+      setError(`La descripción no puede superar ${MaxLongitudDescripcionSolicitudIl} caracteres.`);
       return;
     }
 
@@ -342,12 +342,14 @@ export default function ModalNuevaSolicitudIl(props: ModalNuevaSolicitudIlProps)
                       id="nueva-solicitud-descripcion"
                       className="form-control form-control-sm"
                       rows={3}
-                      maxLength={230}
+                      maxLength={MaxLongitudDescripcionSolicitudIl}
                       value={descripcion}
                       onChange={(evento) => setDescripcion(evento.target.value)}
                       required
                     />
-                    <div className="form-text">{descripcion.length}/230</div>
+                    <div className="form-text">
+                      {descripcion.length}/{MaxLongitudDescripcionSolicitudIl}
+                    </div>
                   </div>
                   <div className="col-md-6">
                     <EtiquetaCampo htmlFor="nueva-solicitud-inicio" obligatorio>

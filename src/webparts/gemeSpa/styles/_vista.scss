@@ -559,3 +559,138 @@
     line-height: 1.35;
   }
 }
+
+// Operador renovable (carcasa demo; paridad visual con maqueta .or-*)
+.cowork-vista__tabs--operador-renovable .nav-link {
+  white-space: nowrap;
+}
+
+.cowork-vista-operador-renovable__contenido {
+  grid-column: 1 / -1;
+}
+
+.cowork-operador-renovable__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: var(--cowork-font-size-xs);
+  background: var(--cowork-color-surface-muted, #f1f3f5);
+  border: 1px solid var(--cowork-color-border, #dee2e6);
+}
+
+.cowork-operador-renovable__chip--alerta {
+  background: rgba(220, 53, 69, 0.08);
+  border-color: rgba(220, 53, 69, 0.35);
+  color: #842029;
+}
+
+.cowork-operador-renovable__chip--ok {
+  background: rgba(25, 135, 84, 0.08);
+  border-color: rgba(25, 135, 84, 0.35);
+  color: #0f5132;
+}
+
+.cowork-operador-renovable__kpi .card-body {
+  font-size: var(--cowork-font-size-sm);
+}
+
+.cowork-operador-renovable__tarjeta-equipo--alerta {
+  border-color: rgba(220, 53, 69, 0.45);
+}
+
+.cowork-operador-renovable__punto {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cowork-operador-renovable__punto--disp {
+  background: #198754;
+}
+
+.cowork-operador-renovable__punto--indisp {
+  background: #dc3545;
+}
+
+.cowork-grilla-celda-alerta {
+  color: #842029;
+  font-weight: 500;
+}
+
+// Grilla solicitudes operador renovable (paridad maqueta .or-sol-*)
+.cowork-vista-tabla-mui .MuiDataGrid-row.or-sol-row-alerta {
+  background-color: #fff8f3;
+}
+
+.cowork-vista-tabla-mui .MuiDataGrid-row.or-sol-row-alerta:hover {
+  background-color: #fff0e6;
+}
+
+.or-inv-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #28a745;
+  flex-shrink: 0;
+  cursor: help;
+}
+
+.or-inv-dot.is-baja {
+  background: #adb5bd;
+}
+
+.or-inv-dot.is-indisponible,
+.or-sol-inv-list li.is-down .or-inv-dot {
+  background: #dc3545;
+}
+
+.or-sol-inv-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.or-sol-inv-list li:last-child {
+  margin-bottom: 0;
+}
+
+.or-sol-inv-list .or-inv-dot {
+  margin-top: 0.35rem;
+}
+
+.or-sol-inv-nombre {
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.or-inv-eq {
+  line-height: 1.25;
+}
+
+.or-sol-disp {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--cowork-font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.or-sol-disp.is-ok {
+  color: #1e7e34;
+}
+
+.or-sol-id-cen .fw-medium {
+  line-height: 1.2;
+}
+
+.or-gestion-panel {
+  border-color: var(--bs-primary) !important;
+}
+
+.or-sol-disp.is-alerta {
+  color: var(--cowork-color-acento, #e56000);
+}

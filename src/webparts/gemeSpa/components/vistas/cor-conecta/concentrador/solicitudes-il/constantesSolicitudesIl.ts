@@ -1,5 +1,11 @@
+export {
+  ModuloFiltroInstalacionConcentrador,
+  NombreListaBitacoraEngine,
+  NombreListaCentrales,
+  NombreListaUsuariosInstalaciones
+} from '../../../../../services/sharepoint/concentradorComun/NombresListasConcentrador';
+
 export const NombreListaSolicitudesIl = 'CONC_LISTA_SOLICITUDES_IL';
-export const NombreListaBitacoraEngine = 'ENGINE_BITACORA';
 /** Lookup a bitácora; el estado visible proviene de TAREAORIGEN_ESTADO (columna adicional). */
 export const CampoLookupTareaActualIl = 'TAREAACTUAL';
 /**
@@ -16,12 +22,6 @@ export const CampoTareaOrigenBitacoraIl = 'TAREAORIGEN_x003a_TAREA';
 export const CampoEstadoDestinoBitacoraIl = 'TAREADESTINO_x003a_ESTADO';
 /** Columna adicional «ACCIONAVANCE:ACCION» en ENGINE_BITACORA. */
 export const CampoAccionAvanceBitacoraIl = 'ACCIONAVANCE_x003a_ACCION';
-/** Mantenedor de instalaciones; en UI se presenta como «Central». */
-export const NombreListaCentrales = 'CONC_MANTENEDOR_INSTALACIONES';
-/** Asignación usuario → instalaciones (lookup múltiple) para perfil solicitante. */
-export const NombreListaUsuariosInstalaciones = 'CONC_MANTENEDOR_USUARIOSINSTALACIONES';
-export const ModuloFiltroInstalacionConcentrador = 'Concentrador';
-
 export type EstadoSolicitudIl = 'Vigente' | 'Finalizada' | 'Anulada';
 
 export function ResolverEstadoSolicitudIl(valor: string | undefined): EstadoSolicitudIl {
@@ -40,3 +40,6 @@ export const SubtitulosPorEstadoSolicitudIl: Record<EstadoSolicitudIl, string> =
 };
 
 export const TamanoMaximoAdjuntoBytes = 10 * 1024 * 1024;
+
+/** Límite de caracteres del campo DESCRIPCION (lista y formularios alta / edición / clon). */
+export const MaxLongitudDescripcionSolicitudIl = 200;

@@ -1,8 +1,1 @@
-export function EscaparValorXmlCaml(valor: string): string {
-  return valor
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
+export { EscaparValorXmlCaml } from '../concentradorComun/EscaparXmlCaml';

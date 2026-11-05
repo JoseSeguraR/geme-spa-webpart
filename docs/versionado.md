@@ -1,6 +1,6 @@
 # Versionado del producto
 
-GEME SPA Webpart es un **artefacto SPFx** (`.sppkg`) desplegado en el App Catalog del tenant. La versión de producto no coincide con la de un paquete npm publicado ni con la del framework SharePoint.
+GM SPA es un **artefacto SPFx** (`.sppkg`) desplegado en el App Catalog del tenant. La versión de producto no coincide con la de un paquete npm publicado ni con la del framework SharePoint.
 
 ## Fuente de verdad
 
@@ -52,7 +52,7 @@ Incrementar **solo B** para un nuevo despliegue al catálogo **no** obliga a cam
 | `GemeSpaWebPart.manifest.json` → `"version": "*"` | Patrón SPFx: la versión del componente se resuelve en el empaquetado. No fijar a mano salvo indicación explícita del equipo. |
 | `package-solution.json` → `features[].version` | Versión del **Feature** de activación. Subir cuando cambie el XML de feature de forma relevante, no en cada release rutinario. |
 | `GemeSpaWebPart.ts` → `dataVersion` | Esquema de propiedades del Web Part, no versión de producto. |
-| Dependencias `@microsoft/sp-*` (p. ej. `1.23.2`) | Versión del **framework SPFx**, independiente del producto GEME. |
+| Dependencias `@microsoft/sp-*` (p. ej. `1.23.2`) | Versión del **framework SPFx**, independiente del producto **GM SPA**. |
 | Claves `version` en caché `localStorage` (menú, grilla, etc.) | Versión de **formato de datos** en el navegador, no release del `.sppkg`. |
 | Versión en sidebar (`versionWebPart`) | Proviene del manifiesto en runtime; en producción debe reflejar el paquete desplegado. |
 
@@ -87,6 +87,7 @@ No modificar `package.json` ni `config/**` por conveniencia del agente; solo cua
 
 | Campo | Valor |
 | --- | --- |
-| Nombre | GEME SPA Webpart |
+| Nombre | GM SPA |
 | `solution.id` | `7df70f14-42fe-45db-b2a9-6158f2714ac4` |
-| Paquete | `sharepoint/solution/GEME SPA Webpart.sppkg` |
+| Paquete | `sharepoint/solution/GM SPA.sppkg` |
+| Web Part (caja de herramientas) | GM SPA (`GemeSpaWebPart.manifest.json` → `preconfiguredEntries.title`) |

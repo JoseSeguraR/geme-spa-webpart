@@ -1,4 +1,7 @@
 import type { EstadoSolicitudIl } from '../components/vistas/cor-conecta/concentrador/solicitudes-il/constantesSolicitudesIl';
+import type { CentralMantenedor } from './concentradorComun/CentralMantenedor';
+
+export type { CentralMantenedor };
 
 export type SolicitudIl = {
   id: number;
@@ -9,12 +12,6 @@ export type SolicitudIl = {
   fechaInicio?: string;
   fechaFin?: string;
   estado: EstadoSolicitudIl | string;
-};
-
-export type CentralMantenedor = {
-  id: number;
-  central: string;
-  codigoSiod: string;
 };
 
 export type DatosNuevaSolicitudIl = {

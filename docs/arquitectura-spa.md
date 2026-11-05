@@ -1,6 +1,6 @@
 # Arquitectura de la SPA
 
-Este documento describe lo que es común a la aplicación: el Web Part, la carcasa, el menú, las rutas y los componentes reutilizables. El detalle de Solicitudes IL está en [solicitudes-il.md](solicitudes-il.md).
+Este documento describe lo que es común a la aplicación: el Web Part, la carcasa, el menú, las rutas y los componentes reutilizables. Módulos del Concentrador documentados aparte: [solicitudes-il.md](solicitudes-il.md), [operador-renovable.md](operador-renovable.md).
 
 ## Modelo
 

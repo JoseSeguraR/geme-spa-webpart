@@ -1,11 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "GEME SPA Webpart",
+    "name": "GM SPA",
     "id": "7df70f14-42fe-45db-b2a9-6158f2714ac4",
-    "version": "1.0.1.0",
+    "version": "1.1.0.0",
     "includeClientSideAssets": true,
-    "skipFeatureDeployment": true,
+    "skipFeatureDeployment": false,
     "isDomainIsolated": false,
     "developer": {
       "name": "",
@@ -16,25 +16,26 @@
     },
     "metadata": {
       "shortDescription": {
-        "default": "GEME SPA Webpart es la webpart de los módulos de Generadora Metropolitana"
+        "default": "GM SPA - Solución de despliegue de los módulos de Generadora Metropolitana"
       },
       "longDescription": {
-        "default": "GEME SPA Webpart es la webpart de los módulos de Generadora Metropolitana"
+        "default": "GM SPA - Solución de despliegue de los módulos de Generadora Metropolitana"
       },
       "screenshotPaths": [],
+      
       "videoUrl": "",
       "categories": []
     },
     "features": [
       {
-        "title": "GEME SPA Webpart Feature",
-        "description": "The feature that activates elements of the geme-spa-webpart solution.",
+        "title": "GM SPA Feature",
+        "description": "Esta característica activa los elementos de la solución gm-spa.",
         "id": "1cb3f9d5-2fa1-4202-974a-57bd68b8ccf8",
         "version": "1.0.0.0"
       }
     ]
   },
   "paths": {
-    "zippedPackage": "solution/GEME SPA Webpart.sppkg"
+    "zippedPackage": "solution/GM SPA.sppkg"
   }
 }

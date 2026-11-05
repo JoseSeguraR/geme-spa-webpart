@@ -4,10 +4,21 @@ import VistaSolicitudesIlSolicitante from '../../components/vistas/cor-conecta/c
 import { RutaHashSolicitudesIl } from '../../components/vistas/cor-conecta/concentrador/administrador/rutas';
 import { RutaHashSolicitudesIlDespachador } from '../../components/vistas/cor-conecta/concentrador/despachador/rutas';
 import { RutaHashSolicitudesIlSolicitante } from '../../components/vistas/cor-conecta/concentrador/solicitante/rutas';
+import VistaOperadorRenovableSolicitudes from '../../components/vistas/cor-conecta/concentrador/operador-renovable/solicitudes/VistaOperadorRenovableSolicitudes';
+import VistaOperadorRenovableEquipos from '../../components/vistas/cor-conecta/concentrador/operador-renovable/equipos/VistaOperadorRenovableEquipos';
+import VistaOperadorRenovableSubestacion from '../../components/vistas/cor-conecta/concentrador/operador-renovable/subestacion/VistaOperadorRenovableSubestacion';
+import {
+  RutaHashOperadorRenovableEquipos,
+  RutaHashOperadorRenovableSolicitudes,
+  RutaHashOperadorRenovableSubestacion
+} from '../../components/vistas/cor-conecta/concentrador/operador-renovable/rutas';
 import type { RegistroVistasMap } from './TiposRegistroVistas';
 
 export const registroVistasCorConecta: RegistroVistasMap = {
   [RutaHashSolicitudesIl]: VistaSolicitudesIlAdministrador,
   [RutaHashSolicitudesIlSolicitante]: VistaSolicitudesIlSolicitante,
-  [RutaHashSolicitudesIlDespachador]: VistaSolicitudesIlDespachador
+  [RutaHashSolicitudesIlDespachador]: VistaSolicitudesIlDespachador,
+  [RutaHashOperadorRenovableSolicitudes]: VistaOperadorRenovableSolicitudes,
+  [RutaHashOperadorRenovableEquipos]: VistaOperadorRenovableEquipos,
+  [RutaHashOperadorRenovableSubestacion]: VistaOperadorRenovableSubestacion
 };
