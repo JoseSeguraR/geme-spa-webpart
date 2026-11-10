@@ -60,6 +60,10 @@ export type GrillaServidorMuiProps<Row extends GridValidRowModel & { id: GridRow
   columnasAutoajustables?: readonly string[];
   /** Clase CSS adicional por fila (p. ej. resaltado de alerta en operador renovable). */
   obtenerClaseFila?: (fila: Row) => string | undefined;
+  /** Total conocido de registros (paginación local); si se omite, se deduce de la página actual. */
+  totalFilas?: number;
+  /** Clase adicional del contenedor de la tabla (p. ej. `cowork-vista-tabla-mui--centrada`). */
+  claseContenedor?: string;
 };
 
 function OverlayCargaGrilla(): React.ReactElement {
@@ -119,7 +123,9 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     opcionesTamanoPagina = OpcionesTamanoPaginaGrillaPredeterminadas,
     alturaAutomatica = false,
     columnasAutoajustables,
-    obtenerClaseFila
+    obtenerClaseFila,
+    totalFilas: totalFilasConocido,
+    claseContenedor
   } = props;
 
   const apiRef = useGridApiRef();
@@ -223,7 +229,9 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     });
   }, [columnas, columnasAutoajustables]);
 
-  const totalFilas = hayPaginaSiguiente
+  const totalFilas = totalFilasConocido !== undefined
+    ? totalFilasConocido
+    : hayPaginaSiguiente
     ? -1
     : tamanoPagina === TamanoPaginaTodos
       ? filas.length
@@ -271,7 +279,11 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
       ) : null}
 
       {ocultarGrilla ? null : (
-        <div className={`cowork-vista-tabla-mui${alturaAutomatica ? ' cowork-vista-tabla-mui--multilinea' : ''}`}>
+        <div
+          className={`cowork-vista-tabla-mui${alturaAutomatica ? ' cowork-vista-tabla-mui--multilinea' : ''}${
+            claseContenedor ? ` ${claseContenedor}` : ''
+          }`}
+        >
           <DataGrid
             apiRef={apiRef}
             rows={filas}

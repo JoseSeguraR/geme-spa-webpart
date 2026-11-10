@@ -61,10 +61,6 @@ a.cowork-menu-arbol__icono-principal:focus-visible {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 72%);
 }
 
-.cowork-menu-contexto__volver {
-  color: rgba(255, 255, 255, 0.75);
-}
-
 .cowork-menu-contexto__volver:hover,
 .cowork-menu-contexto__volver:focus-visible {
   color: #ffffff;
@@ -83,8 +79,11 @@ a.cowork-menu-arbol__icono-principal:focus-visible {
 
 .cowork-menu-contexto__icono-modulo,
 .cowork-menu-arbol__icono-modulo-raiz {
-  background-color: rgba(255, 255, 255, 0.14);
   color: inherit;
+}
+
+.cowork-menu-pie {
+  border-top-color: rgba(255, 255, 255, 0.12);
 }
 
 .cowork-menu-arbol__lista--flyout {

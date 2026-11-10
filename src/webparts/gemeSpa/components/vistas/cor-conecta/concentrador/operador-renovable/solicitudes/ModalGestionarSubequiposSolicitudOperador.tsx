@@ -7,6 +7,15 @@ import {
   type IndisponibilidadSubequipoSolicitud
 } from '../../../../../../models/operadorRenovable/SolicitudOperadorRenovable';
 import { ObtenerIndisponibilidadesPorSolicitud } from '../../../../../../services/sharepoint/operadorRenovable/IndisponibilidadesSolicitudServicio';
+import {
+  AgruparPeriodosPorSubequipo,
+  AplicarPeriodosASubequipo
+} from '../../../../../../services/sharepoint/operadorRenovable/AplicarPeriodosSubequipos';
+import {
+  HayServicioPeriodos,
+  ObtenerPeriodosAbiertos,
+  type PeriodoIndisponibilidad
+} from '../../../../../../services/sharepoint/operadorRenovable/PeriodosIndisponibilidadApiServicio';
 import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
 import FormularioMarcarDisponibilidadSubequipo from '../equipos/FormularioMarcarDisponibilidadSubequipo';
 import FormularioMarcarIndisponibilidadSubequipo from '../equipos/FormularioMarcarIndisponibilidadSubequipo';
@@ -30,7 +39,30 @@ type ModoPanelGestion = 'indisp' | 'disp' | 'bitacora';
 
 type ContextoSub = {
   subequipo: SubequipoOperador;
+  /** Arreglo estable: si se recreara en cada render, el formulario se reiniciaría y perdería su aviso. */
+  subequipos: SubequipoOperador[];
 };
+
+/** La fila con el estado según los períodos de la App Function (si los hay). */
+function FilaConPeriodos(
+  fila: IndisponibilidadSubequipoSolicitud,
+  periodos: Map<number, PeriodoIndisponibilidad[]> | undefined
+): { fila: IndisponibilidadSubequipoSolicitud; subequipo: SubequipoOperador } {
+  const base = IndisponibilidadASubequipoOperador(fila);
+  if (!periodos) {
+    return { fila, subequipo: base };
+  }
+  const subequipo = AplicarPeriodosASubequipo(base, periodos.get(fila.subequipoId));
+  return {
+    fila: {
+      ...fila,
+      disponibilidad: subequipo.disponibilidad,
+      capacidadActualMw: subequipo.capacidadActualMw,
+      motivo: subequipo.motivo ?? (subequipo.periodoVigente ? fila.motivo : undefined)
+    },
+    subequipo
+  };
+}
 
 export default function ModalGestionarSubequiposSolicitudOperador(
   props: ModalGestionarSubequiposSolicitudOperadorProps
@@ -41,6 +73,7 @@ export default function ModalGestionarSubequiposSolicitudOperador(
   const [error, setError] = useState<string | undefined>();
   const [modoPanel, setModoPanel] = useState<ModoPanelGestion | undefined>(undefined);
   const [contextoPanel, setContextoPanel] = useState<ContextoSub | undefined>(undefined);
+  const [periodos, setPeriodos] = useState<Map<number, PeriodoIndisponibilidad[]> | undefined>(undefined);
 
   const Recargar = useCallback((): void => {
     if (!solicitud) {
@@ -48,6 +81,11 @@ export default function ModalGestionarSubequiposSolicitudOperador(
     }
     setCargando(true);
     setError(undefined);
+    if (HayServicioPeriodos()) {
+      ObtenerPeriodosAbiertos()
+        .then((abiertos) => setPeriodos(AgruparPeriodosPorSubequipo(abiertos)))
+        .catch(() => setPeriodos(undefined));
+    }
     ObtenerIndisponibilidadesPorSolicitud(context, solicitud.id)
       .then(setFilas)
       .catch((err) => {
@@ -78,16 +116,16 @@ export default function ModalGestionarSubequiposSolicitudOperador(
     return <></>;
   }
 
+  // El formulario se cierra solo (onCancelar) si todo salió bien; si no, deja su aviso visible.
   const TrasGuardar = (): void => {
     Recargar();
     onActualizado();
-    setModoPanel(undefined);
-    setContextoPanel(undefined);
   };
 
   const AbrirPanel = (modo: ModoPanelGestion, fila: IndisponibilidadSubequipoSolicitud): void => {
+    const { subequipo } = FilaConPeriodos(fila, periodos);
     setModoPanel(modo);
-    setContextoPanel({ subequipo: IndisponibilidadASubequipoOperador(fila) });
+    setContextoPanel({ subequipo, subequipos: [subequipo] });
   };
 
   const CerrarPanel = (): void => {
@@ -123,9 +161,11 @@ export default function ModalGestionarSubequiposSolicitudOperador(
                   {modoPanel === 'indisp' ? (
                     <FormularioMarcarIndisponibilidadSubequipo
                       context={context}
-                      subequipos={[contextoPanel.subequipo]}
-                      nombreEquipo={solicitud.idSolicitud}
+                      mostrarTitulo
+                      subequipos={contextoPanel.subequipos}
+                      nombreEquipo={undefined}
                       central={solicitud.central}
+                      centralId={solicitud.centralId}
                       onCancelar={CerrarPanel}
                       onGuardado={TrasGuardar}
                     />
@@ -133,8 +173,8 @@ export default function ModalGestionarSubequiposSolicitudOperador(
                   {modoPanel === 'disp' ? (
                     <FormularioMarcarDisponibilidadSubequipo
                       context={context}
-                      subequipos={[contextoPanel.subequipo]}
-                      nombreEquipo={solicitud.idSolicitud}
+                      subequipos={contextoPanel.subequipos}
+                      nombreEquipo={undefined}
                       central={solicitud.central}
                       onCancelar={CerrarPanel}
                       onGuardado={TrasGuardar}
@@ -144,7 +184,7 @@ export default function ModalGestionarSubequiposSolicitudOperador(
                     <PanelBitacoraSubequipoOperador
                       context={context}
                       subequipo={contextoPanel.subequipo}
-                      nombreEquipo={solicitud.idSolicitud}
+                      nombreEquipo={undefined}
                       central={solicitud.central}
                       onCerrar={CerrarPanel}
                     />
@@ -153,8 +193,8 @@ export default function ModalGestionarSubequiposSolicitudOperador(
               ) : null}
 
               {cargando && filas.length === 0 ? <p className="text-muted mb-0">Cargando equipos…</p> : null}
-              <div className="table-responsive">
-                <table className="table table-sm table-bordered mb-0">
+              <div>
+                <table className="table table-sm table-bordered mb-0 cowork-tabla-fichas">
                   <thead className="table-light">
                     <tr>
                       <th scope="col">Equipo</th>
@@ -173,39 +213,46 @@ export default function ModalGestionarSubequiposSolicitudOperador(
                         </td>
                       </tr>
                     ) : null}
-                    {filas.map((fila) => {
+                    {filas.map((original) => {
+                      const { fila } = FilaConPeriodos(original, periodos);
                       const indisponible = fila.disponibilidad === 'Indisponible';
                       return (
                         <tr key={fila.id}>
-                          <td>
+                          <td data-label="Equipo">
                             <PanelCopySubequipoSolicitud codigo={fila.codigo} tipoEtiqueta={fila.tipoEtiqueta} />
                           </td>
-                          <td className="text-center align-middle">
+                          <td className="text-center align-middle" data-label="Estado">
                             <PuntoEstadoSubequipoSolicitud disponibilidad={fila.disponibilidad} />
                           </td>
-                          <td className="align-middle">{FormatearMotivoSubequipoSolicitud(fila.motivo)}</td>
-                          <td className="text-nowrap align-middle">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-danger me-1"
-                              title="Marcar indisponibilidad"
-                              onClick={() => AbrirPanel('indisp', fila)}
-                            >
-                              <i className="bi bi-x-lg" aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-success me-1"
-                              title="Marcar disponibilidad"
-                              disabled={!indisponible}
-                              onClick={() => AbrirPanel('disp', fila)}
-                            >
-                              <i className="bi bi-check-lg" aria-hidden="true" />
-                            </button>
+                          <td className="align-middle" data-label="Motivo">{FormatearMotivoSubequipoSolicitud(fila.motivo)}</td>
+                          <td className="text-nowrap align-middle" data-label="Acciones">
+                            {/* Una sola acción según el estado (maqueta `botonesDisponibilidad`). */}
+                            {indisponible ? (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-success me-1"
+                                title="Marcar disponibilidad"
+                                aria-label={`Marcar disponibilidad de ${fila.codigo}`}
+                                onClick={() => AbrirPanel('disp', fila)}
+                              >
+                                <i className="bi bi-check-lg" aria-hidden="true" />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-danger me-1"
+                                title="Marcar indisponibilidad"
+                                aria-label={`Marcar indisponibilidad de ${fila.codigo}`}
+                                onClick={() => AbrirPanel('indisp', fila)}
+                              >
+                                <i className="bi bi-x-lg" aria-hidden="true" />
+                              </button>
+                            )}
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-secondary"
                               title="Ver bitácora"
+                              aria-label={`Bitácora de ${fila.codigo}`}
                               onClick={() => AbrirPanel('bitacora', fila)}
                             >
                               <i className="bi bi-journal-text" aria-hidden="true" />

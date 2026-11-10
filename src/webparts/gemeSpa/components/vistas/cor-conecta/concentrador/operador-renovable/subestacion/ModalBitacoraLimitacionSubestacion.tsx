@@ -6,8 +6,8 @@ import type {
   LimitacionSubestacionOperador
 } from '../../../../../../models/operadorRenovable/LimitacionSubestacionOperador';
 import { ObtenerBitacoraLimitacionSubestacion } from '../../../../../../services/sharepoint/operadorRenovable/BitacoraSubestacionServicio';
-import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
 import { FormatearFechaHoraVisible } from '../../../../../../utils/FechaHoraCorConecta';
+import { EnvioEventoBitacora, FechasEventoBitacora } from '../equipos/DetalleEventoBitacora';
 
 export type ModalBitacoraLimitacionSubestacionProps = {
   context: WebPartContext;
@@ -35,7 +35,7 @@ export default function ModalBitacoraLimitacionSubestacion(
     setCargando(true);
     setError(undefined);
 
-    ObtenerBitacoraLimitacionSubestacion(context, limitacion.id)
+    ObtenerBitacoraLimitacionSubestacion(limitacion.id)
       .then((resultado) => {
         if (!cancelado) {
           setFilas(resultado);
@@ -44,7 +44,7 @@ export default function ModalBitacoraLimitacionSubestacion(
       .catch((err) => {
         if (!cancelado) {
           const mensaje =
-            err instanceof SharePointRestError ? err.message : 'No se pudo cargar la bitácora de la limitación.';
+            err instanceof Error ? err.message : 'No se pudo cargar la bitácora de la limitación.';
           setError(mensaje);
           setFilas([]);
         }
@@ -79,7 +79,7 @@ export default function ModalBitacoraLimitacionSubestacion(
               {cargando ? <p className="text-muted">Cargando eventos…</p> : null}
               {!cargando && filas.length === 0 ? (
                 <p className="text-muted mb-0">
-                  Sin eventos en bitácora (la lista puede no estar provisionada aún en el sitio).
+                  Sin eventos en la bitácora.
                 </p>
               ) : null}
               {!cargando && filas.length > 0 ? (
@@ -91,9 +91,13 @@ export default function ModalBitacoraLimitacionSubestacion(
                         {FormatearFechaHoraVisible(fila.fecha) || '—'} · {fila.usuario}
                       </div>
                       <div className="small">
-                        {fila.estadoAnterior} → {fila.estadoNuevo}
+                        {fila.estadoAnterior || '—'} → {fila.estadoNuevo || '—'}
+                        {fila.potenciaLimitadaMw !== undefined ? ` · tope ${fila.potenciaLimitadaMw.toLocaleString('es-CL')} MW` : ''}
+                        {fila.motivo ? ` · ${fila.motivo}` : ''}
                       </div>
+                      <FechasEventoBitacora fechaInicio={fila.fechaInicio} fechaFin={fila.fechaFin} />
                       {fila.descripcion ? <div className="small mt-1">{fila.descripcion}</div> : null}
+                      <EnvioEventoBitacora envio={fila.meteologica} />
                     </li>
                   ))}
                 </ul>

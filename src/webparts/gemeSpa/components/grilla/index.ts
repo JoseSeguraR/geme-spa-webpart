@@ -1,5 +1,7 @@
 export { default as GrillaServidorMui } from './GrillaServidorMui';
 export type { ConfigBusquedaGrillaServidor, GrillaServidorMuiProps } from './GrillaServidorMui';
+export { default as GrillaLocalMui } from './GrillaLocalMui';
+export type { EstadoCargaGrillaLocal, GrillaLocalMuiProps } from './GrillaLocalMui';
 export { default as CampoBusquedaGrillaMui } from './CampoBusquedaGrillaMui';
 export { default as MensajeVacioGrillaMui } from './MensajeVacioGrillaMui';
 export type { MensajeVacioGrillaMuiProps } from './MensajeVacioGrillaMui';

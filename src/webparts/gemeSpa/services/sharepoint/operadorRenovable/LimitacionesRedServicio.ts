@@ -11,7 +11,6 @@ import type { RespuestaListaSharePoint } from '../RespuestaListaSharePoint';
 import { SharePointRestError } from '../SharePointRestError';
 import {
   AccionBitacoraCrearLimitacion,
-  AccionBitacoraEnvioMeteologicaSimulado,
   AccionBitacoraFinalizarLimitacion,
   AccionBitacoraModificarLimitacion,
   CampoEstadoLimitacionRed,
@@ -25,7 +24,11 @@ import {
   MotivoIndisponibilidadFalla,
   MotivoIndisponibilidadTrabajo
 } from './CamposOperadorRenovable';
-import { RegistrarBitacoraLimitacionSubestacion } from './BitacoraSubestacionServicio';
+import {
+  ReintentarEnvioLimitacionSubestacion,
+  RegistrarEventoLimitacionSubestacion
+} from './BitacoraSubestacionServicio';
+import type { ResultadoEnvioMeteologica } from './CapacidadCentralApiServicio';
 import { ObtenerInstalacionesOperadorRenovable } from './InstalacionesOperadorRenovableServicio';
 import { NotificarCambioDisponibilidadOperadorRenovable } from './OperadorRenovableRefrescoGlobal';
 
@@ -102,15 +105,18 @@ export async function ObtenerLimitacionesRedOperadorRenovable(
     return [];
   }
 
+  // Solo las activas: las finalizadas quedan como historial y la lista supera con el tiempo las 5.000 filas.
+  // ESTADO tiene índice; el orden por fecha lo aplica la grilla.
   const webUrl = context.pageContext.web.absoluteUrl;
   const tituloLista = encodeURIComponent(NombreListaLimitacionesRed);
+  const filtro = `${CampoEstadoLimitacionRed} eq '${EstadoLimitacionRedActiva}'`;
   const url =
     `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items` +
     `?$select=Id,INSTALACIONId,${CampoPotenciaLimitadaMw},${CampoFechaInicioLimitacion},${CampoFechaFinLimitacion},MOTIVO,DESCRIPCION,${CampoEstadoLimitacionRed},` +
     `${CampoLookupLimitacionSolicitudConcentrador}Id,${CampoLookupLimitacionSolicitudFalla}Id,` +
     `${CampoLookupLimitacionSolicitudConcentrador}/ID_SOLICITUD,${CampoLookupLimitacionSolicitudFalla}/ID_CEN` +
     `&$expand=${CampoLookupLimitacionSolicitudConcentrador},${CampoLookupLimitacionSolicitudFalla}` +
-    `&$orderby=${encodeURIComponent(`${CampoFechaInicioLimitacion} desc`)}&$top=5000`;
+    `&$filter=${encodeURIComponent(filtro)}&$top=5000`;
 
   const response = await context.spHttpClient.get(url, SPHttpClient.configurations.v1);
   await ValidarRespuesta(response, 'ObtenerLimitacionesRedOperadorRenovable', url);
@@ -222,18 +228,11 @@ function CuerpoLimitacionDesdeFormulario(datos: DatosFormularioLimitacionSubesta
   return cuerpo;
 }
 
-export async function RegistrarEnvioMeteologicaLimitacionSimulado(
-  context: WebPartContext,
+/** Reenvía el último cálculo de la limitación (la App Function solo reenvía si no quedó enviado). */
+export function ReintentarEnvioMeteologicaLimitacion(
   limitacion: LimitacionSubestacionOperador
-): Promise<void> {
-  const detalle = `Tope de ${limitacion.potenciaLimitadaMw} MW en ${limitacion.central} (simulado; sin App Function).`;
-  await RegistrarBitacoraLimitacionSubestacion(context, {
-    limitacionId: limitacion.id,
-    accion: AccionBitacoraEnvioMeteologicaSimulado,
-    estadoAnterior: limitacion.estado,
-    estadoNuevo: limitacion.estado,
-    descripcion: detalle
-  });
+): Promise<ResultadoEnvioMeteologica> {
+  return ReintentarEnvioLimitacionSubestacion(limitacion.id);
 }
 
 export async function CrearLimitacionRedConBitacora(
@@ -241,38 +240,26 @@ export async function CrearLimitacionRedConBitacora(
   datos: DatosFormularioLimitacionSubestacion,
   nombreCentral: string,
   enviarMeteologica: boolean
-): Promise<number> {
+): Promise<{ id: number; envio?: ResultadoEnvioMeteologica }> {
   const titulo = ConstruirTituloLimitacion(nombreCentral, datos.potenciaLimitadaMw);
   const id = await CrearItemLimitacion(context, titulo, {
     ...CuerpoLimitacionDesdeFormulario(datos),
     [CampoEstadoLimitacionRed]: EstadoLimitacionRedActiva
   });
 
-  await RegistrarBitacoraLimitacionSubestacion(context, {
+  NotificarCambioDisponibilidadOperadorRenovable();
+
+  // La App Function anota el evento (bitácora en la BD) y envía el tope a Meteológica
+  const evento = {
     limitacionId: id,
     accion: AccionBitacoraCrearLimitacion,
     estadoAnterior: '—',
     estadoNuevo: EstadoLimitacionRedActiva,
-    descripcion: 'Limitación registrada en SharePoint.'
-  });
+    descripcion: 'Limitación registrada.'
+  };
+  const envio = enviarMeteologica ? await RegistrarEventoLimitacionSubestacion(context, evento) : undefined;
 
-  NotificarCambioDisponibilidadOperadorRenovable();
-
-  if (enviarMeteologica) {
-    await RegistrarEnvioMeteologicaLimitacionSimulado(context, {
-      id,
-      instalacionId: datos.instalacionId,
-      central: nombreCentral,
-      potenciaLimitadaMw: datos.potenciaLimitadaMw,
-      fechaInicio: FormatearFechaHoraVisible(datos.fechaInicioIso),
-      fechaFin: datos.fechaFinIso ? FormatearFechaHoraVisible(datos.fechaFinIso) : '—',
-      motivo: datos.motivo,
-      descripcion: datos.descripcion ?? '',
-      estado: EstadoLimitacionRedActiva
-    });
-  }
-
-  return id;
+  return { id, envio };
 }
 
 export async function ActualizarLimitacionRedConBitacora(
@@ -281,7 +268,7 @@ export async function ActualizarLimitacionRedConBitacora(
   datos: DatosFormularioLimitacionSubestacion,
   nombreCentral: string,
   enviarMeteologica: boolean
-): Promise<void> {
+): Promise<ResultadoEnvioMeteologica | undefined> {
   const cambios = DescribirCambiosLimitacion(limitacion, datos, nombreCentral);
   const titulo = ConstruirTituloLimitacion(nombreCentral, datos.potenciaLimitadaMw);
   await ActualizarItemLimitacion(context, limitacion.id, {
@@ -291,30 +278,22 @@ export async function ActualizarLimitacionRedConBitacora(
 
   NotificarCambioDisponibilidadOperadorRenovable();
 
-  await RegistrarBitacoraLimitacionSubestacion(context, {
-    limitacionId: limitacion.id,
-    accion: AccionBitacoraModificarLimitacion,
-    estadoAnterior: limitacion.estado,
-    estadoNuevo: limitacion.estado,
-    descripcion: cambios || 'Se guardó sin cambios en campos visibles.'
-  });
-
-  if (enviarMeteologica) {
-    await RegistrarEnvioMeteologicaLimitacionSimulado(context, {
-      ...limitacion,
-      instalacionId: datos.instalacionId,
-      central: nombreCentral,
-      potenciaLimitadaMw: datos.potenciaLimitadaMw,
-      motivo: datos.motivo,
-      descripcion: datos.descripcion ?? ''
-    });
-  }
+  return enviarMeteologica
+    ? RegistrarEventoLimitacionSubestacion(context, {
+        limitacionId: limitacion.id,
+        accion: AccionBitacoraModificarLimitacion,
+        estadoAnterior: limitacion.estado,
+        estadoNuevo: limitacion.estado,
+        descripcion: cambios || 'Se guardó sin cambios en campos visibles.'
+      })
+    : undefined;
 }
 
+/** Finaliza la limitación y devuelve la capacidad sin ese tope a Meteológica. */
 export async function FinalizarLimitacionRed(
   context: WebPartContext,
   limitacion: LimitacionSubestacionOperador
-): Promise<void> {
+): Promise<ResultadoEnvioMeteologica> {
   const ahoraIso = new Date().toISOString();
   const estadoAnterior = limitacion.estado;
   await ActualizarItemLimitacion(context, limitacion.id, {
@@ -322,7 +301,8 @@ export async function FinalizarLimitacionRed(
     [CampoFechaFinLimitacion]: ahoraIso
   });
 
-  await RegistrarBitacoraLimitacionSubestacion(context, {
+  NotificarCambioDisponibilidadOperadorRenovable();
+  return RegistrarEventoLimitacionSubestacion(context, {
     limitacionId: limitacion.id,
     accion: AccionBitacoraFinalizarLimitacion,
     estadoAnterior,

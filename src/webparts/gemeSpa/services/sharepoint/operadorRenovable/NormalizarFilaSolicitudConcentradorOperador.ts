@@ -53,6 +53,8 @@ export function NormalizarFilaSolicitudConcentradorOperador(
     descripcion: ObtenerTexto(fila.DESCRIPCION),
     fechaProgramadaInicio: FormatearFechaHoraVisible(inicioProg) || '—',
     fechaEfectivaInicio: FormatearFechaHoraVisible(inicioEfec) || '—',
+    fechaProgramadaInicioIso: inicioProg,
+    fechaEfectivaInicioIso: inicioEfec,
     estado
   };
 }

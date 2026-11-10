@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { FilaBitacoraOperadorSubequipo, SubequipoOperador } from '../../../../../../models/operadorRenovable/CatalogoEquiposOperador';
 import { ObtenerBitacoraSubequipoOperador } from '../../../../../../services/sharepoint/operadorRenovable/BitacoraOperadorServicio';
-import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
 import { FormatearFechaHoraVisible } from '../../../../../../utils/FechaHoraCorConecta';
+import { EnvioEventoBitacora, FechasEventoBitacora } from './DetalleEventoBitacora';
 
 export type ModalBitacoraSubequipoOperadorProps = {
   context: WebPartContext;
@@ -34,7 +34,7 @@ export default function ModalBitacoraSubequipoOperador(
     setCargando(true);
     setError(undefined);
 
-    ObtenerBitacoraSubequipoOperador(context, subequipo.id)
+    ObtenerBitacoraSubequipoOperador(subequipo.id)
       .then((resultado) => {
         if (!cancelado) {
           setFilas(resultado);
@@ -43,7 +43,7 @@ export default function ModalBitacoraSubequipoOperador(
       .catch((err) => {
         if (!cancelado) {
           const mensaje =
-            err instanceof SharePointRestError ? err.message : 'No se pudo cargar la bitácora del subequipo.';
+            err instanceof Error ? err.message : 'No se pudo cargar la bitácora del subequipo.';
           setError(mensaje);
           setFilas([]);
         }
@@ -97,7 +97,14 @@ export default function ModalBitacoraSubequipoOperador(
                         {fila.capacidadMw !== undefined ? ` · ${fila.capacidadMw} MW` : ''}
                         {fila.motivo ? ` · ${fila.motivo}` : ''}
                       </div>
+                      <FechasEventoBitacora
+                        fechaInicio={fila.fechaInicio}
+                        fechaFinEstimada={fila.fechaFinEstimada}
+                        fechaFin={fila.fechaFin}
+                        fechaFinEstimadaAnterior={fila.fechaFinEstimadaAnterior}
+                      />
                       {fila.descripcion ? <div className="small mt-1">{fila.descripcion}</div> : null}
+                      <EnvioEventoBitacora envio={fila.meteologica} />
                       <div className="small text-muted mt-1">{fila.usuario}</div>
                     </li>
                   ))}

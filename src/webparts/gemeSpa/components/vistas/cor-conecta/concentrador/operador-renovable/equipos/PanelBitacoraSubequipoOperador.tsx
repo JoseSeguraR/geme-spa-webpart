@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { FilaBitacoraOperadorSubequipo, SubequipoOperador } from '../../../../../../models/operadorRenovable/CatalogoEquiposOperador';
 import { ObtenerBitacoraSubequipoOperador } from '../../../../../../services/sharepoint/operadorRenovable/BitacoraOperadorServicio';
-import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
 import { FormatearFechaHoraVisible } from '../../../../../../utils/FechaHoraCorConecta';
+import { EnvioEventoBitacora, FechasEventoBitacora } from './DetalleEventoBitacora';
 
 export type PanelBitacoraSubequipoOperadorProps = {
   context: WebPartContext;
@@ -27,7 +27,7 @@ export default function PanelBitacoraSubequipoOperador(
     setCargando(true);
     setError(undefined);
 
-    ObtenerBitacoraSubequipoOperador(context, subequipo.id)
+    ObtenerBitacoraSubequipoOperador(subequipo.id)
       .then((resultado) => {
         if (!cancelado) {
           setFilas(resultado);
@@ -35,7 +35,7 @@ export default function PanelBitacoraSubequipoOperador(
       })
       .catch((err) => {
         if (!cancelado) {
-          setError(err instanceof SharePointRestError ? err.message : 'No se pudo cargar la bitácora.');
+          setError(err instanceof Error ? err.message : 'No se pudo cargar la bitácora.');
           setFilas([]);
         }
       })
@@ -55,7 +55,7 @@ export default function PanelBitacoraSubequipoOperador(
     <div>
       <h3 className="h6 mb-2">Bitácora del subequipo</h3>
       <p className="small text-muted mb-3">
-        {subequipo.codigo} · {nombreEquipo ?? ''} · {central ?? ''}
+        {[subequipo.codigo, nombreEquipo, central].filter((parte) => parte).join(' · ')}
       </p>
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {cargando ? <p className="text-muted small mb-0">Cargando bitácora…</p> : null}
@@ -70,7 +70,14 @@ export default function PanelBitacoraSubequipoOperador(
               <div className="text-muted">
                 {FormatearFechaHoraVisible(fila.fecha) || fila.fecha} · {fila.usuario}
               </div>
+              <FechasEventoBitacora
+                fechaInicio={fila.fechaInicio}
+                fechaFinEstimada={fila.fechaFinEstimada}
+                fechaFin={fila.fechaFin}
+                fechaFinEstimadaAnterior={fila.fechaFinEstimadaAnterior}
+              />
               {fila.descripcion ? <div>{fila.descripcion}</div> : null}
+              <EnvioEventoBitacora envio={fila.meteologica} />
             </li>
           ))}
         </ul>

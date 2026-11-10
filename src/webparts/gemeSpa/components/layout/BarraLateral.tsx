@@ -9,6 +9,7 @@ export type BarraLateralProps = {
   rutaActual: string;
   versionWebPart: string;
   urlColeccionSitio: string;
+  urlCerrarSesion: string;
   onAlternarColapsada: () => void;
   onAlternarMovil: () => void;
   onEnlaceMenu?: () => void;
@@ -21,6 +22,7 @@ export default function BarraLateral(props: BarraLateralProps): React.ReactEleme
     rutaActual,
     versionWebPart,
     urlColeccionSitio,
+    urlCerrarSesion,
     onAlternarColapsada,
     onAlternarMovil,
     onEnlaceMenu
@@ -56,6 +58,7 @@ export default function BarraLateral(props: BarraLateralProps): React.ReactEleme
           rutaActual={rutaActual}
           colapsada={colapsada}
           urlColeccionSitio={urlColeccionSitio}
+          urlCerrarSesion={urlCerrarSesion}
           onNavegar={onEnlaceMenu}
         />
       </div>

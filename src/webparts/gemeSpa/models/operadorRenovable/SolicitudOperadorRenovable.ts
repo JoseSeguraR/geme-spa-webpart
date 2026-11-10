@@ -19,6 +19,9 @@ export type SolicitudOperadorRenovableFila = {
   subequipos: IndisponibilidadSubequipoSolicitud[];
   fechaProgramadaInicio: string;
   fechaEfectivaInicio: string;
+  /** ISO de las fechas anteriores, para ordenar (el texto visible es `dd/mm/aaaa hh:mm`). */
+  fechaProgramadaInicioIso: string;
+  fechaEfectivaInicioIso: string;
   estado: string;
 };
 

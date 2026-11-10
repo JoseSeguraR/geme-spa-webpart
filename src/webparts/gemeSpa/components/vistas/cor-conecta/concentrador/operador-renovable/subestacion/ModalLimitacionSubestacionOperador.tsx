@@ -29,29 +29,34 @@ import CampoFechaHora24 from '../../../../../concentrador/CampoFechaHora24';
 export type ModalLimitacionSubestacionOperadorProps = {
   context: WebPartContext;
   centrales: CentralMantenedor[];
+  /** Central propuesta al crear (la del filtro de la pestaña); sin ella, la primera. */
+  centralInicialId?: number;
   limitacion?: LimitacionSubestacionOperador;
   visible: boolean;
   onCerrar: () => void;
-  onGuardado: () => void;
+  /** Tras guardar (el modal se cierra siempre, como la maqueta); `aviso` si el envío a Meteológica falló. */
+  onGuardado: (aviso?: string) => void;
 };
 
 export default function ModalLimitacionSubestacionOperador(
   props: ModalLimitacionSubestacionOperadorProps
 ): React.ReactElement {
-  const { context, centrales, limitacion, visible, onCerrar, onGuardado } = props;
+  const { context, centrales, centralInicialId, limitacion, visible, onCerrar, onGuardado } = props;
   const esEdicion = limitacion !== undefined;
 
   const [instalacionId, setInstalacionId] = useState('');
   const [potenciaMw, setPotenciaMw] = useState('');
   const [fechaInicioLocal, setFechaInicioLocal] = useState('');
   const [fechaFinLocal, setFechaFinLocal] = useState('');
-  const [motivo, setMotivo] = useState(MotivoIndisponibilidadTrabajo);
+  // Vacío hasta que se elige (maqueta: «Seleccione»); la solicitud vinculada aparece después.
+  const [motivo, setMotivo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [solicitudVinculadaId, setSolicitudVinculadaId] = useState('');
   const [opcionesVinculo, setOpcionesVinculo] = useState<OpcionSolicitudVinculadaPgl[]>([]);
   const [cargandoVinculos, setCargandoVinculos] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  /** Guardada en SharePoint, pero sin envío a Meteológica: se informa y el modal queda solo para cerrar. */
 
   const mapaCentrales = useMemo(() => new Map(centrales.map((c) => [c.id, c.central])), [centrales]);
 
@@ -69,7 +74,7 @@ export default function ModalLimitacionSubestacionOperador(
           ConvertirIsoAFechaLocalInput(new Date().toISOString())
       );
       setFechaFinLocal(ConvertirIsoAFechaLocalInput(limitacion.fechaFinIso));
-      setMotivo(limitacion.motivo || MotivoIndisponibilidadTrabajo);
+      setMotivo(limitacion.motivo || '');
       setDescripcion(limitacion.descripcion);
       if (limitacion.motivo === MotivoIndisponibilidadFalla && limitacion.solicitudFallaId) {
         setSolicitudVinculadaId(String(limitacion.solicitudFallaId));
@@ -79,16 +84,16 @@ export default function ModalLimitacionSubestacionOperador(
         setSolicitudVinculadaId('');
       }
     } else {
-      const primera = centrales[0];
-      setInstalacionId(primera ? String(primera.id) : '');
+      const propuesta = centrales.find((c) => c.id === centralInicialId) ?? centrales[0];
+      setInstalacionId(propuesta ? String(propuesta.id) : '');
       setPotenciaMw('');
       setFechaInicioLocal(ConvertirIsoAFechaLocalInput(new Date().toISOString()));
       setFechaFinLocal('');
-      setMotivo(MotivoIndisponibilidadTrabajo);
+      setMotivo('');
       setDescripcion('');
       setSolicitudVinculadaId('');
     }
-  }, [visible, limitacion, centrales]);
+  }, [visible, limitacion, centrales, centralInicialId]);
 
   useEffect(() => {
     if (!visible) {
@@ -96,7 +101,7 @@ export default function ModalLimitacionSubestacionOperador(
       return undefined;
     }
     const idInst = Number.parseInt(instalacionId, 10);
-    if (!Number.isFinite(idInst)) {
+    if (!Number.isFinite(idInst) || !motivo) {
       setOpcionesVinculo([]);
       return undefined;
     }
@@ -151,6 +156,10 @@ export default function ModalLimitacionSubestacionOperador(
       setError('Indique potencia limitada mayor a 0 MW.');
       return undefined;
     }
+    if (!motivo) {
+      setError('Indique si la limitación se debe a falla o trabajo.');
+      return undefined;
+    }
     if (!inicioIso) {
       setError('Indique fecha y hora de inicio.');
       return undefined;
@@ -191,12 +200,11 @@ export default function ModalLimitacionSubestacionOperador(
     setGuardando(true);
     setError(undefined);
     try {
-      if (esEdicion && limitacion) {
-        await ActualizarLimitacionRedConBitacora(context, limitacion, datos, nombreCentral, true);
-      } else {
-        await CrearLimitacionRedConBitacora(context, datos, nombreCentral, true);
-      }
-      onGuardado();
+      const envio =
+        esEdicion && limitacion
+          ? await ActualizarLimitacionRedConBitacora(context, limitacion, datos, nombreCentral, true)
+          : (await CrearLimitacionRedConBitacora(context, datos, nombreCentral, true)).envio;
+      onGuardado(envio && !envio.enviado ? `La limitación quedó guardada. ${envio.mensaje}` : undefined);
       onCerrar();
     } catch (err) {
       const mensaje =
@@ -245,12 +253,16 @@ export default function ModalLimitacionSubestacionOperador(
                   <input
                     id="pgl-mw"
                     type="number"
-                    min={0.01}
-                    step={0.01}
+                    min={0}
+                    step={0.1}
                     className="form-control form-control-sm"
                     value={potenciaMw}
+                    aria-describedby="pgl-mw-kw"
                     onChange={(e) => setPotenciaMw(e.target.value)}
                   />
+                  <div id="pgl-mw-kw" className="form-text">
+                    Equivalente previsto a Meteológica: {(potenciaKw ?? 0).toLocaleString('es-CL', { maximumFractionDigits: 0 })} kW
+                  </div>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label" htmlFor="pgl-inicio">
@@ -285,10 +297,12 @@ export default function ModalLimitacionSubestacionOperador(
                       setSolicitudVinculadaId('');
                     }}
                   >
+                    <option value="">Seleccione</option>
                     <option value={MotivoIndisponibilidadFalla}>{MotivoIndisponibilidadFalla}</option>
                     <option value={MotivoIndisponibilidadTrabajo}>{MotivoIndisponibilidadTrabajo}</option>
                   </select>
                 </div>
+                {motivo ? (
                 <div className="col-md-6">
                   <label className="form-label" htmlFor="pgl-solicitud-vinculada">
                     {motivo === MotivoIndisponibilidadFalla ? 'Solicitud de falla' : 'Solicitud concentrador'}
@@ -300,19 +314,17 @@ export default function ModalLimitacionSubestacionOperador(
                     onChange={(e) => setSolicitudVinculadaId(e.target.value)}
                     disabled={cargandoVinculos}
                   >
-                    <option value="">Sin vínculo</option>
+                    <option value="">-- Sin vincular --</option>
                     {opcionesVinculo.map((op) => (
                       <option key={op.id} value={op.id}>
                         {op.etiqueta}
                       </option>
                     ))}
                   </select>
-                </div>
-                {potenciaKw !== undefined ? (
-                  <div className="col-md-6">
-                    <span className="form-label d-block">Potencia (kW)</span>
-                    <span className="small text-muted">{potenciaKw.toFixed(0)} kW</span>
+                  <div className="form-text">
+                    Puede vincularla ahora o modificar esta limitación más tarde para agregarla.
                   </div>
+                </div>
                 ) : null}
                 <div className="col-12">
                   <label className="form-label" htmlFor="pgl-desc">
@@ -326,6 +338,9 @@ export default function ModalLimitacionSubestacionOperador(
                     onChange={(e) => setDescripcion(e.target.value)}
                   />
                 </div>
+              </div>
+              <div className="alert alert-info mt-3 mb-0">
+                Al guardar, la limitación queda activa y se envía a Meteológica como tope de la central.
               </div>
             </div>
             <div className="modal-footer">

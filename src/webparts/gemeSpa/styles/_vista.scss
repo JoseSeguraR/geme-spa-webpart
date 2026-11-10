@@ -652,6 +652,35 @@
   background: #dc3545;
 }
 
+.cowork-operador-renovable__punto--baja {
+  background: #adb5bd;
+}
+
+// Tarjetas de «Disponibilidad de equipos» (paridad maqueta .or-central-card / .or-inv-row).
+.cowork-operador-renovable__tarjeta-equipo--seleccionada {
+  border-color: var(--cowork-color-btn-primary-bg, #003773);
+  box-shadow: 0 0 0 1px var(--cowork-color-btn-primary-bg, #003773);
+}
+
+.cowork-operador-renovable__barra {
+  display: flex;
+  height: 6px;
+}
+
+.cowork-operador-renovable__fila--indisp {
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.cowork-operador-renovable__fila--baja {
+  opacity: 0.6;
+}
+
+.cowork-operador-renovable__casilla-vacia {
+  display: inline-block;
+  width: 1em;
+  flex-shrink: 0;
+}
+
 .cowork-grilla-celda-alerta {
   color: #842029;
   font-weight: 500;
@@ -731,4 +760,106 @@
 
 .or-sol-disp.is-alerta {
   color: var(--cowork-color-acento, #e56000);
+}
+
+// Operador renovable › Planificación: calendario del mes, una columna por día (sin scroll horizontal:
+// la tabla ocupa el ancho de la tarjeta y los días se reparten el espacio que deja la etiqueta).
+.cowork-planificacion__calendario {
+  table-layout: fixed;
+  width: 100%;
+  font-size: var(--cowork-font-size-xs, 0.75rem);
+
+  th,
+  td {
+    padding: 0.2rem 0.1rem;
+    vertical-align: middle;
+  }
+}
+
+.cowork-planificacion__etiqueta {
+  width: 11rem;
+  overflow-wrap: anywhere;
+}
+
+.cowork-planificacion__dia {
+  text-align: center;
+}
+
+.cowork-planificacion__dia--hoy {
+  // outline y no box-shadow: Bootstrap usa box-shadow inset para el fondo de las celdas
+  outline: 2px solid var(--bs-primary, #0d6efd);
+  outline-offset: -2px;
+}
+
+// Colores de las barras y de la capacidad reducida. La regla de celdas de Bootstrap
+// (.table > :not(caption) > * > *, con background-color y box-shadow inset) es más específica que una clase
+// sola: por eso el selector incluye la tabla y la celda, y se anula el box-shadow.
+.cowork-planificacion__calendario > tbody > tr > td {
+  &.cowork-planificacion__barra--vigente,
+  &.cowork-planificacion__barra--vencido,
+  &.cowork-planificacion__barra--programado,
+  &.cowork-planificacion__barra--finalizado,
+  &.cowork-planificacion__capacidad--reducida {
+    box-shadow: none;
+  }
+
+  &.cowork-planificacion__barra--vigente {
+    background-color: #dc3545;
+  }
+
+  &.cowork-planificacion__barra--vencido {
+    background-color: #dc3545;
+    background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 4px, transparent 4px 8px);
+  }
+
+  &.cowork-planificacion__barra--programado {
+    background-color: #ffc107;
+  }
+
+  &.cowork-planificacion__barra--finalizado {
+    background-color: #adb5bd;
+  }
+
+  &.cowork-planificacion__capacidad--reducida {
+    background-color: #fff3cd;
+    color: #664d03;
+  }
+}
+
+// Leyenda (fuera de la tabla)
+.cowork-planificacion__leyenda.cowork-planificacion__barra--vigente,
+.cowork-planificacion__leyenda.cowork-planificacion__barra--vencido {
+  background-color: #dc3545;
+}
+
+.cowork-planificacion__leyenda.cowork-planificacion__barra--vencido {
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 4px, transparent 4px 8px);
+}
+
+.cowork-planificacion__leyenda.cowork-planificacion__barra--programado {
+  background-color: #ffc107;
+}
+
+.cowork-planificacion__leyenda.cowork-planificacion__barra--finalizado {
+  background-color: #adb5bd;
+}
+
+.cowork-planificacion__fila-capacidad td,
+.cowork-planificacion__fila-capacidad th {
+  font-weight: 600;
+  // Los MW de tres o más cifras no caben en una línea en celdas angostas: se parten en dígitos
+  overflow-wrap: anywhere;
+}
+
+.cowork-planificacion__leyenda {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 0.15rem;
+  vertical-align: middle;
+}
+
+.cowork-planificacion__mes {
+  min-width: 9rem;
+  opacity: 1;
 }

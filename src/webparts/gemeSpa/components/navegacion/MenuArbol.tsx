@@ -8,6 +8,7 @@ import {
   RutaPerteneceASubarbolMenu
 } from '../../utils/MenuNavegacion';
 import { EsNodoPrimerNivelActivo, ObtenerClaseIconoMenu } from '../../utils/MenuIconos';
+import { SepararNodosPieMenu } from '../../utils/MenuPie';
 import { ObtenerAtributosEnlaceExternoMenu } from '../../utils/EnlaceExternoMenu';
 import { EsEnlaceMenuActivoParaRuta } from '../../utils/MenuRutaActiva';
 import { ConstruirHashDesdeRuta } from '../../utils/NavegacionHash';
@@ -17,6 +18,7 @@ export type MenuArbolProps = {
   rutaActual: string;
   colapsada: boolean;
   urlColeccionSitio: string;
+  urlCerrarSesion: string;
   onNavegar?: () => void;
 };
 
@@ -54,6 +56,8 @@ type MenuArbolNodoProps = {
   gruposExpandidos: Set<string>;
   onAlternarGrupo: (idGrupo: string) => void;
   onAbrirContextoGrupoRaiz?: (idGrupo: string) => void;
+  /** Opciones de primer nivel del pie: ícono delante y, en los grupos, chevron al final. */
+  mostrarIcono?: boolean;
   onNavegar?: () => void;
 };
 
@@ -66,8 +70,10 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
     gruposExpandidos,
     onAlternarGrupo,
     onAbrirContextoGrupoRaiz,
+    mostrarIcono = false,
     onNavegar
   } = props;
+  const iconoPie = mostrarIcono && nivel === 1;
 
   if (EsNodoMenuGrupo(nodo)) {
     const abrirContextoRaiz = nivel === 1 && onAbrirContextoGrupoRaiz !== undefined;
@@ -100,11 +106,21 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
           onClick={() => onAlternarGrupo(nodo.id)}
           aria-expanded={expandido}
         >
-          <i
-            className={`bi ${expandido ? 'bi-chevron-down' : 'bi-chevron-right'} cowork-menu-arbol__icono`}
-            aria-hidden="true"
-          />
+          {iconoPie ? (
+            <i className={`${ObtenerClaseIconoMenu(nodo)} cowork-menu-arbol__icono-modulo-raiz`} aria-hidden="true" />
+          ) : (
+            <i
+              className={`bi ${expandido ? 'bi-chevron-down' : 'bi-chevron-right'} cowork-menu-arbol__icono`}
+              aria-hidden="true"
+            />
+          )}
           <span className="cowork-menu-arbol__etiqueta">{nodo.etiqueta}</span>
+          {iconoPie ? (
+            <i
+              className={`bi ${expandido ? 'bi-chevron-down' : 'bi-chevron-right'} cowork-menu-arbol__icono cowork-menu-arbol__icono--fin`}
+              aria-hidden="true"
+            />
+          ) : null}
         </button>
         {expandido ? (
           <ul className="cowork-menu-arbol__lista cowork-menu-arbol__lista--anidada">
@@ -128,7 +144,7 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
 
   if (EsNodoMenuEnlaceExterno(nodo)) {
     const atributosEnlace = ObtenerAtributosEnlaceExternoMenu(nodo.url, urlColeccionSitio);
-    const iconoModuloRaiz = nivel === 1 && onAbrirContextoGrupoRaiz !== undefined;
+    const iconoModuloRaiz = (nivel === 1 && onAbrirContextoGrupoRaiz !== undefined) || iconoPie;
 
     return (
       <li className={`cowork-menu-arbol__item cowork-menu-arbol__item--nivel-${nivel}`}>
@@ -165,6 +181,9 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
         aria-current={activo ? 'page' : undefined}
         onClick={onNavegar}
       >
+        {iconoPie ? (
+          <i className={`${ObtenerClaseIconoMenu(nodo)} cowork-menu-arbol__icono-modulo-raiz`} aria-hidden="true" />
+        ) : null}
         <span className="cowork-menu-arbol__etiqueta">{nodo.etiqueta}</span>
       </a>
     </li>
@@ -172,28 +191,32 @@ function MenuArbolNodo(props: MenuArbolNodoProps): React.ReactElement {
 }
 
 export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
-  const { nodos, rutaActual, colapsada, urlColeccionSitio, onNavegar } = props;
+  const { nodos, rutaActual, colapsada, urlColeccionSitio, urlCerrarSesion, onNavegar } = props;
   const [gruposExpandidosManual, setGruposExpandidosManual] = useState<Set<string>>(() => new Set());
   const [preferirMenuRaiz, setPreferirMenuRaiz] = useState(false);
   const [grupoContextoManualId, setGrupoContextoManualId] = useState<string | null>(null);
   const [flyoutGrupoId, setFlyoutGrupoId] = useState<string | null>(null);
   const [flyoutPosicion, setFlyoutPosicion] = useState<PosicionFlyout | null>(null);
   const contenedorRailRef = useRef<HTMLElement>(null);
+  const contenedorPieRef = useRef<HTMLElement>(null);
   const disparadorFlyoutRef = useRef<HTMLButtonElement | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
+
+  // «Control Sitio» no se muestra arriba: sus hijos van al pie del sidebar.
+  const { principales: nodosPrincipales, pie: nodosPie } = useMemo(() => SepararNodosPieMenu(nodos), [nodos]);
 
   const nodoFlyoutGrupo = useMemo(() => {
     if (!flyoutGrupoId) {
       return undefined;
     }
 
-    const candidato = nodos.find((n) => n.id === flyoutGrupoId);
+    const candidato = [...nodosPrincipales, ...nodosPie].find((n) => n.id === flyoutGrupoId);
     return candidato && EsNodoMenuGrupo(candidato) ? candidato : undefined;
-  }, [flyoutGrupoId, nodos]);
+  }, [flyoutGrupoId, nodosPrincipales, nodosPie]);
 
   const grupoContextoPorRuta = useMemo(
-    () => ObtenerGrupoPrimerNivelParaRuta(nodos, rutaActual),
-    [nodos, rutaActual]
+    () => ObtenerGrupoPrimerNivelParaRuta(nodosPrincipales, rutaActual),
+    [nodosPrincipales, rutaActual]
   );
 
   const grupoContextoManual = useMemo(() => {
@@ -201,9 +224,9 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
       return undefined;
     }
 
-    const candidato = nodos.find((n) => n.id === grupoContextoManualId);
+    const candidato = nodosPrincipales.find((n) => n.id === grupoContextoManualId);
     return candidato && EsNodoMenuGrupo(candidato) ? candidato : undefined;
-  }, [grupoContextoManualId, nodos]);
+  }, [grupoContextoManualId, nodosPrincipales]);
 
   const grupoContextoActivo = useMemo(() => {
     // Tras «Volver» la ruta puede seguir en el módulo anterior; el contexto elegido en raíz prevalece hasta navegar.
@@ -220,17 +243,18 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
 
   const modoContextoMenuExpandido = !colapsada && grupoContextoActivo !== undefined;
 
-  const nodosMenuExpandido = modoContextoMenuExpandido ? grupoContextoActivo.hijos : nodos;
+  const nodosMenuExpandido = modoContextoMenuExpandido ? grupoContextoActivo.hijos : nodosPrincipales;
 
   const gruposPorRuta = useMemo(() => {
     const expandidos = ObtenerGruposAncestrosParaRuta(nodosMenuExpandido, rutaActual);
+    ObtenerGruposAncestrosParaRuta(nodosPie, rutaActual).forEach((id) => expandidos.add(id));
 
     if (colapsada && grupoContextoPorRuta) {
       ObtenerGruposAncestrosParaRuta(grupoContextoPorRuta.hijos, rutaActual).forEach((id) => expandidos.add(id));
     }
 
     return expandidos;
-  }, [colapsada, grupoContextoPorRuta, nodosMenuExpandido, rutaActual]);
+  }, [colapsada, grupoContextoPorRuta, nodosMenuExpandido, nodosPie, rutaActual]);
 
   useEffect(() => {
     setPreferirMenuRaiz(false);
@@ -285,7 +309,7 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
 
     const CerrarSiClickFuera = (evento: MouseEvent): void => {
       const objetivo = evento.target as Node;
-      if (contenedorRailRef.current?.contains(objetivo)) {
+      if (contenedorRailRef.current?.contains(objetivo) || contenedorPieRef.current?.contains(objetivo)) {
         return;
       }
       if (flyoutRef.current?.contains(objetivo)) {
@@ -309,7 +333,7 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
 
   const AbrirContextoGrupoRaiz = useCallback(
     (idGrupo: string): void => {
-      const nodoGrupo = nodos.find((n) => n.id === idGrupo);
+      const nodoGrupo = nodosPrincipales.find((n) => n.id === idGrupo);
       if (nodoGrupo && EsNodoMenuGrupo(nodoGrupo)) {
         const expandidosEnSubarbol = ObtenerGruposAncestrosParaRuta(nodoGrupo.hijos, rutaActual);
         setGruposExpandidosManual((previo) => {
@@ -322,7 +346,7 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
       setPreferirMenuRaiz(false);
       setGrupoContextoManualId(idGrupo);
     },
-    [nodos, rutaActual]
+    [nodosPrincipales, rutaActual]
   );
 
   const AlternarGrupo = (idGrupo: string): void => {
@@ -361,6 +385,76 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
     setFlyoutGrupoId(nodo.id);
   };
 
+  const RenderizarItemRail = (nodo: NodoMenu): React.ReactElement | null => {
+    const activo = EsNodoPrimerNivelActivo(nodo, rutaActual);
+    const claseIcono = `cowork-menu-arbol__icono-principal ${activo ? 'cowork-menu-arbol__icono-principal--activo' : ''}`;
+
+    if (EsNodoMenuGrupo(nodo)) {
+      const flyoutAbierto = flyoutGrupoId === nodo.id;
+
+      return (
+        <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
+          <button
+            type="button"
+            className={claseIcono}
+            ref={(elemento) => {
+              if (flyoutAbierto) {
+                disparadorFlyoutRef.current = elemento;
+              }
+            }}
+            onClick={() => AlternarFlyoutGrupo(nodo)}
+            aria-expanded={flyoutAbierto}
+            aria-haspopup="menu"
+            aria-controls={flyoutAbierto ? `cowork-menu-flyout-${nodo.id}` : undefined}
+            aria-label={nodo.etiqueta}
+            title={nodo.etiqueta}
+          >
+            <i className={ObtenerClaseIconoMenu(nodo)} aria-hidden="true" />
+          </button>
+        </li>
+      );
+    }
+
+    if (EsNodoMenuEnlaceExterno(nodo)) {
+      const atributosEnlace = ObtenerAtributosEnlaceExternoMenu(nodo.url, urlColeccionSitio);
+
+      return (
+        <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
+          <a
+            className={claseIcono}
+            href={atributosEnlace.href}
+            target={atributosEnlace.target}
+            rel={atributosEnlace.rel}
+            aria-label={nodo.etiqueta}
+            title={nodo.etiqueta}
+            onClick={onNavegar}
+          >
+            <i className={ObtenerClaseIconoMenu(nodo)} aria-hidden="true" />
+          </a>
+        </li>
+      );
+    }
+
+    if (!EsNodoMenuEnlaceInterno(nodo)) {
+      return null;
+    }
+
+    return (
+      <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
+        <a
+          className={claseIcono}
+          href={ConstruirHashDesdeRuta(nodo.rutaHash)}
+          aria-current={activo ? 'page' : undefined}
+          aria-label={nodo.etiqueta}
+          title={nodo.etiqueta}
+          onClick={onNavegar}
+        >
+          <i className={ObtenerClaseIconoMenu(nodo)} aria-hidden="true" />
+        </a>
+      </li>
+    );
+  };
+
   return (
     <>
       {colapsada ? (
@@ -370,111 +464,46 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
           aria-label="Accesos rápidos del menú"
         >
           <ul className="cowork-menu-arbol__lista cowork-menu-arbol__lista--rail">
-            {nodos.map((nodo) => {
-              const activo = EsNodoPrimerNivelActivo(nodo, rutaActual);
-              const claseIcono = `cowork-menu-arbol__icono-principal ${activo ? 'cowork-menu-arbol__icono-principal--activo' : ''}`;
-
-              if (EsNodoMenuGrupo(nodo)) {
-                const flyoutAbierto = flyoutGrupoId === nodo.id;
-
-                return (
-                  <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
-                    <button
-                      type="button"
-                      className={claseIcono}
-                      ref={(elemento) => {
-                        if (flyoutAbierto) {
-                          disparadorFlyoutRef.current = elemento;
-                        }
-                      }}
-                      onClick={() => AlternarFlyoutGrupo(nodo)}
-                      aria-expanded={flyoutAbierto}
-                      aria-haspopup="menu"
-                      aria-controls={flyoutAbierto ? `cowork-menu-flyout-${nodo.id}` : undefined}
-                      aria-label={nodo.etiqueta}
-                    >
-                      <i className={ObtenerClaseIconoMenu(nodo)} aria-hidden="true" />
-                    </button>
-                  </li>
-                );
-              }
-
-              if (EsNodoMenuEnlaceExterno(nodo)) {
-                const atributosEnlace = ObtenerAtributosEnlaceExternoMenu(nodo.url, urlColeccionSitio);
-
-                return (
-                  <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
-                    <a
-                      className={claseIcono}
-                      href={atributosEnlace.href}
-                      target={atributosEnlace.target}
-                      rel={atributosEnlace.rel}
-                      aria-label={nodo.etiqueta}
-                      onClick={onNavegar}
-                    >
-                      <i className={ObtenerClaseIconoMenu(nodo)} aria-hidden="true" />
-                    </a>
-                  </li>
-                );
-              }
-
-              if (!EsNodoMenuEnlaceInterno(nodo)) {
-                return null;
-              }
-
-              return (
-                <li key={nodo.id} className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
-                  <a
-                    className={claseIcono}
-                    href={ConstruirHashDesdeRuta(nodo.rutaHash)}
-                    aria-current={activo ? 'page' : undefined}
-                    aria-label={nodo.etiqueta}
-                    onClick={onNavegar}
-                  >
-                    <i className={ObtenerClaseIconoMenu(nodo)} aria-hidden="true" />
-                  </a>
-                </li>
-              );
-            })}
+            {nodosPrincipales.map(RenderizarItemRail)}
           </ul>
-          {nodoFlyoutGrupo && flyoutPosicion ? (
-            <div
-              ref={flyoutRef}
-              id={`cowork-menu-flyout-${nodoFlyoutGrupo.id}`}
-              className="cowork-menu-flyout"
-              role="menu"
-              aria-labelledby={`cowork-menu-flyout-titulo-${nodoFlyoutGrupo.id}`}
-              style={{
-                top: `${flyoutPosicion.superior}px`,
-                left: `${flyoutPosicion.izquierda}px`
-              }}
-            >
-              <div
-                id={`cowork-menu-flyout-titulo-${nodoFlyoutGrupo.id}`}
-                className="cowork-menu-contexto__modulo cowork-menu-flyout__modulo"
-              >
-                <span className="cowork-menu-contexto__icono-modulo" aria-hidden="true">
-                  <i className={ObtenerClaseIconoMenu(nodoFlyoutGrupo)} />
-                </span>
-                <p className="cowork-menu-contexto__titulo">{nodoFlyoutGrupo.etiqueta}</p>
-              </div>
-              <ul className="cowork-menu-arbol__lista cowork-menu-arbol__lista--flyout">
-                {nodoFlyoutGrupo.hijos.map((hijo) => (
-                  <MenuArbolNodo
-                    key={hijo.id}
-                    nodo={hijo}
-                    nivel={1}
-                    rutaActual={rutaActual}
-                    urlColeccionSitio={urlColeccionSitio}
-                    gruposExpandidos={gruposExpandidosManual}
-                    onAlternarGrupo={AlternarGrupo}
-                    onNavegar={NavegarDesdeFlyout}
-                  />
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </nav>
+      ) : null}
+      {nodoFlyoutGrupo && flyoutPosicion ? (
+        <div
+          ref={flyoutRef}
+          id={`cowork-menu-flyout-${nodoFlyoutGrupo.id}`}
+          className="cowork-menu-flyout"
+          role="menu"
+          aria-labelledby={`cowork-menu-flyout-titulo-${nodoFlyoutGrupo.id}`}
+          style={{
+            top: `${flyoutPosicion.superior}px`,
+            left: `${flyoutPosicion.izquierda}px`
+          }}
+        >
+          <div
+            id={`cowork-menu-flyout-titulo-${nodoFlyoutGrupo.id}`}
+            className="cowork-menu-contexto__modulo cowork-menu-flyout__modulo"
+          >
+            <span className="cowork-menu-contexto__icono-modulo" aria-hidden="true">
+              <i className={ObtenerClaseIconoMenu(nodoFlyoutGrupo)} />
+            </span>
+            <p className="cowork-menu-contexto__titulo">{nodoFlyoutGrupo.etiqueta}</p>
+          </div>
+          <ul className="cowork-menu-arbol__lista cowork-menu-arbol__lista--flyout">
+            {nodoFlyoutGrupo.hijos.map((hijo) => (
+              <MenuArbolNodo
+                key={hijo.id}
+                nodo={hijo}
+                nivel={1}
+                rutaActual={rutaActual}
+                urlColeccionSitio={urlColeccionSitio}
+                gruposExpandidos={gruposExpandidosManual}
+                onAlternarGrupo={AlternarGrupo}
+                onNavegar={NavegarDesdeFlyout}
+              />
+            ))}
+          </ul>
+        </div>
       ) : null}
       <nav
         className={`cowork-menu-arbol cowork-menu-arbol--expandido ${colapsada ? 'cowork-menu-arbol--expandido-en-sidebar-colapsado' : ''}`}
@@ -482,16 +511,20 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
       >
         {modoContextoMenuExpandido ? (
           <header className="cowork-menu-contexto">
-            <button type="button" className="cowork-menu-contexto__volver" onClick={VolverAMenuRaiz}>
+            <button
+              type="button"
+              className="cowork-menu-contexto__volver"
+              onClick={VolverAMenuRaiz}
+              title="Volver al menú principal"
+              aria-label={`${grupoContextoActivo.etiqueta}: volver al menú principal`}
+            >
               <i className="bi bi-chevron-double-left cowork-menu-contexto__icono-volver" aria-hidden="true" />
-              Volver
+              <i
+                className={`${ObtenerClaseIconoMenu(grupoContextoActivo)} cowork-menu-contexto__icono-modulo`}
+                aria-hidden="true"
+              />
+              <span className="cowork-menu-contexto__titulo">{grupoContextoActivo.etiqueta}</span>
             </button>
-            <div className="cowork-menu-contexto__modulo">
-              <span className="cowork-menu-contexto__icono-modulo" aria-hidden="true">
-                <i className={ObtenerClaseIconoMenu(grupoContextoActivo)} />
-              </span>
-              <p className="cowork-menu-contexto__titulo">{grupoContextoActivo.etiqueta}</p>
-            </div>
           </header>
         ) : null}
         <ul className="cowork-menu-arbol__lista">
@@ -508,6 +541,48 @@ export default function MenuArbol(props: MenuArbolProps): React.ReactElement {
               onNavegar={onNavegar}
             />
           ))}
+        </ul>
+      </nav>
+      <nav ref={contenedorPieRef} className="cowork-menu-arbol cowork-menu-pie" aria-label="Administración y sesión">
+        {colapsada ? (
+          <div className="cowork-menu-arbol--rail-escritorio">
+            <ul className="cowork-menu-arbol__lista cowork-menu-arbol__lista--rail">
+              {nodosPie.map(RenderizarItemRail)}
+              <li className="cowork-menu-arbol__item cowork-menu-arbol__item--rail">
+                <a
+                  className="cowork-menu-arbol__icono-principal"
+                  href={urlCerrarSesion}
+                  aria-label="Cerrar sesión"
+                  title="Cerrar sesión"
+                >
+                  <i className="bi bi-box-arrow-right" aria-hidden="true" />
+                </a>
+              </li>
+            </ul>
+          </div>
+        ) : null}
+        <ul
+          className={`cowork-menu-arbol__lista ${colapsada ? 'cowork-menu-arbol--expandido-en-sidebar-colapsado' : ''}`}
+        >
+          {nodosPie.map((nodo) => (
+            <MenuArbolNodo
+              key={nodo.id}
+              nodo={nodo}
+              nivel={1}
+              rutaActual={rutaActual}
+              urlColeccionSitio={urlColeccionSitio}
+              gruposExpandidos={gruposExpandidosManual}
+              onAlternarGrupo={AlternarGrupo}
+              mostrarIcono
+              onNavegar={onNavegar}
+            />
+          ))}
+          <li className="cowork-menu-arbol__item cowork-menu-arbol__item--nivel-1">
+            <a className="cowork-menu-arbol__enlace" href={urlCerrarSesion}>
+              <i className="bi bi-box-arrow-right cowork-menu-arbol__icono-modulo-raiz" aria-hidden="true" />
+              <span className="cowork-menu-arbol__etiqueta">Cerrar sesión</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </>

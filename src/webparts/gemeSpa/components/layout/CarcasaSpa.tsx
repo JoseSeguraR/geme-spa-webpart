@@ -11,6 +11,7 @@ export type CarcasaSpaProps = {
   urlColeccionSitio: string;
   nodosMenu: NodoMenu[];
   rutaActual: string;
+  onAbrirPropiedades?: () => void;
   children?: React.ReactNode;
 };
 
@@ -49,7 +50,7 @@ function UseAltoVisibleHost(raizRef: React.RefObject<HTMLDivElement>): void {
 }
 
 export default function CarcasaSpa(props: CarcasaSpaProps): React.ReactElement {
-  const { userDisplayName, signOutUrl, versionWebPart, urlColeccionSitio, nodosMenu, rutaActual, children } = props;
+  const { userDisplayName, signOutUrl, versionWebPart, urlColeccionSitio, nodosMenu, rutaActual, onAbrirPropiedades, children } = props;
   const [sidebarColapsada, setSidebarColapsada] = useState(false);
   const [sidebarMovilAbierta, setSidebarMovilAbierta] = useState(false);
   const raizRef = useRef<HTMLDivElement>(null);
@@ -85,6 +86,7 @@ export default function CarcasaSpa(props: CarcasaSpaProps): React.ReactElement {
           rutaActual={rutaActual}
           versionWebPart={versionWebPart}
           urlColeccionSitio={urlColeccionSitio}
+          urlCerrarSesion={signOutUrl}
           onAlternarColapsada={AlternarSidebarColapsada}
           onAlternarMovil={AlternarSidebarMovil}
           onEnlaceMenu={CerrarSidebarMovil}
@@ -94,6 +96,7 @@ export default function CarcasaSpa(props: CarcasaSpaProps): React.ReactElement {
             userDisplayName={userDisplayName}
             signOutUrl={signOutUrl}
             onAlternarSidebarMovil={AlternarSidebarMovil}
+            onAbrirPropiedades={onAbrirPropiedades}
           />
           <main className="cowork-contenido">{children}</main>
         </div>

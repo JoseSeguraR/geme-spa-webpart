@@ -12,6 +12,8 @@ export class SharePointRestError extends Error {
     mensaje?: string
   ) {
     super(mensaje ?? `Error SharePoint REST (${status}) en ${operacion}: ${recurso}`);
+    // El web part compila a ES5: sin esto, `instanceof SharePointRestError` da false y se pierde el mensaje
+    Object.setPrototypeOf(this, SharePointRestError.prototype);
     this.name = 'SharePointRestError';
     this.operacion = operacion;
     this.recurso = recurso;

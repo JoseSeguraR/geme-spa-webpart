@@ -1,4 +1,5 @@
 import type { DisponibilidadSubequipoOperador } from '../../components/vistas/cor-conecta/concentrador/operador-renovable/constantesOperadorRenovable';
+import type { PeriodoIndisponibilidad } from '../../services/sharepoint/operadorRenovable/PeriodosIndisponibilidadApiServicio';
 
 export type EstadoRegistroSubequipoOperador = 'Activo' | 'Inactivo' | 'Baja';
 
@@ -19,6 +20,10 @@ export type SubequipoOperador = {
   descripcion?: string;
   fechaIndisponibilidad?: string;
   equipoId: number;
+  /** Con la App Function de períodos: el que lo deja fuera ahora (vigente o vencido). */
+  periodoVigente?: PeriodoIndisponibilidad;
+  /** El próximo que todavía no empieza. */
+  periodoProgramado?: PeriodoIndisponibilidad;
 };
 
 export type EquipoOperadorTarjeta = {
@@ -31,24 +36,22 @@ export type EquipoOperadorTarjeta = {
   indisponibleMw: number;
 };
 
-export type DatosMarcarIndisponibilidadSubequipo = {
-  subequipoId: number;
-  motivo: string;
-  descripcion?: string;
-  fechaIndisponibilidadIso: string;
-  capacidadActualMw: number;
-  capacidadMaximaMw: number;
-  disponibilidadAnterior: string;
+/** Resultado de Meteológica que acompañó a un evento de bitácora (envío del perfil o del tope). */
+export type EnvioMeteologicaBitacora = {
+  estado?: string;
+  error?: string;
+  verificado?: boolean;
+  /** ISO UTC. */
+  desde?: string;
+  hasta?: string;
+  tramos?: { desde: string; hasta: string; mw: number }[];
+  /** Solo limitaciones: tipo y valor del tramo GRID. */
+  tipo?: string;
+  valorMw?: number;
+  enviadoEn?: string;
 };
 
-export type DatosMarcarDisponibilidadSubequipo = {
-  subequipoId: number;
-  fechaDisponibilidadIso: string;
-  capacidadMaximaMw: number;
-  disponibilidadAnterior: string;
-  capacidadActualAnteriorMw: number;
-};
-
+/** Fila de `app.concentrador_bitacora_subequipo` (BD de la App Function). Fechas ISO UTC. */
 export type FilaBitacoraOperadorSubequipo = {
   id: number;
   accion: string;
@@ -58,5 +61,11 @@ export type FilaBitacoraOperadorSubequipo = {
   motivo?: string;
   descripcion?: string;
   usuario: string;
+  /** Cuándo ocurrió (inicio, retorno, cambio). */
   fecha: string;
+  fechaInicio?: string;
+  fechaFinEstimada?: string;
+  fechaFin?: string;
+  fechaFinEstimadaAnterior?: string;
+  meteologica?: EnvioMeteologicaBitacora;
 };

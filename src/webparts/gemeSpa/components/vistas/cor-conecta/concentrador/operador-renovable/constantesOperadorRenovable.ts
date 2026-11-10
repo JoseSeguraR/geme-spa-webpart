@@ -3,10 +3,7 @@ export const NombreListaSubequiposOperador = 'CONC_MANTENEDOR_SUBEQUIPOS';
 export const NombreListaIndisponibilidades = 'CONC_LISTA_INDISPONIBILIDADES';
 export const NombreListaLimitacionesRed = 'CONC_LISTA_LIMITACIONESRED';
 export const NombreListaSolicitudFalla = 'CONC_LISTA_SOLICITUDFALLA';
-/** Legacy (obsoleta 30-oct-2026); sustituida por {@link NombreListaBitacoraSubequipo}. */
-export const NombreListaBitacoraOperador = 'CONC_LISTA_BITACORAOPERADOR';
-export const NombreListaBitacoraSubequipo = 'CONC_LISTA_BITACORA_SUBEQUIPO';
-export const NombreListaBitacoraSubestacion = 'CONC_LISTA_BITACORA_SUBESTACION';
+// Las bitácoras de subequipos y limitaciones están en la BD de la App Function (10-11-2026), no en listas.
 
 export {
   NombreListaBitacoraEngine,
@@ -27,8 +24,6 @@ export type FiltroEstadoSolicitudesOperadorRenovable = 'enCurso' | 'todosEstados
 export type FiltroDisponibilidadSolicitudesOperador = 'todas' | 'alerta' | 'ok';
 
 export type FiltroCatalogoEquiposOperador = 'disponible' | 'indisponible' | 'todos';
-
-export type FiltroEstadoLimitacionSubestacion = 'activas' | 'todas';
 
 export type DisponibilidadSubequipoOperador = 'Disponible' | 'Indisponible';
 

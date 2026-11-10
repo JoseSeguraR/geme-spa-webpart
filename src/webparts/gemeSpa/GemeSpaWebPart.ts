@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { Version } from '@microsoft/sp-core-library';
+import { DisplayMode, Version } from '@microsoft/sp-core-library';
 import {
   type IPropertyPaneConfiguration,
   type IPropertyPanePage,
@@ -9,17 +9,20 @@ import {
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
 import GemeSpa from './components/GemeSpa';
+import type { PropiedadesWebPartOperadorRenovable } from './models/ConfiguracionOperadorRenovable';
 import type { PropiedadesWebPartSolicitudesIl } from './models/ConfiguracionSolicitudesIl';
+import { EstablecerConfiguracionOperadorRenovable } from './services/sharepoint/operadorRenovable/CapacidadCentralApiServicio';
 import './styles/GemeSpa.global.scss';
 
-export type GemeSpaWebPartProps = PropiedadesWebPartSolicitudesIl;
+export type GemeSpaWebPartProps = PropiedadesWebPartSolicitudesIl & PropiedadesWebPartOperadorRenovable;
 
 const GrupoFlujoBitacoraSolicitudesIl = 'Solicitudes IL · Flujo (bitácora)';
 const GrupoEnlacesSolicitudesIl = 'Solicitudes IL · Enlaces';
 const GrupoSiodSolicitudesIl = 'Solicitudes IL · SIOD (Azure Functions)';
+const GrupoAppFunctionOperadorRenovable = 'Operador renovable · Meteológica (Azure Functions)';
 
 function CampoUrlPropertyPane(
-  clave: keyof PropiedadesWebPartSolicitudesIl,
+  clave: keyof GemeSpaWebPartProps,
   label: string,
   description: string
 ): ReturnType<typeof PropertyPaneTextField> {
@@ -36,11 +39,16 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
 
   public render(): void {
     const urlWeb = this.context.pageContext.web.absoluteUrl;
+    EstablecerConfiguracionOperadorRenovable({
+      concOperadorRenovableUrlMeteologicaFacilities: this.properties.concOperadorRenovableUrlMeteologicaFacilities,
+      concOperadorRenovableUrlPeriodos: this.properties.concOperadorRenovableUrlPeriodos
+    });
     const element: React.ReactElement = React.createElement(GemeSpa, {
       context: this.context,
       userDisplayName: this.context.pageContext.user.displayName,
       signOutUrl: `${urlWeb}/_layouts/15/SignOut.aspx`,
       versionWebPart: this._obtenerVersionWebPart(),
+      onAbrirPropiedades: this.displayMode === DisplayMode.Edit ? () => this.context.propertyPane.open() : undefined,
       propiedadesSolicitudesIl: {
         concSolicitudesIlIdTareaCrear: this.properties.concSolicitudesIlIdTareaCrear,
         concSolicitudesIlIdTareaFinalizar: this.properties.concSolicitudesIlIdTareaFinalizar,
@@ -84,7 +92,7 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
       displayName: 'COR Conecta',
       header: {
         description:
-          'Concentrador · Solicitudes IL. Expanda cada grupo según lo que deba configurar.'
+          'Concentrador · Solicitudes IL y Operador renovable. Expanda cada grupo según lo que deba configurar.'
       },
       displayGroupsAsAccordion: true,
       groups: [
@@ -158,6 +166,22 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
                   'concSolicitudesIlUrlUpdateSIOD',
                   'URL Update SIOD',
                   'Endpoint de actualización en SIOD (Azure Function u otro servicio).'
+                )
+              ]
+            },
+            {
+              groupName: GrupoAppFunctionOperadorRenovable,
+              isCollapsed: true,
+              groupFields: [
+                CampoUrlPropertyPane(
+                  'concOperadorRenovableUrlMeteologicaFacilities',
+                  'URL centrales en Meteológica',
+                  'GET /api/meteologica-facilities con ?code=<function key>. Muestra la capacidad instalada en Meteológica al filtrar por central.'
+                ),
+                CampoUrlPropertyPane(
+                  'concOperadorRenovableUrlPeriodos',
+                  'URL indisponibilidades (períodos)',
+                  '/api/concentrador-periodos con ?code=<function key>. Indisponibilidades con fecha estimada de fin, Planificación, bitácoras y limitaciones (la misma llave sirve para todos los endpoints del Operador renovable).'
                 )
               ]
             }

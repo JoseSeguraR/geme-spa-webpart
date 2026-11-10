@@ -1,0 +1,159 @@
+// Control Sitio del Concentrador: Permisos de usuario y Mantenedores (components/vistas/cor-conecta/control-sitio).
+
+.cowork-control-sitio__contenido {
+  min-width: 0;
+}
+
+// Estado Activo / Inactivo de los catálogos (más compacto que el de Solicitudes IL).
+.cowork-badge-estado--compacto {
+  font-size: var(--cowork-font-size-xs);
+  padding: 0.2rem 0.65rem;
+  white-space: nowrap;
+}
+
+.cowork-estado-registro--activo.cowork-badge-estado {
+  background-color: #198754;
+}
+
+.cowork-estado-registro--inactivo.cowork-badge-estado {
+  background-color: #6c757d;
+}
+
+// Grillas de mantenedores (`GrillaLocalMui`): con filas de alto automático, todo el contenido de la celda
+// (texto, badges, botones) queda centrado en vertical y con el mismo margen, para que las filas se lean alineadas.
+.cowork-vista-tabla-mui--centrada {
+  .MuiDataGrid-cell {
+    display: flex;
+    align-items: center;
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .MuiDataGrid-cell .badge {
+    font-size: var(--cowork-font-size-xs);
+    font-weight: 600;
+  }
+}
+
+// REGLA: tablas sin scroll horizontal. Ocupan el ancho de su tarjeta y, en pantallas angostas,
+// cada fila se muestra como ficha «encabezado: valor» (data-label).
+.cowork-tabla-fichas {
+  width: 100%;
+  font-size: var(--cowork-font-size-sm);
+}
+
+.cowork-tabla-fichas th,
+.cowork-tabla-fichas td {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@mixin cowork-tabla-como-fichas {
+  thead {
+    display: none;
+  }
+
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  tr {
+    margin-bottom: var(--cowork-space-3);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--cowork-radius-md, 0.375rem);
+    padding: var(--cowork-space-2);
+  }
+
+  tbody th,
+  tbody td {
+    display: flex;
+    align-items: center;
+    gap: var(--cowork-space-2);
+    border: 0;
+    text-align: left !important;
+    padding: var(--cowork-space-1) var(--cowork-space-2);
+  }
+
+  tbody th[data-label]::before,
+  tbody td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 45%;
+    font-weight: 600;
+    color: var(--cowork-color-texto-apoyo, #64748b);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cowork-tabla-fichas {
+    @include cowork-tabla-como-fichas;
+  }
+}
+
+// Matriz de permisos: pasa a fichas antes, porque tiene más columnas.
+@media (max-width: 991.98px) {
+  .cowork-tabla-fichas--lg {
+    @include cowork-tabla-como-fichas;
+  }
+}
+
+// Plazos de envío.
+.cowork-plazo-dias {
+  max-width: 9rem;
+}
+
+.cowork-plazo-hora {
+  max-width: 7rem;
+}
+
+// Permisos de usuario.
+.cowork-permisos__busqueda {
+  min-width: 12rem;
+  max-width: 22rem;
+}
+
+.cowork-permisos__modulo {
+  background-color: var(--cowork-color-btn-primary-bg, #003773);
+  color: #ffffff;
+}
+
+.cowork-permisos__modulo--sitio {
+  background-color: #6c757d;
+}
+
+.cowork-permisos__esquina {
+  border-top-color: transparent;
+  border-left-color: transparent;
+}
+
+.cowork-permisos__funcion {
+  font-size: var(--cowork-font-size-xs);
+  hyphens: auto;
+  min-width: 5.5rem;
+}
+
+.cowork-permisos__usuario {
+  font-weight: 600;
+}
+
+.cowork-permisos__icono {
+  font-size: 1.15rem;
+}
+
+.cowork-permisos__celda:disabled {
+  opacity: 1;
+}
+
+.cowork-permisos__lista-centrales {
+  max-height: 50vh;
+  overflow-y: auto;
+  column-width: 14rem;
+}
+
+.cowork-permisos__resultados {
+  max-height: 18rem;
+  overflow-y: auto;
+}

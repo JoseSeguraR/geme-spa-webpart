@@ -104,3 +104,24 @@ export function FormatearValorLocalParaEdicion(valorLocal: string | undefined): 
   }
   return `${partes[3]}/${partes[2]}/${partes[1]} ${partes[4]}:${partes[5]}`;
 }
+
+/**
+ * Interpreta una hora escrita o pegada (`9:05`, `09:05`, `0905`, `9`) como `HH:mm` de 00 a 23 h.
+ * Devuelve `''` si el texto está vacío y `undefined` si no es una hora válida.
+ */
+export function InterpretarHora24(texto: string): string | undefined {
+  const limpio = texto.trim();
+  if (!limpio) {
+    return '';
+  }
+  const coincidencia = /^(\d{1,2})(?:\s*[:.hH]\s*(\d{2})|(\d{2}))?(?:\s*(?:hrs?|h)\.?)?$/.exec(limpio);
+  if (!coincidencia) {
+    return undefined;
+  }
+  const hora = Number(coincidencia[1]);
+  const minutos = Number(coincidencia[2] ?? coincidencia[3] ?? '0');
+  if (hora > 23 || minutos > 59) {
+    return undefined;
+  }
+  return `${hora < 10 ? '0' : ''}${hora}:${minutos < 10 ? '0' : ''}${minutos}`;
+}

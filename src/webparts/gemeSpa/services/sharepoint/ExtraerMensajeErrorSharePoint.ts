@@ -1,10 +1,14 @@
-type CuerpoErrorSharePoint = {
-  error?: {
-    message?: {
-      value?: string;
-    };
-    code?: string;
+type DetalleErrorSharePoint = {
+  message?: {
+    value?: string;
   };
+  code?: string;
+};
+
+/** `odata=verbose` responde `error`; `odata=nometadata` responde `odata.error`. */
+type CuerpoErrorSharePoint = {
+  error?: DetalleErrorSharePoint;
+  'odata.error'?: DetalleErrorSharePoint;
 };
 
 type RespuestaConJson = {
@@ -16,11 +20,12 @@ type RespuestaConJson = {
 export async function ExtraerMensajeErrorSharePoint(response: RespuestaConJson): Promise<string> {
   try {
     const json = (await response.json()) as CuerpoErrorSharePoint;
-    const mensaje = json.error?.message?.value?.trim();
+    const detalle = json.error ?? json['odata.error'];
+    const mensaje = detalle?.message?.value?.trim();
     if (mensaje) {
       return mensaje;
     }
-    const codigo = json.error?.code?.trim();
+    const codigo = detalle?.code?.trim();
     if (codigo) {
       return codigo;
     }

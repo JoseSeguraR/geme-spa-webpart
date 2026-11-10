@@ -127,9 +127,11 @@ export function CeldaIdCenSodiSolicitudOperador(props: {
   relacionSodiCen: string;
 }): React.ReactElement {
   const { idSolicitud, relacionSodiCen } = props;
-  const lineaPrincipal = idSolicitud || '—';
-  const mostrarRelacion =
-    relacionSodiCen.trim().length > 0 && relacionSodiCen.trim() !== idSolicitud.trim();
+  // Sin ID_SOLICITUD (`#<id>` interno) se muestra solo la relación SODI/CEN, como la maqueta.
+  const sinIdSolicitud = !idSolicitud.trim() || idSolicitud.indexOf('#') === 0;
+  const relacion = relacionSodiCen.trim();
+  const lineaPrincipal = sinIdSolicitud ? relacion || '—' : idSolicitud;
+  const mostrarRelacion = !sinIdSolicitud && relacion.length > 0 && relacion !== idSolicitud.trim();
   return (
     <span className="or-sol-id-cen d-flex flex-column">
       <span className="fw-medium">{lineaPrincipal}</span>
