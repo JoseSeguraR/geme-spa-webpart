@@ -2,7 +2,14 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { GridColDef, GridRowId } from '@mui/x-data-grid';
-import { GrillaServidorMui } from '../../../../../grilla';
+import { GrillaLocalMui } from '../../../../../grilla';
+import { UseCatalogoEquiposOperadorRenovable } from '../equipos/UseCatalogoEquiposOperadorRenovable';
+import { UseCapacidadMeteologicaCentral } from '../equipos/UseCapacidadMeteologicaCentral';
+import {
+  AvisoCapacidadMeteologica,
+  EtiquetaCapacidadMeteologica,
+  TextoCapacidadMeteologica
+} from '../equipos/IndicadorCapacidadMeteologica';
 import { CeldaAccionesCentrada, ObtenerOpcionesBaseColumnaAccionesGrilla } from '../../../../../grilla/ColumnaAccionesGrilla';
 import CarcasaOperadorRenovable from '../CarcasaOperadorRenovable';
 import { UseRefrescoOperadorRenovable } from '../UseRefrescoOperadorRenovable';
@@ -12,12 +19,11 @@ import ModalVerSolicitudConcentradorOperador from '../solicitudes/ModalVerSolici
 import ModalVerSolicitudFallaOperador from './ModalVerSolicitudFallaOperador';
 import DesplegableAccionesFilaGrilla from '../../../../../concentrador/DesplegableAccionesFilaGrilla';
 import { AccionMenuFilaGrillaConIcono } from '../../../../../concentrador/accionesGrillaConcentrador';
-import type { FiltroEstadoLimitacionSubestacion } from '../constantesOperadorRenovable';
 import type { LimitacionSubestacionOperador } from '../../../../../../models/operadorRenovable/LimitacionSubestacionOperador';
 import {
   EsLimitacionSubestacionActiva,
   FinalizarLimitacionRed,
-  RegistrarEnvioMeteologicaLimitacionSimulado
+  ReintentarEnvioMeteologicaLimitacion
 } from '../../../../../../services/sharepoint/operadorRenovable/LimitacionesRedServicio';
 import { SharePointRestError } from '../../../../../../services/sharepoint/SharePointRestError';
 import ModalBitacoraLimitacionSubestacion from './ModalBitacoraLimitacionSubestacion';
@@ -30,14 +36,14 @@ export type ContenidoSubestacionOperadorRenovableProps = {
 
 type FilaGrilla = LimitacionSubestacionOperador & { id: GridRowId };
 
+function FormatearMw(valor: number): string {
+  return `${valor.toLocaleString('es-CL', { maximumFractionDigits: 2 })} MW`;
+}
+
 export default function ContenidoSubestacionOperadorRenovable(
   props: ContenidoSubestacionOperadorRenovableProps
 ): React.ReactElement {
   const { context } = props;
-  const [filtroEstado, setFiltroEstado] = useState<FiltroEstadoLimitacionSubestacion>('activas');
-  const [textoBusqueda, setTextoBusqueda] = useState('');
-  const [paginaActual, setPaginaActual] = useState(0);
-  const [tamanoPagina, setTamanoPagina] = useState(10);
   const [tokenRecarga, setTokenRecarga] = useState(0);
   const tokenRefrescoGlobal = UseRefrescoOperadorRenovable();
   const [filtroCentralId, setFiltroCentralId] = useState('');
@@ -50,29 +56,25 @@ export default function ContenidoSubestacionOperadorRenovable(
   );
   const [limitacionBitacora, setLimitacionBitacora] = useState<LimitacionSubestacionOperador | undefined>(undefined);
   const [errorAccion, setErrorAccion] = useState<string | undefined>();
+  const [mensajeAccion, setMensajeAccion] = useState<string | undefined>();
 
   const { filas, centrales, estadoCarga, mensajeError, recargar } = UseLimitacionesSubestacionOperadorRenovable(
     context,
     tokenRecarga + tokenRefrescoGlobal
   );
 
-  const filasFiltradas = useMemo(() => {
-    const texto = textoBusqueda.trim().toLowerCase();
-    const idCentral = filtroCentralId ? Number.parseInt(filtroCentralId, 10) : undefined;
-    return filas.filter((fila) => {
-      if (filtroEstado === 'activas' && !EsLimitacionSubestacionActiva(fila.estado)) {
-        return false;
-      }
-      if (idCentral !== undefined && Number.isFinite(idCentral) && fila.instalacionId !== idCentral) {
-        return false;
-      }
-      if (!texto) {
-        return true;
-      }
-      const blob = [fila.central, fila.descripcion, fila.motivo, fila.estado].join(' ').toLowerCase();
-      return blob.includes(texto);
-    });
-  }, [filas, filtroEstado, filtroCentralId, textoBusqueda]);
+  // Capacidad instalada por central (subequipos activos), para los indicadores (maqueta `calcularResumenLimitacionRed`).
+  const { tarjetas: equiposCatalogo } = UseCatalogoEquiposOperadorRenovable(context, tokenRecarga + tokenRefrescoGlobal, false);
+
+  const idCentralFiltro = filtroCentralId ? Number.parseInt(filtroCentralId, 10) : undefined;
+  const hayFiltroCentral = idCentralFiltro !== undefined && Number.isFinite(idCentralFiltro);
+  const capacidadMeteologica = UseCapacidadMeteologicaCentral(context, hayFiltroCentral ? idCentralFiltro : undefined);
+
+  // El servicio solo trae limitaciones activas.
+  const filasFiltradas = useMemo(
+    () => filas.filter((fila) => !hayFiltroCentral || fila.instalacionId === idCentralFiltro),
+    [filas, hayFiltroCentral, idCentralFiltro]
+  );
 
   const AbrirSolicitudVinculada = (fila: LimitacionSubestacionOperador): void => {
     if (fila.motivo === MotivoIndisponibilidadFalla && fila.solicitudFallaId) {
@@ -95,16 +97,28 @@ export default function ContenidoSubestacionOperadorRenovable(
         subequipos: [],
         fechaProgramadaInicio: '—',
         fechaEfectivaInicio: '—',
+        fechaProgramadaInicioIso: '',
+        fechaEfectivaInicioIso: '',
         estado: '—'
       });
     }
   };
 
+  /** Capacidad total, disponible, limitado por red y % limitado de la central filtrada (o de todas). */
   const resumen = useMemo(() => {
-    const activas = filas.filter((l) => EsLimitacionSubestacionActiva(l.estado));
-    const mwLimitados = activas.reduce((sum, l) => sum + l.potenciaLimitadaMw, 0);
-    return { activas: activas.length, mwLimitados };
-  }, [filas]);
+    const totalMw = equiposCatalogo
+      .filter((eq) => !hayFiltroCentral || eq.centralId === idCentralFiltro)
+      .reduce((suma, eq) => suma + eq.totalMw, 0);
+    const limitadoMw = filas
+      .filter((l) => EsLimitacionSubestacionActiva(l.estado) && (!hayFiltroCentral || l.instalacionId === idCentralFiltro))
+      .reduce((suma, l) => suma + l.potenciaLimitadaMw, 0);
+    return {
+      totalMw,
+      limitadoMw,
+      disponibleMw: Math.max(0, totalMw - limitadoMw),
+      porcentaje: totalMw > 0 ? (limitadoMw / totalMw) * 100 : 0
+    };
+  }, [equiposCatalogo, filas, hayFiltroCentral, idCentralFiltro]);
 
   const RecargarTodo = (): void => {
     setTokenRecarga((v) => v + 1);
@@ -112,13 +126,19 @@ export default function ContenidoSubestacionOperadorRenovable(
   };
 
   const Finalizar = async (fila: LimitacionSubestacionOperador): Promise<void> => {
-    const confirmar = window.confirm(`¿Finalizar la limitación en ${fila.central} (${fila.potenciaLimitadaMw} MW)?`);
+    const confirmar = window.confirm(
+      '¿Finalizar esta limitación? Se registra con la fecha y hora actual y deja de mostrarse en la lista.'
+    );
     if (!confirmar) {
       return;
     }
     setErrorAccion(undefined);
+    setMensajeAccion(undefined);
     try {
-      await FinalizarLimitacionRed(context, fila);
+      const envio = await FinalizarLimitacionRed(context, fila);
+      if (!envio.enviado) {
+        setErrorAccion(`La limitación quedó finalizada. ${envio.mensaje}`);
+      }
       RecargarTodo();
     } catch (err) {
       const mensaje =
@@ -127,14 +147,20 @@ export default function ContenidoSubestacionOperadorRenovable(
     }
   };
 
-  const EnviarMeteologica = async (fila: LimitacionSubestacionOperador): Promise<void> => {
+  const ReintentarEnvio = async (fila: LimitacionSubestacionOperador): Promise<void> => {
     setErrorAccion(undefined);
+    setMensajeAccion(undefined);
     try {
-      await RegistrarEnvioMeteologicaLimitacionSimulado(context, fila);
+      const envio = await ReintentarEnvioMeteologicaLimitacion(fila);
+      if (envio.enviado) {
+        setMensajeAccion(envio.mensaje);
+      } else {
+        setErrorAccion(envio.mensaje);
+      }
       RecargarTodo();
     } catch (err) {
       const mensaje =
-        err instanceof SharePointRestError ? err.message : 'No se pudo registrar el envío simulado.';
+        err instanceof SharePointRestError ? err.message : 'No se pudo reintentar el envío a Meteológica.';
       setErrorAccion(mensaje);
     }
   };
@@ -150,6 +176,14 @@ export default function ContenidoSubestacionOperadorRenovable(
             (fila.motivo === MotivoIndisponibilidadFalla && fila.solicitudFallaId) ||
             fila.solicitudConcentradorId;
           const acciones = [
+            ...(activa
+              ? [
+                  AccionMenuFilaGrillaConIcono('editar', 'Modificar', () => setModalFormulario(fila)),
+                  AccionMenuFilaGrillaConIcono('finalizar', 'Finalizar', () => {
+                    Finalizar(fila).catch(() => undefined);
+                  })
+                ]
+              : []),
             ...(tieneVinculo
               ? [
                   AccionMenuFilaGrillaConIcono('ver-solicitud', 'Ver solicitud vinculada', () =>
@@ -158,17 +192,9 @@ export default function ContenidoSubestacionOperadorRenovable(
                 ]
               : []),
             AccionMenuFilaGrillaConIcono('bitacora', 'Bitácora', () => setLimitacionBitacora(fila)),
-            ...(activa
-              ? [
-                  AccionMenuFilaGrillaConIcono('editar', 'Modificar', () => setModalFormulario(fila)),
-                  AccionMenuFilaGrillaConIcono('finalizar', 'Finalizar', () => {
-                    Finalizar(fila).catch(() => undefined);
-                  }),
-                  AccionMenuFilaGrillaConIcono('meteo', 'Enviar a Meteológica', () => {
-                    EnviarMeteologica(fila).catch(() => undefined);
-                  })
-                ]
-              : [])
+            AccionMenuFilaGrillaConIcono('meteo', 'Reintentar envío a Meteológica', () => {
+              ReintentarEnvio(fila).catch(() => undefined);
+            })
           ];
           return (
             <CeldaAccionesCentrada>
@@ -177,28 +203,22 @@ export default function ContenidoSubestacionOperadorRenovable(
           );
         }
       },
-      { field: 'central', headerName: 'Central', minWidth: 140, flex: 1 },
+      { field: 'central', headerName: 'Central', minWidth: 140, flex: 1, cellClassName: 'cowork-celda-texto-largo' },
       {
         field: 'potenciaLimitadaMw',
-        headerName: 'Potencia (MW)',
-        minWidth: 110,
-        valueFormatter: (valor) => `${Number(valor)} MW (${Number(valor) * 1000} kW)`
+        headerName: 'Potencia',
+        width: 120,
+        renderCell: (params) => (
+          <span className="d-flex flex-column lh-sm">
+            <strong>{FormatearMw(params.row.potenciaLimitadaMw)}</strong>
+            <small className="text-muted">{(params.row.potenciaLimitadaMw * 1000).toLocaleString('es-CL')} kW</small>
+          </span>
+        )
       },
-      { field: 'fechaInicio', headerName: 'Inicio', minWidth: 140 },
-      { field: 'fechaFin', headerName: 'Fin', minWidth: 120 },
-      { field: 'motivo', headerName: 'Motivo', minWidth: 90 },
-      { field: 'descripcion', headerName: 'Descripción', minWidth: 200, flex: 1.2 },
-      {
-        field: 'estado',
-        headerName: 'Estado',
-        minWidth: 110,
-        renderCell: (params) => {
-          const activa = EsLimitacionSubestacionActiva(String(params.value));
-          return (
-            <span className={activa ? 'cowork-grilla-celda-alerta' : undefined}>{String(params.value)}</span>
-          );
-        }
-      }
+      { field: 'fechaInicio', headerName: 'Fecha efectiva de inicio', width: 150 },
+      { field: 'fechaFin', headerName: 'Fecha efectiva de fin', width: 150 },
+      { field: 'motivo', headerName: 'Motivo', width: 100 },
+      { field: 'descripcion', headerName: 'Descripción', minWidth: 180, flex: 1.5, cellClassName: 'cowork-celda-texto-largo' }
     ],
     []
   );
@@ -210,41 +230,60 @@ export default function ContenidoSubestacionOperadorRenovable(
     <CarcasaOperadorRenovable tabActiva="subestacion">
       {mensajeError ? <div className="alert alert-danger py-2">{mensajeError}</div> : null}
       {errorAccion ? <div className="alert alert-warning py-2">{errorAccion}</div> : null}
+      {mensajeAccion ? <div className="alert alert-success py-2">{mensajeAccion}</div> : null}
 
-      <div className="cowork-operador-renovable__toolbar d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-        <div className="d-flex flex-wrap gap-2">
-          <span className="cowork-operador-renovable__chip">{resumen.activas} activas</span>
-          <span className="cowork-operador-renovable__chip">
-            {resumen.mwLimitados.toFixed(1)} MW limitados (activas)
-          </span>
-        </div>
-        <fieldset className="cowork-vista__radios-estado d-flex flex-wrap gap-3 mb-0 border-0 p-0">
-          <legend className="visually-hidden">Estado limitación</legend>
-          {(
-            [
-              ['activas', 'Activas'],
-              ['todas', 'Todas']
-            ] as const
-          ).map(([valor, etiqueta]) => {
-            const idRadio = `filtro-pgl-or-${valor}`;
-            return (
-              <div key={valor} className="form-check form-check-inline mb-0">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="filtro-pgl-or"
-                  id={idRadio}
-                  checked={filtroEstado === valor}
-                  onChange={() => setFiltroEstado(valor)}
-                />
-                <label className="form-check-label" htmlFor={idRadio}>
-                  {etiqueta}
-                </label>
+      <div className="row g-2 mb-3">
+        {[
+          { etiqueta: 'Capacidad total', mw: resumen.totalMw, clase: 'primary' },
+          { etiqueta: 'Disponible', mw: resumen.disponibleMw, clase: 'success' },
+          { etiqueta: 'Limitado por red', mw: resumen.limitadoMw, clase: 'danger' }
+        ].map((kpi) => (
+          <div key={kpi.etiqueta} className="col-6 col-lg">
+            <div className={`card h-100 cowork-operador-renovable__kpi border-${kpi.clase}`}>
+              <div className="card-body py-2">
+                <div className="text-muted text-uppercase small">{kpi.etiqueta}</div>
+                <div className="fs-5 fw-semibold">{FormatearMw(kpi.mw)}</div>
+                <small className="text-muted">{(kpi.mw * 1000).toLocaleString('es-CL', { maximumFractionDigits: 0 })} kW</small>
               </div>
-            );
-          })}
-        </fieldset>
+            </div>
+          </div>
+        ))}
+        <div className="col-6 col-lg">
+          <div className="card h-100 cowork-operador-renovable__kpi border-warning">
+            <div className="card-body py-2">
+              <div className="text-muted text-uppercase small">% limitado</div>
+              <div className="fs-5 fw-semibold">{resumen.porcentaje.toFixed(1)} %</div>
+              <div
+                className="progress mt-2 cowork-operador-renovable__barra"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Number(resumen.porcentaje.toFixed(1))}
+              >
+                <div className="progress-bar bg-warning" style={{ width: `${Math.min(resumen.porcentaje, 100)}%` }} />
+              </div>
+            </div>
+          </div>
+        </div>
+        {capacidadMeteologica.estado === 'sinCentral' ? null : (
+          <div className="col-6 col-lg">
+            <div className="card h-100 cowork-operador-renovable__kpi border-info">
+              <div className="card-body py-2">
+                <div className="text-muted text-uppercase small">{EtiquetaCapacidadMeteologica}</div>
+                <div className="fs-5 fw-semibold">{TextoCapacidadMeteologica(capacidadMeteologica)}</div>
+                {capacidadMeteologica.estado === 'listo' ? (
+                  <small className="text-muted">
+                    {(capacidadMeteologica.capacidadMw * 1000).toLocaleString('es-CL', { maximumFractionDigits: 0 })} kW
+                  </small>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+      {hayFiltroCentral ? (
+        <AvisoCapacidadMeteologica capacidad={capacidadMeteologica} capacidadGemeMw={resumen.totalMw} />
+      ) : null}
 
       <div className="cowork-vista__barra-acciones d-flex flex-wrap align-items-end gap-3 mb-3">
         <div style={{ maxWidth: '14rem' }}>
@@ -257,7 +296,7 @@ export default function ContenidoSubestacionOperadorRenovable(
             value={filtroCentralId}
             onChange={(e) => setFiltroCentralId(e.target.value)}
           >
-            <option value="">Todas</option>
+            <option value="">Todas las centrales</option>
             {centrales.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.central}
@@ -276,26 +315,18 @@ export default function ContenidoSubestacionOperadorRenovable(
         </button>
       </div>
 
-      <GrillaServidorMui
+      <GrillaLocalMui<FilaGrilla>
         filas={filasFiltradas}
         columnas={columnas}
         estadoCarga={estadoGrilla}
-        paginaActual={paginaActual}
-        tamanoPagina={tamanoPagina}
-        hayPaginaSiguiente={false}
-        onCambioPagina={setPaginaActual}
-        onCambioTamanoPagina={setTamanoPagina}
-        campoOrden="fechaInicio"
-        direccionOrden="desc"
-        onCambioOrdenamiento={() => undefined}
-        busqueda={{
-          etiqueta: 'Buscar limitación',
-          valorEnConsulta: textoBusqueda,
-          onCambioConsulta: setTextoBusqueda
-        }}
-        mensajeSinRegistros="No hay limitaciones registradas."
-        mensajeSinRegistrosBusqueda="No hay limitaciones que coincidan con la búsqueda."
-        textoBusquedaActiva={textoBusqueda}
+        campoOrdenInicial="fechaInicio"
+        direccionOrdenInicial="desc"
+        valorOrden={(fila, campo) =>
+          campo === 'fechaInicio' ? fila.fechaInicioIso ?? '' : campo === 'fechaFin' ? fila.fechaFinIso ?? '' : fila[campo as keyof FilaGrilla]
+        }
+        etiquetaBusqueda="Buscar limitación"
+        textoBusquedaFila={(fila) => [fila.central, fila.descripcion, fila.motivo, fila.fechaInicio, fila.fechaFin].join(' ')}
+        mensajeSinRegistros="No hay limitaciones activas."
         mensajeError={mensajeError}
         onReintentar={RecargarTodo}
       />
@@ -303,10 +334,15 @@ export default function ContenidoSubestacionOperadorRenovable(
       <ModalLimitacionSubestacionOperador
         context={context}
         centrales={centrales}
+        centralInicialId={hayFiltroCentral ? idCentralFiltro : undefined}
         limitacion={modalFormulario !== undefined && modalFormulario !== 'nueva' ? modalFormulario : undefined}
         visible={modalFormulario !== undefined}
         onCerrar={() => setModalFormulario(undefined)}
-        onGuardado={RecargarTodo}
+        onGuardado={(aviso) => {
+          setErrorAccion(aviso);
+          setMensajeAccion(undefined);
+          RecargarTodo();
+        }}
       />
       <ModalBitacoraLimitacionSubestacion
         context={context}

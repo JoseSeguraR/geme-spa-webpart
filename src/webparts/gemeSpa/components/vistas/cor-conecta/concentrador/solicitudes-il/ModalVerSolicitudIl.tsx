@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { AdjuntoSolicitudIl, SolicitudIl } from '../../../../../models/SolicitudIl';
 import { ObtenerAdjuntosSolicitudIl } from '../../../../../services/sharepoint/solicitudesIl/SolicitudesIlCrudServicio';
-import { FormatearFechaHoraVisible } from './UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../../../utils/FechaHoraCorConecta';
 import {
   BloqueEstadoFormularioSolicitudIl,
   ResolverEstadoSolicitudIl

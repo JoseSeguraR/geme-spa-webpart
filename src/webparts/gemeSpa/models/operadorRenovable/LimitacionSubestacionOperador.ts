@@ -1,3 +1,4 @@
+import type { EnvioMeteologicaBitacora } from './CatalogoEquiposOperador';
 import type { EstadoLimitacionSubestacion } from '../../components/vistas/cor-conecta/concentrador/operador-renovable/constantesOperadorRenovable';
 
 export type LimitacionSubestacionOperador = {
@@ -31,12 +32,18 @@ export type DatosFormularioLimitacionSubestacion = {
   solicitudFallaId?: number;
 };
 
+/** Fila de `app.concentrador_bitacora_limitacion` (BD de la App Function). Fechas ISO UTC. */
 export type FilaBitacoraLimitacionSubestacion = {
   id: number;
   accion: string;
   estadoAnterior: string;
   estadoNuevo: string;
+  potenciaLimitadaMw?: number;
+  fechaInicio?: string;
+  fechaFin?: string;
+  motivo?: string;
   descripcion?: string;
   usuario: string;
   fecha: string;
+  meteologica?: EnvioMeteologicaBitacora;
 };

@@ -9,9 +9,6 @@ export const EstadoSubequipoActivo = 'Activo';
 export const MotivoIndisponibilidadFalla = 'Falla';
 export const MotivoIndisponibilidadTrabajo = 'Trabajo';
 
-export const AccionBitacoraMarcarIndisponibilidad = 'Marcar indisponibilidad';
-export const AccionBitacoraMarcarDisponibilidad = 'Marcar disponibilidad';
-
 /** Estado de solicitud en grilla (motor de flujos, mismo origen que Solicitudes IL). */
 export const CampoLookupTareaActualConcentrador = 'TAREAACTUAL';
 export const CampoEstadoTareaActualConcentrador = 'TAREAACTUAL_x003a_TAREAORIGEN_ES';
@@ -40,9 +37,6 @@ export const CampoSharePointCapacidadMaximaMw = 'CAPACIDAD_MAXIMA_MW';
 export const CampoSharePointCapacidadActualMw = 'CAPACIDAD_ACTUAL_MW';
 export const CampoLookupTipoEquipoSubequipo = 'TIPOEQUIPO';
 
-/** Snapshot de MW en bitácora de subequipo (`CONC_LISTA_BITACORA_*`). */
-export const CampoSharePointCapacidadBitacoraSubequipo = 'CAPACIDAD_MW';
-
 /** `CONC_LISTA_LIMITACIONESRED` */
 export const CampoLookupLimitacionInstalacion = 'INSTALACION';
 export const CampoPotenciaLimitadaMw = 'POTENCIA_LIMITADA_MW';
@@ -61,9 +55,10 @@ export const EstadoSolicitudFallaVigente = 'Vigente';
 
 export const CampoEmpresaSolicitanteConcentrador = 'EMPRESA_SOLICITANTE';
 
+/** `CONC_MANTENEDOR_INSTALACIONES`: ID de la central en Meteológica (lo lee la App Function). */
+export const CampoFacilityIdMeteologica = 'FACILITY_ID_METEOLOGICA';
+
+/** ACCION de `app.concentrador_bitacora_limitacion` (BD de la App Function). */
 export const AccionBitacoraCrearLimitacion = 'Crear limitación';
 export const AccionBitacoraModificarLimitacion = 'Modificar limitación';
 export const AccionBitacoraFinalizarLimitacion = 'Finalizar';
-export const AccionBitacoraEnvioMeteologicaSimulado = 'Envío a Meteológica (simulado)';
-
-export const CampoLookupBitacoraLimitacion = 'LIMITACION';

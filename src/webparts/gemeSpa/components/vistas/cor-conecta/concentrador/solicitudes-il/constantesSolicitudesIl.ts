@@ -43,3 +43,6 @@ export const TamanoMaximoAdjuntoBytes = 10 * 1024 * 1024;
 
 /** Límite de caracteres del campo DESCRIPCION (lista y formularios alta / edición / clon). */
 export const MaxLongitudDescripcionSolicitudIl = 200;
+
+/** Filas por consulta a SharePoint cuando la grilla muestra todos los registros. */
+export const TamanoLoteCargaCompletaSolicitudesIl = 500;

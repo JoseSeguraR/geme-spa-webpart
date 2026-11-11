@@ -8,14 +8,17 @@ import {
   type GridPaginationModel,
   type GridRowId,
   type GridSortModel,
-  type GridValidRowModel
+  type GridValidRowModel,
+  useGridApiRef
 } from '@mui/x-data-grid';
 import CampoBusquedaGrillaMui from './CampoBusquedaGrillaMui';
 import MensajeVacioGrillaMui from './MensajeVacioGrillaMui';
 import {
   AlturaGrillaPredeterminadaPx,
   OpcionesTamanoPaginaGrillaPredeterminadas,
-  type EstadoCargaGrillaServidor
+  TamanoPaginaTodos,
+  type EstadoCargaGrillaServidor,
+  type OpcionTamanoPaginaGrilla
 } from './TiposGrillaServidor';
 import { TemaGrillaGeme } from './TemaGrillaMui';
 import { AlturaEncabezadoGrillaPx, AlturaFilaGrillaPx } from '../../models/GrillaServidor';
@@ -49,9 +52,18 @@ export type GrillaServidorMuiProps<Row extends GridValidRowModel & { id: GridRow
   mensajeSinRegistrosBusqueda?: string;
   textoBusquedaActiva?: string;
   alturaPx?: number;
-  opcionesTamanoPagina?: readonly number[];
+  /** Tamaños de página; `{ value: TamanoPaginaTodos, label }` agrega la opción de ver todo. */
+  opcionesTamanoPagina?: readonly OpcionTamanoPaginaGrilla[];
+  /** Sin scroll vertical: la grilla crece con las filas y cada fila con su contenido (texto multilínea). */
+  alturaAutomatica?: boolean;
+  /** Columnas cuyo ancho se ajusta al contenido cada vez que cambian las filas. */
+  columnasAutoajustables?: readonly string[];
   /** Clase CSS adicional por fila (p. ej. resaltado de alerta en operador renovable). */
   obtenerClaseFila?: (fila: Row) => string | undefined;
+  /** Total conocido de registros (paginación local); si se omite, se deduce de la página actual. */
+  totalFilas?: number;
+  /** Clase adicional del contenedor de la tabla (p. ej. `cowork-vista-tabla-mui--centrada`). */
+  claseContenedor?: string;
 };
 
 function OverlayCargaGrilla(): React.ReactElement {
@@ -109,8 +121,14 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     textoBusquedaActiva = '',
     alturaPx = AlturaGrillaPredeterminadaPx,
     opcionesTamanoPagina = OpcionesTamanoPaginaGrillaPredeterminadas,
-    obtenerClaseFila
+    alturaAutomatica = false,
+    columnasAutoajustables,
+    obtenerClaseFila,
+    totalFilas: totalFilasConocido,
+    claseContenedor
   } = props;
+
+  const apiRef = useGridApiRef();
 
   const [textoBusquedaLocal, setTextoBusquedaLocal] = useState(busqueda?.valorEnConsulta ?? '');
   const contenedorGrillaRef = useRef<HTMLDivElement>(null);
@@ -137,26 +155,34 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     [ObtenerContenedorPortalWebPart]
   );
 
-  useEffect(() => {
-    if (busqueda) {
-      setTextoBusquedaLocal(busqueda.valorEnConsulta);
-    }
-  }, [busqueda?.valorEnConsulta, busqueda]);
+  // El padre suele pasar `busqueda` como objeto en línea: los efectos dependen de sus valores, no del
+  // objeto, para que un re-render (p. ej. al llegar la respuesta) no pise lo que el usuario está escribiendo.
+  const valorEnConsulta = busqueda?.valorEnConsulta;
+  const demoraBusquedaMs = busqueda?.demoraMs ?? 450;
+  const onCambioConsultaRef = useRef(busqueda?.onCambioConsulta);
+  onCambioConsultaRef.current = busqueda?.onCambioConsulta;
 
   useEffect(() => {
-    if (!busqueda) {
+    if (valorEnConsulta === undefined) {
+      return;
+    }
+    // Solo cuando el valor cambia desde fuera (p. ej. limpiar filtros); conserva espacios al final.
+    setTextoBusquedaLocal((actual) => (actual.trim() === valorEnConsulta.trim() ? actual : valorEnConsulta));
+  }, [valorEnConsulta]);
+
+  useEffect(() => {
+    if (valorEnConsulta === undefined) {
       return;
     }
     const textoNormalizado = textoBusquedaLocal.trim();
-    const demoraBase = busqueda.demoraMs ?? 450;
-    const demoraMs = textoNormalizado.length === 0 ? 0 : demoraBase;
+    const demoraMs = textoNormalizado.length === 0 ? 0 : demoraBusquedaMs;
     const id = window.setTimeout(() => {
-      if (textoNormalizado !== busqueda.valorEnConsulta.trim()) {
-        busqueda.onCambioConsulta(textoNormalizado);
+      if (textoNormalizado !== valorEnConsulta.trim()) {
+        onCambioConsultaRef.current?.(textoNormalizado);
       }
     }, demoraMs);
     return () => window.clearTimeout(id);
-  }, [textoBusquedaLocal, busqueda]);
+  }, [textoBusquedaLocal, valorEnConsulta, demoraBusquedaMs]);
 
   const modeloOrden: GridSortModel = useMemo(
     () => [{ field: campoOrden, sort: direccionOrden }],
@@ -168,7 +194,56 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     [paginaActual, tamanoPagina]
   );
 
-  const totalFilas = hayPaginaSiguiente ? -1 : paginaActual * tamanoPagina + filas.length;
+  useEffect(() => {
+    if (!columnasAutoajustables?.length || filas.length === 0) {
+      return;
+    }
+    // autosizeColumns mide solo celdas ya dibujadas: se espera a que existan (con altura automática
+    // MUI dibuja las filas algunos cuadros después), si no mediría solo el encabezado.
+    let id = 0;
+    const Autoajustar = (intentosRestantes: number): void => {
+      const raiz = apiRef.current?.rootElementRef?.current;
+      const hayCeldas = raiz?.querySelector(`.MuiDataGrid-cell[data-field="${columnasAutoajustables[0]}"]`);
+      if (!hayCeldas && intentosRestantes > 0) {
+        id = window.requestAnimationFrame(() => Autoajustar(intentosRestantes - 1));
+        return;
+      }
+      apiRef.current?.autosizeColumns({
+        columns: [...columnasAutoajustables],
+        includeHeaders: true,
+        includeOutliers: true
+      }).catch(() => undefined);
+    };
+    id = window.requestAnimationFrame(() => Autoajustar(30));
+    return () => window.cancelAnimationFrame(id);
+  }, [apiRef, columnasAutoajustables, filas]);
+
+  const columnasGrilla = useMemo(() => {
+    if (!columnasAutoajustables?.length) {
+      return columnas;
+    }
+    return columnas.map((columna): GridColDef<Row> => {
+      if (columnasAutoajustables.indexOf(columna.field) === -1) {
+        return columna;
+      }
+      const claseOriginal = columna.cellClassName;
+      return {
+        ...columna,
+        cellClassName: (params) => {
+          const clase = typeof claseOriginal === 'function' ? claseOriginal(params) : claseOriginal;
+          return clase ? `${clase} cowork-celda-autoajustada` : 'cowork-celda-autoajustada';
+        }
+      };
+    });
+  }, [columnas, columnasAutoajustables]);
+
+  const totalFilas = totalFilasConocido !== undefined
+    ? totalFilasConocido
+    : hayPaginaSiguiente
+    ? -1
+    : tamanoPagina === TamanoPaginaTodos
+      ? filas.length
+      : paginaActual * tamanoPagina + filas.length;
   const estaCargando = cargando ?? (estadoCarga === 'cargando' || estadoCarga === 'inicial');
   const ocultarGrilla = estadoCarga === 'vacio' && filas.length === 0;
   const hayBusquedaActiva = textoBusquedaActiva.trim().length > 0;
@@ -212,11 +287,18 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
       ) : null}
 
       {ocultarGrilla ? null : (
-        <div className="cowork-vista-tabla-mui">
+        <div
+          className={`cowork-vista-tabla-mui${alturaAutomatica ? ' cowork-vista-tabla-mui--multilinea' : ''}${
+            claseContenedor ? ` ${claseContenedor}` : ''
+          }`}
+        >
           <DataGrid
+            apiRef={apiRef}
             rows={filas}
-            columns={columnas}
+            columns={columnasGrilla}
             rowHeight={AlturaFilaGrillaPx}
+            autoHeight={alturaAutomatica}
+            getRowHeight={alturaAutomatica ? () => 'auto' : undefined}
             columnHeaderHeight={AlturaEncabezadoGrillaPx}
             loading={estaCargando}
             slots={slotsGrilla}
@@ -258,7 +340,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
                 : undefined
             }
             slotProps={slotPropsGrilla}
-            sx={{ height: alturaPx }}
+            sx={alturaAutomatica ? undefined : { height: alturaPx }}
           />
         </div>
       )}

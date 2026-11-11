@@ -7,4 +7,6 @@ export interface GemeSpaProps {
   signOutUrl: string;
   versionWebPart: string;
   propiedadesSolicitudesIl: PropiedadesWebPartSolicitudesIl;
+  /** Solo con la página en edición: abre el panel de propiedades del web part (la SPA tapa su barra). */
+  onAbrirPropiedades?: () => void;
 }

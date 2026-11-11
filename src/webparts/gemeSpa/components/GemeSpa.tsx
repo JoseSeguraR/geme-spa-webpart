@@ -8,7 +8,7 @@ import CarcasaSpa from './layout/CarcasaSpa';
 import ContenedorVista from './vistas/ContenedorVista';
 
 export default function GemeSpa(props: GemeSpaProps): React.ReactElement {
-  const { context, userDisplayName, signOutUrl, versionWebPart, propiedadesSolicitudesIl } = props;
+  const { context, userDisplayName, signOutUrl, versionWebPart, propiedadesSolicitudesIl, onAbrirPropiedades } = props;
   const { rutaActual } = UseRutaHash();
   const { estado: estadoMenu, menu, error: errorMenu } = UseMenuInicializado(context);
 
@@ -45,6 +45,7 @@ export default function GemeSpa(props: GemeSpaProps): React.ReactElement {
       urlColeccionSitio={context.pageContext.site.absoluteUrl}
       nodosMenu={menu.arbol}
       rutaActual={rutaActual}
+      onAbrirPropiedades={onAbrirPropiedades}
     >
       <EnrutadorVistas
         rutaActual={rutaActual}

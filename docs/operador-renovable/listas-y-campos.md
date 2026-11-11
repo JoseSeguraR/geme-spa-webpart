@@ -12,7 +12,7 @@ Convención: lookups por **Id**. Elecciones en sitio `geme`: **`Falla` / `Trabaj
 | `CONC_LISTA_INDISPONIBILIDADES` | Una fila por subequipo marcado en el formulario |
 | `CONC_MANTENEDOR_SUBEQUIPOS` | Catálogo + **`DISPONIBILIDAD`** operativa |
 | `CONC_LISTA_LIMITACIONESRED` | PGL |
-| `CONC_LISTA_BITACORA_SUBEQUIPO` / **`CONC_LISTA_BITACORA_SUBESTACION`** | Eventos operador (target) |
+| ~~`CONC_LISTA_BITACORA_SUBEQUIPO` / `CONC_LISTA_BITACORA_SUBESTACION`~~ | Reemplazadas el 10-11-2026 por `app.concentrador_bitacora_subequipo` y `app.concentrador_bitacora_limitacion` (BD de la App Function); se leen con `GET /api/concentrador-bitacora` |
 | `CONC_LISTA_BITACORAOPERADOR` | Legacy; fallback webpart subequipo |
 | `CONC_MANTENEDOR_INSTALACIONES` | Ámbito operador = **todas las filas activas** (intersectadas con usuario); **no** crear `TIPO_SUBEQUIPO` ni `ES_RENOVABLE` |
 | `ENGINE_BITACORA` | Solo lectura estado solicitud |

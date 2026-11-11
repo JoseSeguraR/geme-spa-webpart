@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { GridColDef, GridRowId } from '@mui/x-data-grid';
-import { GrillaServidorMui } from '../../../../../grilla';
+import { GrillaLocalMui } from '../../../../../grilla';
 import { CeldaAccionesCentrada, ObtenerOpcionesBaseColumnaAccionesGrilla } from '../../../../../grilla/ColumnaAccionesGrilla';
 import DesplegableAccionesFilaGrilla from '../../../../../concentrador/DesplegableAccionesFilaGrilla';
 import { AccionMenuFilaGrillaConIcono } from '../../../../../concentrador/accionesGrillaConcentrador';
@@ -56,9 +56,6 @@ export default function ContenidoSolicitudesOperadorRenovable(
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstadoSolicitudesOperadorRenovable>('enCurso');
   const [filtroDisponibilidad, setFiltroDisponibilidad] =
     useState<FiltroDisponibilidadSolicitudesOperador>('todas');
-  const [textoBusqueda, setTextoBusqueda] = useState('');
-  const [paginaActual, setPaginaActual] = useState(0);
-  const [tamanoPagina, setTamanoPagina] = useState(10);
   const [tokenRecarga, setTokenRecarga] = useState(0);
   const tokenRefrescoGlobal = UseRefrescoOperadorRenovable();
 
@@ -69,9 +66,10 @@ export default function ContenidoSolicitudesOperadorRenovable(
     undefined
   );
 
+  // Como la maqueta: búsqueda, orden y paginación en el navegador sobre las solicitudes cargadas.
   const { filas, estadoCarga, mensajeError, recargar } = UseSolicitudesOperadorRenovableLista(
     context,
-    textoBusqueda,
+    '',
     filtroEstado,
     tokenRecarga + tokenRefrescoGlobal
   );
@@ -112,7 +110,7 @@ export default function ContenidoSolicitudesOperadorRenovable(
           );
         }
       },
-      { field: 'idSolicitud', headerName: 'ID', minWidth: 120, flex: 1 },
+      { field: 'id', headerName: 'ID', width: 80 },
       {
         field: 'idCenSodi',
         headerName: 'ID CEN/SODI',
@@ -184,8 +182,35 @@ export default function ContenidoSolicitudesOperadorRenovable(
     []
   );
 
-  const estadoGrilla =
-    estadoCarga === 'error' ? 'error' : estadoCarga === 'cargando' && filas.length === 0 ? 'cargando' : 'listo';
+  const estadoGrilla = estadoCarga === 'error' ? 'error' : estadoCarga === 'cargando' && filas.length === 0 ? 'cargando' : 'listo';
+
+  const TextoBusquedaFila = (fila: FilaGrilla): string =>
+    [
+      fila.id,
+      fila.idSolicitud,
+      fila.relacionSodiCen,
+      fila.solicitante,
+      fila.empresaSolicitante ?? '',
+      fila.central,
+      fila.subequipos.map((s) => s.codigo).join(' '),
+      fila.descripcion,
+      fila.fechaProgramadaInicio,
+      fila.fechaEfectivaInicio,
+      fila.estado
+    ].join(' ');
+
+  const ValorOrden = (fila: FilaGrilla, campo: string): unknown => {
+    if (campo === 'fechaProgramadaInicio') {
+      return fila.fechaProgramadaInicioIso;
+    }
+    if (campo === 'fechaEfectivaInicio') {
+      return fila.estado === 'Vigente' ? fila.fechaEfectivaInicioIso : '';
+    }
+    if (campo === 'idCenSodi') {
+      return fila.idSolicitud.indexOf('#') === 0 ? fila.relacionSodiCen : fila.idSolicitud;
+    }
+    return fila[campo as keyof FilaGrilla];
+  };
 
   return (
     <CarcasaOperadorRenovable tabActiva="solicitudes">
@@ -263,31 +288,20 @@ export default function ContenidoSolicitudesOperadorRenovable(
         (Programada, Vigente, Extendida). El estado proviene del motor (TAREAACTUAL).
       </p>
 
-      <GrillaServidorMui
+      <GrillaLocalMui<FilaGrilla>
         filas={filasFiltradas}
         columnas={columnas}
         obtenerClaseFila={(fila) => (fila.subequiposIndisponibles > 0 ? 'or-sol-row-alerta' : undefined)}
         estadoCarga={estadoGrilla}
-        paginaActual={paginaActual}
-        tamanoPagina={tamanoPagina}
-        hayPaginaSiguiente={false}
-        onCambioPagina={setPaginaActual}
-        onCambioTamanoPagina={setTamanoPagina}
-        campoOrden="fechaProgramadaInicio"
-        direccionOrden="asc"
-        onCambioOrdenamiento={() => undefined}
-        busqueda={{
-          etiqueta: 'Buscar solicitud',
-          valorEnConsulta: textoBusqueda,
-          onCambioConsulta: setTextoBusqueda
-        }}
+        campoOrdenInicial="fechaProgramadaInicio"
+        valorOrden={ValorOrden}
+        etiquetaBusqueda="Buscar solicitud"
+        textoBusquedaFila={TextoBusquedaFila}
         mensajeSinRegistros={
           filtroEstado === 'enCurso'
             ? 'No hay solicitudes en curso con equipos indisponibles en sus centrales.'
             : 'No hay solicitudes con equipos indisponibles en sus centrales.'
         }
-        mensajeSinRegistrosBusqueda="No hay solicitudes que coincidan con la búsqueda."
-        textoBusquedaActiva={textoBusqueda}
         mensajeError={mensajeError}
         onReintentar={RecargarTodo}
       />

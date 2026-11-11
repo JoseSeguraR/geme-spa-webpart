@@ -1,5 +1,5 @@
 import type { SolicitudOperadorRenovableFila } from '../../../models/operadorRenovable/SolicitudOperadorRenovable';
-import { FormatearFechaHoraVisible } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-il/UtilidadesFechaSolicitudIl';
+import { FormatearFechaHoraVisible } from '../../../utils/FechaHoraCorConecta';
 import {
   CampoEmpresaSolicitanteConcentrador,
   CampoEstadoTareaActualConcentrador,
@@ -53,6 +53,8 @@ export function NormalizarFilaSolicitudConcentradorOperador(
     descripcion: ObtenerTexto(fila.DESCRIPCION),
     fechaProgramadaInicio: FormatearFechaHoraVisible(inicioProg) || '—',
     fechaEfectivaInicio: FormatearFechaHoraVisible(inicioEfec) || '—',
+    fechaProgramadaInicioIso: inicioProg,
+    fechaEfectivaInicioIso: inicioEfec,
     estado
   };
 }

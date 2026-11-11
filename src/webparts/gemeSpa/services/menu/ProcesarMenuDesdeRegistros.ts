@@ -4,6 +4,7 @@ import { ConstruirArbolMenu } from './ConstruirArbolMenu';
 import { FiltrarRegistrosPorAudienciaEnlace } from './FiltrarPorAudiencia';
 import { FiltrarRegistrosVisibles, ObtenerIdsRegistrosVisibles } from './PropagarVisibilidadHeaders';
 import { RecolectarRutasDisponiblesDesdeArbol } from './RecolectarRutasDisponibles';
+import { ReemplazarEnlacesLegadoControlSitio } from './ReemplazarEnlacesLegadoControlSitio';
 
 export function ProcesarMenuDesdeRegistros(
   registros: RegistroSistemaAccesoNormalizado[],
@@ -13,7 +14,7 @@ export function ProcesarMenuDesdeRegistros(
   const trasAudiencia = FiltrarRegistrosPorAudienciaEnlace(registros, conjuntoGruposUsuario);
   const idsVisibles = ObtenerIdsRegistrosVisibles(trasAudiencia);
   const registrosVisibles = FiltrarRegistrosVisibles(trasAudiencia, idsVisibles);
-  const arbol = ConstruirArbolMenu(registrosVisibles);
+  const arbol = ReemplazarEnlacesLegadoControlSitio(ConstruirArbolMenu(registrosVisibles));
   const rutasDisponibles = RecolectarRutasDisponiblesDesdeArbol(arbol);
 
   return {

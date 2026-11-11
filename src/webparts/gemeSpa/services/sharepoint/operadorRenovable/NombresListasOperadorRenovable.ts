@@ -1,7 +1,4 @@
 export {
-  NombreListaBitacoraOperador,
-  NombreListaBitacoraSubequipo,
-  NombreListaBitacoraSubestacion,
   NombreListaSubequiposOperador
 } from '../../../components/vistas/cor-conecta/concentrador/operador-renovable/constantesOperadorRenovable';
 

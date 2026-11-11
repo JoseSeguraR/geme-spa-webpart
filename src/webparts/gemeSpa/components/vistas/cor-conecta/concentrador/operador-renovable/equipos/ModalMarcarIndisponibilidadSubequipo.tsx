@@ -9,6 +9,9 @@ export type ModalMarcarIndisponibilidadSubequipoProps = {
   subequipos?: SubequipoOperador[];
   nombreEquipo?: string;
   central?: string;
+  /** Con la App Function de períodos, el formulario pide también la fecha estimada de fin. */
+  centralId?: number;
+  capacidadEquipoMw?: number;
   visible: boolean;
   onCerrar: () => void;
   onGuardado: () => void;
@@ -17,7 +20,7 @@ export type ModalMarcarIndisponibilidadSubequipoProps = {
 export default function ModalMarcarIndisponibilidadSubequipo(
   props: ModalMarcarIndisponibilidadSubequipoProps
 ): React.ReactElement {
-  const { context, subequipo, subequipos, nombreEquipo, central, visible, onCerrar, onGuardado } = props;
+  const { context, subequipo, subequipos, nombreEquipo, central, centralId, capacidadEquipoMw, visible, onCerrar, onGuardado } = props;
   const lista = subequipos ?? (subequipo ? [subequipo] : []);
 
   if (!visible || lista.length === 0) {
@@ -27,11 +30,14 @@ export default function ModalMarcarIndisponibilidadSubequipo(
   return (
     <>
       <div className="modal fade show d-block" role="dialog" aria-modal="true">
-        <div className="modal-dialog modal-dialog-scrollable">
+        <div className="modal-dialog modal-dialog-scrollable modal-lg">
           <div className="modal-content">
-            <div className="modal-header">
-              <h2 className="modal-title h5">Marcar indisponibilidad</h2>
-              <button type="button" className="btn-close" aria-label="Cerrar" onClick={onCerrar} />
+            <div className="modal-header bg-danger text-white">
+              <h2 className="modal-title h5">
+                <i className="bi bi-x-circle me-2" aria-hidden="true" />
+                Marcar indisponibilidad
+              </h2>
+              <button type="button" className="btn-close btn-close-white" aria-label="Cerrar" onClick={onCerrar} />
             </div>
             <div className="modal-body">
               <FormularioMarcarIndisponibilidadSubequipo
@@ -39,6 +45,8 @@ export default function ModalMarcarIndisponibilidadSubequipo(
                 subequipos={lista}
                 nombreEquipo={nombreEquipo}
                 central={central}
+                centralId={centralId}
+                capacidadEquipoMw={capacidadEquipoMw}
                 onCancelar={onCerrar}
                 onGuardado={onGuardado}
               />

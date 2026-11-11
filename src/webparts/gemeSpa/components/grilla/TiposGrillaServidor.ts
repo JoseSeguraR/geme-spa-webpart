@@ -1,5 +1,6 @@
-export type { EstadoCargaGrillaServidor } from '../../models/GrillaServidor';
+export type { EstadoCargaGrillaServidor, OpcionTamanoPaginaGrilla } from '../../models/GrillaServidor';
 export {
   AlturaGrillaPredeterminadaPx,
-  OpcionesTamanoPaginaGrillaPredeterminadas
+  OpcionesTamanoPaginaGrillaPredeterminadas,
+  TamanoPaginaTodos
 } from '../../models/GrillaServidor';

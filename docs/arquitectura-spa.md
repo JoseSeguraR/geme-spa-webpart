@@ -23,7 +23,7 @@ Los componentes no llaman a SharePoint. Los servicios distinguen una consulta va
 
 `GemeSpa` hace dos cosas en paralelo:
 
-1. `UseRutaHash` lee el hash y se suscribe a `hashchange`. Si el hash está vacío, fija `#/inicio`.
+1. `UseRutaHash` lee el hash y se suscribe a `hashchange`. Si el hash está vacío, fija `#/inicio`. `NormalizarSegmentoHash` (`utils/NavegacionHash.ts`) decodifica `%2F` y quita las barras iniciales, porque SharePoint en modo edición (`?Mode=Edit`) reescribe el hash como `#/%2Fruta%2Fhija`.
 2. `UseMenuInicializado` llama a `InicializarMenuAplicacion`.
 
 Mientras el menú carga se muestra `CargandoInicial`. Si la inicialización falla, la pantalla indica que no se pudo cargar el menú y conserva el mensaje del error. Con el menú listo, `CarcasaSpa` envuelve a `EnrutadorVistas`.
@@ -32,10 +32,12 @@ Mientras el menú carga se muestra `CargandoInicial`. Si la inicialización fall
 
 `CarcasaSpa` arma la clase raíz `gemeSpaBootstrap` y el estado visual de la barra lateral (colapsada en escritorio, abierta en móvil).
 
+Al hacer scroll solo se desplaza el contenido: en escritorio la barra lateral y la barra superior son `position: sticky` (`top: 0`) dentro del contenedor con scroll de SharePoint. La barra lateral mide `var(--cowork-alto-visible-host)`, que `CarcasaSpa` calcula (`UseAltoVisibleHost`) como el `clientHeight` del primer ancestro con `overflow-y: auto/scroll` (o `window.innerHeight`) y actualiza al redimensionar; así entra entera bajo la barra del sitio de SharePoint. Ningún ancestro entre la carcasa y ese contenedor puede tener `overflow: hidden`, o el sticky deja de funcionar. En móvil la barra lateral sigue siendo `position: fixed`.
+
 | Pieza | Rol |
 | --- | --- |
-| `BarraLateral` | Árbol de menú, versión del Web Part y enlace a la colección de sitios. |
-| `BarraSuperior` | Usuario y cierre de sesión. |
+| `BarraLateral` | Árbol de menú (`MenuArbol`), pie del menú, versión del Web Part y enlace a la colección de sitios. |
+| `BarraSuperior` | Usuario y cierre de sesión (menú del usuario). |
 | `main.cowork-contenido` | Zona donde el enrutador pinta la vista. |
 | `ContenedorVista` | Envoltorio de una pantalla de negocio: bloque `cowork-vista`. Logos de marca solo en COR Conecta (`ContenedorVistaCorConecta`). |
 
@@ -84,6 +86,21 @@ El menú sale de la lista `SISTEMA_ACCESOS`. Al normalizar, se omiten los ítems
 
 La audiencia compara los identificadores de grupo del ítem con los grupos del usuario actual (`UsuarioCumpleAudiencia`: basta con coincidir en uno).
 
+### Barra lateral (`components/navegacion/MenuArbol.tsx`)
+
+`MenuArbol` divide la barra en dos zonas dentro de `.cowork-barra-lateral__navegacion` (columna flex):
+
+| Zona | Contenido | Comportamiento |
+| --- | --- | --- |
+| Arriba (`.cowork-menu-arbol--expandido`; franja: `--rail-escritorio`) | El árbol del menú sin el grupo «Control Sitio». | Ocupa el alto libre y tiene su propio scroll. Al entrar a un módulo (p. ej. COR Conecta) muestra sus hijos bajo un encabezado con un solo botón: `«`, ícono y nombre del módulo; ese botón vuelve al primer nivel. |
+| Pie (`.cowork-menu-pie`) | Hijos del `Header` «Control Sitio» (Permisos de usuario, Mantenedores) y **Cerrar sesión**. | Fijo abajo, siempre visible, también dentro de un módulo; si no cabe (más de la mitad del alto), tiene scroll propio. Las opciones llevan su ícono (`ICONO`); los grupos se despliegan como acordeón. En la franja contraída se ven como íconos y los grupos abren el menú flotante. |
+
+`utils/MenuPie.ts` (`SepararNodosPieMenu`) reconoce el `Header` del pie por su `HASH_TITLE` normalizado (sin tildes ni mayúsculas): `control sitio`, `control del sitio` o `control de sitio` (`EtiquetasGrupoPieMenu`). Lo busca en todo el árbol, no solo en el primer nivel (en `SISTEMA_ACCESOS` puede colgar de un módulo, como COR Conecta › Concentrador). El `Header` no se muestra; sus hijos pasan al pie en su `ORDEN`, y si un grupo queda vacío al quitarlo, también se oculta. Las rutas no cambian: siguen acumulando el `HASH_KEY` de «Control Sitio». Si se renombra ese `Header` en `SISTEMA_ACCESOS`, hay que agregar el nuevo título a `EtiquetasGrupoPieMenu`.
+
+**Cerrar sesión** usa `signOutUrl` (la misma URL que el menú del usuario de `BarraSuperior`), que llega como `urlCerrarSesion` por `CarcasaSpa` → `BarraLateral` → `MenuArbol`.
+
+Los íconos del menú no llevan fondo: el resaltado queda solo para el ítem activo (`--activo`, `--contiene-activo`).
+
 Caché (`constants/ConfiguracionCacheMenu.ts`):
 
 | Dato | Versión | TTL |
@@ -109,9 +126,13 @@ Una ruta puede existir en el registro sin ítem de menú (pestaña interna). Una
 
 La clave del registro es exactamente la `rutaHash`. El mapa se arma en `constants/registro-vistas/`: un archivo por dominio (`inicio.ts`, `corConecta.ts`) fusionado en `index.ts`. `constants/ComponentRegistry.tsx` reexporta ese mapa; el resto del código importa desde ahí.
 
+**Registro por sufijo.** Si no hay coincidencia exacta, `ObtenerComponenteDelRegistro` busca en `componentRegistrySufijo` una clave con la que termine la ruta (`ruta === sufijo` o `ruta` termina en `/sufijo`; gana el sufijo más largo). Se usa para Permisos de usuario (`permisos-usuarios`) y los mantenedores (`mantenedores/<clave>`) de «Control Sitio» (`constants/registro-vistas/controlSitio.tsx`).
+
+**Enlaces del legado reemplazados.** `services/menu/ReemplazarEnlacesLegadoControlSitio.ts` corre en `ProcesarMenuDesdeRegistros` después de construir el árbol: los enlaces de `SISTEMA_ACCESOS` a `CONC/Administracion/admuserfn.aspx` y `mantenedores.aspx` se convierten en el enlace interno `control-sitio/permisos-usuarios` y en un grupo con un enlace `control-sitio/mantenedores/<clave>` por mantenedor. La lista no se modifica. Documentación: `geme-spa-maqueta/docs/documentacion-tecnica/cor-conecta/concentrador-solicitudes/mantenedores/readme.md` (§8) y `…/plantilla/permisos-usuarios/readme.md` (§6).
+
 `models/RutaAplicacion.ts` solo declara el tipo `RutaHash` y las rutas transversales (`RutaInicio = 'inicio'`). La constante de una pantalla de negocio vive en `rutas.ts` junto a su vista.
 
-Las vistas que usan contexto SPFx reciben `PropsVistaSpa` (`userDisplayName`, `context`, `propiedadesSolicitudesIl`). Hoy el panel de propiedades del Web Part solo configura Solicitudes IL, y esas propiedades viajan en `PropsVistaSpa` para todas las vistas. Una vista que aún no las usa puede registrarse con `RegistrarVistaSinProps`.
+Las vistas que usan contexto SPFx reciben `PropsVistaSpa` (`userDisplayName`, `context`, `propiedadesSolicitudesIl`). El panel de propiedades del Web Part configura Solicitudes IL (viajan en `PropsVistaSpa` para todas las vistas) y el Operador renovable (`EstablecerConfiguracionOperadorRenovable`, sin pasar por props; los servicios la leen con `ObtenerConfiguracionOperadorRenovable`, p. ej. `HayServicioPeriodos` para la URL de períodos). Como la SPA ocupa la página y tapa la barra del Web Part, en modo edición (`displayMode === DisplayMode.Edit`) `GemeSpaWebPart` pasa `onAbrirPropiedades` (`context.propertyPane.open()`) y `BarraSuperior` muestra el botón engranaje «Configurar web part»; SPFx vuelve a llamar a `render` al cambiar de modo. Una vista que aún no las usa puede registrarse con `RegistrarVistaSinProps`.
 
 ### Resaltado del menú
 
@@ -144,6 +165,34 @@ Lista vacía: `GrillaServidorMui` usa `MensajeVacioGrillaMui` (`cowork-grilla-va
 La grilla no consulta SharePoint. El padre le entrega filas ya normalizadas y el estado de carga (`inicial`, `cargando`, `listo`, `vacio`, `error`). La paginación es por páginas conocidas: el padre indica `paginaActual`, `tamanoPagina` y `hayPaginaSiguiente`. El orden se notifica con `onCambioOrdenamiento`. La búsqueda es opcional (`ConfigBusquedaGrillaServidor`) y la aplica quien consulta.
 
 Alturas y tamaños de página predeterminados están en `models/GrillaServidor.ts` (10, 25, 50 y 100 filas; altura 480 px). `ColumnaAccionesGrilla` concentra el ancho y las opciones de la columna de acciones. `PreferenciasAnchoColumnasGrilla` recuerda anchos en el cliente.
+
+Opciones de la grilla (todas opcionales; sin ellas se comporta como antes):
+
+| Prop | Efecto |
+| --- | --- |
+| `alturaAutomatica` | Sin scroll vertical: `autoHeight` y `getRowHeight={() => 'auto'}`. Agrega `cowork-vista-tabla-mui--multilinea` (`styles/_vista.scss`): las celdas parten el texto solo entre palabras y la fila conserva 42 px de mínimo. Para respetar saltos de línea en una columna, `cellClassName: 'cowork-celda-texto-largo'`. |
+| `columnasAutoajustables` | Campos cuyo ancho se recalcula con `apiRef.autosizeColumns` (incluye encabezados) cada vez que cambian las filas. MUI mide solo celdas ya dibujadas, así que la grilla espera (hasta 30 cuadros) a que existan antes de medir; si no, mediría solo el encabezado. Esas celdas llevan `cowork-celda-autoajustada` y nunca parten línea. Úsalo en columnas cortas y deja las de texto largo en `flex`, para no generar scroll horizontal. |
+| `opcionesTamanoPagina` | Números o `{ value, label }`. `{ value: TamanoPaginaTodos, label: 'Mostrar todo' }` (`-1`) pide todas las filas; quien consulta debe traerlas todas y responder `hayPaginaSiguiente = false`. |
+| `totalFilas` | Total conocido de registros (paginación local). Sin él, el total se deduce de la página actual. |
+
+### Grilla local
+
+`components/grilla/GrillaLocalMui.tsx` envuelve `GrillaServidorMui` para listas que se cargan completas (mantenedores): recibe todas las filas y resuelve en el navegador la búsqueda (`textoBusquedaFila`, sin mayúsculas ni tildes), el orden (por el valor del campo; números como números, textos con `localeCompare('es')`) y la paginación (10, 25, 50, 100 o Mostrar todo). Siempre usa `alturaAutomatica` y la clase `cowork-vista-tabla-mui--centrada` (`styles/_control-sitio.scss`: contenido de la celda centrado en vertical). No usa `columnasAutoajustables`: las columnas cortas llevan `width` fijo y las de texto `flex` con `minWidth`, para que los anchos no cambien al paginar, buscar u ordenar.
+
+`GrillaServidorMui` acepta `claseContenedor` para agregar una clase al contenedor de la tabla.
+
+## Formularios y escrituras comunes
+
+- `components/comunes/ModalFormulario.tsx`: carcasa Bootstrap de los modales de alta y edición (título con ícono, alerta de error, Cancelar/Guardar con estado `guardando`, Enter envía). Sin `onGuardar` muestra solo «Cerrar».
+- `services/sharepoint/listaGenerica/ListaSharePointServicio.ts`: `ObtenerTodosLosItemsLista` (sigue `@odata.nextLink`), `CrearItemLista`, `ActualizarItemLista` (MERGE) y `EliminarItemLista`, con `odata=nometadata` y errores `SharePointRestError` con el mensaje de SharePoint (`ExtraerMensajeErrorSharePoint` lee `error` y `odata.error`).
+
+## Fecha y hora (COR Conecta)
+
+Regla del workspace (`CLAUDE.md` y `.cursor/rules/fecha-hora-cor-conecta.mdc`): en COR Conecta las fechas con hora van en `dd/mm/aaaa hh:mm`, de 00 a 23 h, sin AM/PM.
+
+- `utils/FechaHoraCorConecta.ts`: `FormatearFechaHoraVisible` (ISO → texto visible), `ConvertirEntradaLocalAIsoUtc` / `ConvertirIsoAFechaLocalInput` (valor local `AAAA-MM-DDTHH:mm` ↔ ISO UTC), `InterpretarFechaHoraPegada` (acepta `dd/mm/aaaa hh:mm`, `dd-mm-aaaa hh:mm` y `aaaa-mm-ddThh:mm`; sin hora usa la actual; rechaza horas > 23 y fechas inexistentes) y `FormatearValorLocalParaEdicion`. El texto visible se arma a mano: `toLocaleString('es-CL')` separa con guiones y puede usar AM/PM según el navegador.
+- `InterpretarHora24` y `components/concentrador/CampoHora24.tsx`: hora sola `HH:mm` (00 a 23) en lugar de `<input type="time">`; acepta `9:05`, `0905`, `9` o pegar. Lo usan los plazos de envío de los mantenedores.
+- `components/concentrador/CampoFechaHora24.tsx`: reemplaza a `<input type="datetime-local">`. Mismo contrato de valor (`valor`/`onCambio` con `AAAA-MM-DDTHH:mm`, `min`, `disabled`, `readOnly`, `required`). Campo de texto que interpreta al salir, con Enter o al pegar; marca `is-invalid` si el formato o el mínimo no se cumplen y no propaga el valor. El botón de calendario abre un `input type="date"` oculto (`showPicker`) que solo cambia el día y conserva la hora.
 
 ## Carpetas estructurales
 

@@ -1,7 +1,19 @@
 import { RutaInicio } from '../models/RutaAplicacion';
 
+/** Decodifica `%2F` y similares: SharePoint en modo edición reescribe el hash como `#/%2Fruta%2Fhija`. */
+function DecodificarHash(hash: string): string {
+  if (hash.indexOf('%') < 0) {
+    return hash;
+  }
+  try {
+    return decodeURIComponent(hash);
+  } catch {
+    return hash;
+  }
+}
+
 export function NormalizarSegmentoHash(hash: string): string {
-  return hash.replace(/^#/, '').replace(/^\//, '').trim();
+  return DecodificarHash(hash.replace(/^#/, '')).replace(/^\/+/, '').trim();
 }
 
 export function ObtenerRutaDesdeHash(hash: string = window.location.hash): string {

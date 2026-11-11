@@ -1,127 +1,127 @@
-import { SPHttpClient, type SPHttpClientResponse } from '@microsoft/sp-http';
+import { SPHttpClient } from '@microsoft/sp-http';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
-import type {
-  DatosMarcarDisponibilidadSubequipo,
-  DatosMarcarIndisponibilidadSubequipo
-} from '../../../models/operadorRenovable/CatalogoEquiposOperador';
+import type { SubequipoOperador } from '../../../models/operadorRenovable/CatalogoEquiposOperador';
 import { ExtraerMensajeErrorSharePoint } from '../ExtraerMensajeErrorSharePoint';
-import { SharePointRestError } from '../SharePointRestError';
-import { RegistrarBitacoraSubequipoOperador } from './BitacoraOperadorServicio';
-import {
-  AccionBitacoraEnvioMeteologicaSimulado,
-  AccionBitacoraMarcarDisponibilidad,
-  AccionBitacoraMarcarIndisponibilidad,
-  CampoSharePointCapacidadActualMw,
-  DisponibilidadSubequipoDisponible,
-  DisponibilidadSubequipoIndisponible
-} from './CamposOperadorRenovable';
-import { NotificarCambioDisponibilidadOperadorRenovable } from './OperadorRenovableRefrescoGlobal';
 import { NombreListaSubequiposOperador } from './NombresListasOperadorRenovable';
-import { CalcularMwFueraServicio } from './UtilidadesCapacidadSubequipo';
+import { NotificarCambioDisponibilidadOperadorRenovable } from './OperadorRenovableRefrescoGlobal';
+import {
+  AnularPeriodo,
+  CambiarFechaEstimadaPeriodo,
+  CrearPeriodos,
+  FinalizarPeriodos,
+  MigrarPeriodos,
+  ReenviarPerfilCentral,
+  type DatosCrearPeriodos,
+  type EstadoSubequipoSharePoint,
+  type PeriodoIndisponibilidad,
+  type ResultadoAccionPeriodos,
+  type ResultadoMigracion
+} from './PeriodosIndisponibilidadApiServicio';
 
-async function ValidarRespuesta(response: SPHttpClientResponse, operacion: string, url: string): Promise<void> {
-  if (response.ok) {
-    return;
-  }
-  const mensaje = await ExtraerMensajeErrorSharePoint(response);
-  throw new SharePointRestError(operacion, url, response.status, response.statusText, mensaje);
-}
+/**
+ * Acciones del operador sobre la disponibilidad de los subequipos. La App Function guarda el período, escribe
+ * la bitácora y envía el perfil a Meteológica, pero **no escribe en listas de SharePoint** (el cliente no le da
+ * ese permiso): devuelve el estado de hoy de los subequipos afectados y el web part lo escribe en
+ * `CONC_MANTENEDOR_SUBEQUIPOS` con la API REST de SharePoint, como el usuario conectado.
+ */
 
-async function ActualizarItemSubequipo(
+/**
+ * Escribe en SharePoint el estado de los subequipos (MERGE por ítem). No lanza: el período ya quedó guardado;
+ * devuelve un aviso por cada subequipo que no se pudo actualizar.
+ */
+export async function AplicarEstadoSubequiposSharePoint(
   context: WebPartContext,
-  subequipoId: number,
-  cuerpo: Record<string, string | number>
-): Promise<void> {
+  estados: EstadoSubequipoSharePoint[]
+): Promise<string[]> {
   const webUrl = context.pageContext.web.absoluteUrl;
-  const tituloLista = encodeURIComponent(NombreListaSubequiposOperador);
-  const url = `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items(${subequipoId})`;
-
-  const response = await context.spHttpClient.post(url, SPHttpClient.configurations.v1, {
-    headers: {
-      Accept: 'application/json;odata=nometadata',
-      'Content-Type': 'application/json;odata=nometadata;charset=utf-8',
-      'IF-MATCH': '*',
-      'X-HTTP-Method': 'MERGE'
-    },
-    body: JSON.stringify(cuerpo)
-  });
-
-  await ValidarRespuesta(response, 'ActualizarItemSubequipo', url);
+  const lista = encodeURIComponent(NombreListaSubequiposOperador);
+  const avisos: string[] = [];
+  for (const estado of estados) {
+    const url = `${webUrl}/_api/web/lists/getbytitle('${lista}')/items(${estado.subequipoId})`;
+    try {
+      const response = await context.spHttpClient.post(url, SPHttpClient.configurations.v1, {
+        headers: {
+          Accept: 'application/json;odata=nometadata',
+          'Content-Type': 'application/json;odata=nometadata;charset=utf-8',
+          'IF-MATCH': '*',
+          'X-HTTP-Method': 'MERGE'
+        },
+        body: JSON.stringify(estado.campos)
+      });
+      if (!response.ok) {
+        const mensaje = await ExtraerMensajeErrorSharePoint(response);
+        avisos.push(`No se pudo actualizar el estado de ${estado.subequipoCodigo} en SharePoint: ${mensaje ?? `HTTP ${response.status}`}.`);
+      }
+    } catch {
+      avisos.push(`No se pudo actualizar el estado de ${estado.subequipoCodigo} en SharePoint.`);
+    }
+  }
+  return avisos;
 }
 
-async function RegistrarEnvioMeteologicaSubequipoSimulado(
+/** Aplica en SharePoint el estado que devolvió la App Function y suma los avisos al resultado. */
+async function ConEstadoEnSharePoint(
   context: WebPartContext,
-  subequipoId: number,
-  detalle: string
-): Promise<void> {
-  await RegistrarBitacoraSubequipoOperador(context, {
-    subequipoId,
-    accion: AccionBitacoraEnvioMeteologicaSimulado,
-    estadoAnterior: '—',
-    estadoNuevo: '—',
-    descripcion: detalle
-  });
-}
-
-export async function MarcarSubequipoIndisponibleEnSharePoint(
-  context: WebPartContext,
-  datos: DatosMarcarIndisponibilidadSubequipo
-): Promise<void> {
-  await ActualizarItemSubequipo(context, datos.subequipoId, {
-    DISPONIBILIDAD: DisponibilidadSubequipoIndisponible,
-    [CampoSharePointCapacidadActualMw]: datos.capacidadActualMw,
-    MOTIVO: datos.motivo,
-    DESCRIPCION: datos.descripcion ?? '',
-    FECHA_INDISPONIBILIDAD: datos.fechaIndisponibilidadIso
-  });
-
-  await RegistrarBitacoraSubequipoOperador(context, {
-    subequipoId: datos.subequipoId,
-    accion: AccionBitacoraMarcarIndisponibilidad,
-    estadoAnterior: datos.disponibilidadAnterior,
-    estadoNuevo: DisponibilidadSubequipoIndisponible,
-    capacidadMw: datos.capacidadActualMw,
-    motivo: datos.motivo,
-    descripcion: datos.descripcion
-  });
-
-  await RegistrarEnvioMeteologicaSubequipoSimulado(
-    context,
-    datos.subequipoId,
-    `Disponibilidad indisponible (${datos.capacidadActualMw} MW operativos; simulado Meteológica).`
-  );
+  resultado: ResultadoAccionPeriodos
+): Promise<ResultadoAccionPeriodos> {
+  const avisos = await AplicarEstadoSubequiposSharePoint(context, resultado.subequipos);
   NotificarCambioDisponibilidadOperadorRenovable();
+  return { ...resultado, avisos: resultado.avisos.concat(avisos) };
 }
 
-export async function MarcarSubequipoDisponibleEnSharePoint(
+/** Crea las indisponibilidades (un período por subequipo, mismas fechas). */
+export async function MarcarIndisponibilidadConPeriodos(
   context: WebPartContext,
-  datos: DatosMarcarDisponibilidadSubequipo
-): Promise<void> {
-  await ActualizarItemSubequipo(context, datos.subequipoId, {
-    DISPONIBILIDAD: DisponibilidadSubequipoDisponible,
-    [CampoSharePointCapacidadActualMw]: datos.capacidadMaximaMw,
-    MOTIVO: '',
-    DESCRIPCION: ''
-  });
+  datos: DatosCrearPeriodos
+): Promise<ResultadoAccionPeriodos> {
+  return ConEstadoEnSharePoint(context, await CrearPeriodos(context, datos));
+}
 
-  const mwFueraAnterior = CalcularMwFueraServicio(datos.capacidadMaximaMw, datos.capacidadActualAnteriorMw);
-
-  await RegistrarBitacoraSubequipoOperador(context, {
-    subequipoId: datos.subequipoId,
-    accion: AccionBitacoraMarcarDisponibilidad,
-    estadoAnterior: datos.disponibilidadAnterior,
-    estadoNuevo: DisponibilidadSubequipoDisponible,
-    capacidadMw: datos.capacidadMaximaMw,
-    descripcion:
-      mwFueraAnterior > 0
-        ? `Retorno a servicio (${datos.fechaDisponibilidadIso}). MW fuera previos: ${mwFueraAnterior}.`
-        : `Retorno a servicio (${datos.fechaDisponibilidadIso}).`
-  });
-
-  await RegistrarEnvioMeteologicaSubequipoSimulado(
+/**
+ * Marca disponibles: guarda el fin real de sus períodos. Un subequipo Indisponible sin período (dato
+ * anterior a los períodos) solo se pone Disponible en SharePoint, sin envío (no contaba en el perfil).
+ */
+export async function MarcarDisponibilidadConPeriodos(
+  context: WebPartContext,
+  subequipos: SubequipoOperador[],
+  fechaFinIso: string
+): Promise<ResultadoAccionPeriodos> {
+  const periodos = subequipos
+    .map((sub) => sub.periodoVigente)
+    .filter((periodo): periodo is PeriodoIndisponibilidad => periodo !== undefined);
+  const sinPeriodo = subequipos.filter((sub) => !sub.periodoVigente).map((sub) => sub.id);
+  return ConEstadoEnSharePoint(
     context,
-    datos.subequipoId,
-    `Disponibilidad restaurada (${datos.capacidadMaximaMw} MW; simulado Meteológica).`
+    await FinalizarPeriodos(context, periodos.map((p) => p.id), fechaFinIso, sinPeriodo)
   );
+}
+
+/** Cambia la fecha estimada de fin; la App Function reenvía el perfil. */
+export async function ModificarFechaEstimadaPeriodo(
+  context: WebPartContext,
+  periodo: PeriodoIndisponibilidad,
+  fechaFinEstimadaIso: string
+): Promise<ResultadoAccionPeriodos> {
+  return ConEstadoEnSharePoint(context, await CambiarFechaEstimadaPeriodo(context, periodo.id, fechaFinEstimadaIso));
+}
+
+/** Anula una indisponibilidad cargada por error (deja de contar en el perfil). */
+export async function AnularIndisponibilidadPeriodo(
+  context: WebPartContext,
+  periodo: PeriodoIndisponibilidad
+): Promise<ResultadoAccionPeriodos> {
+  return ConEstadoEnSharePoint(context, await AnularPeriodo(context, periodo.id));
+}
+
+/** Recalcula y reenvía el perfil de la central (y pone al día su estado en SharePoint). */
+export async function ReenviarPerfilYEstado(context: WebPartContext, instalacionId: number): Promise<ResultadoAccionPeriodos> {
+  return ConEstadoEnSharePoint(context, await ReenviarPerfilCentral(context, instalacionId));
+}
+
+/** Migra las indisponibilidades sin período y escribe en SharePoint el estado que corresponda. */
+export async function MigrarIndisponibilidadesExistentes(context: WebPartContext): Promise<ResultadoMigracion> {
+  const resultado = await MigrarPeriodos(context, false);
+  const avisos = await AplicarEstadoSubequiposSharePoint(context, resultado.subequipos);
   NotificarCambioDisponibilidadOperadorRenovable();
+  return { ...resultado, omitidos: resultado.omitidos.concat(avisos) };
 }

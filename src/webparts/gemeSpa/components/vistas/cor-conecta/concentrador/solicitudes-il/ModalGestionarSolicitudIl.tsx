@@ -29,10 +29,11 @@ import { SharePointRestError } from '../../../../../services/sharepoint/SharePoi
 import {
   ConvertirEntradaLocalAIsoUtc,
   ConvertirIsoAFechaLocalInput
-} from './UtilidadesFechaSolicitudIl';
+} from '../../../../../utils/FechaHoraCorConecta';
 import { BloqueEstadoFormularioSolicitudIl, ResolverEstadoSolicitudIl } from './PresentacionEstadoSolicitudIl';
 import { ArchivoConNombreSanitizado } from '../../../../../utils/SanearNombreArchivoAdjunto';
 import { ValidarArchivoAdjuntoSharePoint } from '../../../../../utils/ValidacionAdjuntosSharePoint';
+import CampoFechaHora24 from '../../../../concentrador/CampoFechaHora24';
 
 export type ModalGestionarSolicitudIlProps = {
   context: WebPartContext;
@@ -194,8 +195,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
     onCerrar();
   };
 
-  const OnCambioInicio = (evento: React.ChangeEvent<HTMLInputElement>): void => {
-    const valor = evento.target.value;
+  const OnCambioInicio = (valor: string): void => {
     setInicioLocal(valor);
     if (!valor.trim()) {
       setFinLocal('');
@@ -214,8 +214,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
     }
   };
 
-  const OnCambioFin = (evento: React.ChangeEvent<HTMLInputElement>): void => {
-    const valor = evento.target.value;
+  const OnCambioFin = (valor: string): void => {
     setFinLocal(valor);
     if (valor.trim()) {
       setAnularMarcado(false);
@@ -568,12 +567,10 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
                       <EtiquetaCampo htmlFor="gestionar-solicitud-inicio" obligatorio={modoEdicion}>
                         Fecha inicio
                       </EtiquetaCampo>
-                      <input
+                      <CampoFechaHora24
                         id="gestionar-solicitud-inicio"
-                        type="datetime-local"
-                        className="form-control form-control-sm"
-                        value={inicioLocal}
-                        onChange={OnCambioInicio}
+                        valor={inicioLocal}
+                        onCambio={OnCambioInicio}
                         readOnly={!modoEdicion}
                         disabled={!modoEdicion}
                         required={modoEdicion}
@@ -581,14 +578,12 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
                     </div>
                     <div className="col-md-6">
                       <EtiquetaCampo htmlFor="gestionar-solicitud-fin">Fecha fin</EtiquetaCampo>
-                      <input
+                      <CampoFechaHora24
                         id="gestionar-solicitud-fin"
-                        type="datetime-local"
-                        className="form-control form-control-sm"
-                        value={finLocal}
+                        valor={finLocal}
                         min={inicioLocal || undefined}
                         disabled={!finHabilitado}
-                        onChange={OnCambioFin}
+                        onCambio={OnCambioFin}
                         readOnly={!modoEdicion}
                       />
                       {modoEdicion ? (

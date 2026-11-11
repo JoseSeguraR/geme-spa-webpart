@@ -5,7 +5,12 @@ import type { CentralMantenedor, SolicitudIl } from '../../../../../models/Solic
 import { ObtenerCentralesDesdeSharePoint } from '../../../../../services/sharepoint/solicitudesIl/CentralesServicio';
 import { ObtenerPaginaSolicitudesIlRenderListData } from '../../../../../services/sharepoint/solicitudesIl/RenderListDataSolicitudesIlServicio';
 import { SharePointRestError } from '../../../../../services/sharepoint/SharePointRestError';
-import { CampoEstadoTareaActualIl, type EstadoSolicitudIl } from './constantesSolicitudesIl';
+import { TamanoPaginaTodos } from '../../../../grilla';
+import {
+  CampoEstadoTareaActualIl,
+  TamanoLoteCargaCompletaSolicitudesIl,
+  type EstadoSolicitudIl
+} from './constantesSolicitudesIl';
 
 /** Filtro por instalaciones asignadas al solicitante; ausente en otros perfiles. */
 export type RestriccionInstalacionesSolicitante =
@@ -138,6 +143,37 @@ export function UseSolicitudesIlLista(params: UseSolicitudesIlListaParams): UseS
             ? restriccionInstalaciones.ids
             : undefined;
         const campoSharePoint = MapaCampoOrdenGrilla[campoOrden] ?? 'ID';
+
+        if (tamanoPagina === TamanoPaginaTodos) {
+          const todas: SolicitudIl[] = [];
+          let pagingLote: string | undefined;
+          do {
+            const lote = await ObtenerPaginaSolicitudesIlRenderListData(
+              context,
+              {
+                estado: estadoFiltro,
+                centralId: centralIdFiltro,
+                instalacionesPermitidasIds,
+                tamanoPagina: TamanoLoteCargaCompletaSolicitudesIl,
+                campoOrden: campoSharePoint,
+                direccionOrden
+              },
+              pagingLote,
+              textoBusqueda
+            );
+            if (cancelado) {
+              return;
+            }
+            todas.push(...lote.filas);
+            pagingLote = lote.pagingSiguiente;
+          } while (pagingLote);
+
+          setFilas(todas);
+          setHayPaginaSiguiente(false);
+          setEstadoCarga(todas.length === 0 ? 'vacio' : 'listo');
+          return;
+        }
+
         let paging: string | undefined;
         const tokens = tokensPagingRef.current;
 
