@@ -19,6 +19,10 @@
 
     Opcional: carga FACILITY_ID_METEOLOGICA por CODIGO de central (-FacilityIdsMeteologica).
 
+    Opcional: crea en SISTEMA_ACCESOS las filas del menú (-CrearMenu): un Header «operador-renovable» bajo la
+    fila cor-conecta/concentrador y una Route «solicitudes», para que la SPA abra
+    #/cor-conecta/concentrador/operador-renovable/solicitudes. Las pestañas Equipos y Subestación no llevan fila.
+
     Idempotente: si una lista, columna, opción o índice ya existe, lo omite sin error. No modifica columnas
     existentes con otro tipo, no borra columnas obsoletas y no carga subequipos.
 
@@ -33,6 +37,26 @@
     ese tenant: sin él, el inicio de sesión va a tu tenant de origen y falla con AADSTS700016.
     Ejemplo: novakemcl.onmicrosoft.com
 
+.PARAMETER CrearMenu
+    Crea las filas del menú en SISTEMA_ACCESOS si no existen (busca por la ruta de HASH_KEY, no por título).
+    No modifica filas existentes. Requiere que exista la fila con ruta cor-conecta/concentrador.
+
+.PARAMETER MenuGrupoAcceso
+    Grupo de SharePoint del sitio que verá la opción (GRUPOACCESO). Vacío = la ven todos.
+    Ejemplo: "GEME - CONC - Operador renovable"
+
+.PARAMETER MenuTituloGrupo
+    HASH_TITLE del Header. Por defecto "Operador renovable".
+
+.PARAMETER MenuTituloOpcion
+    HASH_TITLE de la Route. Por defecto "Solicitudes".
+
+.PARAMETER MenuIcono
+    ICONO del Header: nombre de Bootstrap Icons sin el prefijo bi- (p. ej. sun). Por defecto "sun".
+
+.PARAMETER MenuOrden
+    ORDEN del Header entre sus hermanos. 0 (por defecto) = después del último.
+
 .PARAMETER FacilityIdsMeteologica
     CODIGO de la central → facilityId de Meteológica (GET /api/meteologica-facilities de la App Function).
     Solo llena las centrales con la columna vacía; no pisa un valor distinto.
@@ -45,6 +69,11 @@
 .EXAMPLE
     ./scripts/provision-operador-renovable.ps1 -SiteUrl "https://novakemcl.sharepoint.com/sites/geme" `
       -FacilityIdsMeteologica @{ "CEME1" = "GeneradoraMetropolitana_CEME1" }
+
+.EXAMPLE
+    # Además crea las filas del menú, visibles solo para el grupo de operadores
+    ./scripts/provision-operador-renovable.ps1 -SiteUrl "https://novakemcl.sharepoint.com/sites/geme" `
+      -CrearMenu -MenuGrupoAcceso "GEME - CONC - Operador renovable"
 
 .EXAMPLE
     # Borra CONC_LISTA_BITACORA_SUBEQUIPO y CONC_LISTA_BITACORA_SUBESTACION (a la papelera; pide confirmación)
@@ -69,6 +98,18 @@ param(
     [hashtable]$FacilityIdsMeteologica = @{},
 
     [switch]$EliminarListasBitacora,
+
+    [switch]$CrearMenu,
+
+    [string]$MenuGrupoAcceso = "",
+
+    [string]$MenuTituloGrupo = "Operador renovable",
+
+    [string]$MenuTituloOpcion = "Solicitudes",
+
+    [string]$MenuIcono = "sun",
+
+    [double]$MenuOrden = 0,
 
     [switch]$UseDeviceLogin
 )
@@ -104,6 +145,9 @@ $ListaLimitaciones = "CONC_LISTA_LIMITACIONESRED"
 # Solo para -EliminarListasBitacora (las bitácoras están en la BD de la App Function)
 $ListaBitacoraSubequipo = "CONC_LISTA_BITACORA_SUBEQUIPO"
 $ListaBitacoraSubestacion = "CONC_LISTA_BITACORA_SUBESTACION"
+# Solo para -CrearMenu
+$ListaSistemaAccesos = "SISTEMA_ACCESOS"
+$RutaMenuPadre = "cor-conecta/concentrador"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -219,6 +263,51 @@ function Ensure-Index {
     Write-Host "    [+] Índice: $List/$Name" -ForegroundColor Green
 }
 
+# PADRE es búsqueda (en la SPA, multivalor); la ruta usa el primer padre, como el menú de la SPA.
+function Get-PadreIdMenu {
+    param($Fila)
+    $padres = @($Fila["PADRE"] | Where-Object { $_ })
+    if ($padres.Count -eq 0) {
+        return 0
+    }
+    return [int]$padres[0].LookupId
+}
+
+# Ruta de la fila: HASH_KEY desde la raíz unidos con / (lo que la SPA usa como #/ruta)
+function Get-RutaMenu {
+    param($Fila, [hashtable]$PorId)
+    $partes = @()
+    $vistos = @{}
+    $actual = $Fila
+    while ($actual -and -not $vistos.ContainsKey($actual.Id)) {
+        $vistos[$actual.Id] = $true
+        $partes = @(([string]$actual["HASH_KEY"]).Trim()) + $partes
+        $padreId = Get-PadreIdMenu -Fila $actual
+        $actual = if ($padreId) { $PorId[$padreId] } else { $null }
+    }
+    return $partes -join "/"
+}
+
+function Find-FilaMenu {
+    param([string]$Ruta, [hashtable]$PorId)
+    return $PorId.Values | Where-Object { (Get-RutaMenu -Fila $_ -PorId $PorId) -eq $Ruta } | Select-Object -First 1
+}
+
+function Ensure-FilaMenu {
+    param([string]$Ruta, [int]$PadreId, [hashtable]$Valores, [hashtable]$PorId)
+    $existente = Find-FilaMenu -Ruta $Ruta -PorId $PorId
+    if ($existente) {
+        Write-Host "    [~] Ya existe: $Ruta (ID $($existente.Id)); no se modifica" -ForegroundColor Yellow
+        return $existente.Id
+    }
+    $valoresFila = $Valores.Clone()
+    $valoresFila.PADRE = @($PadreId)
+    $nueva = Add-PnPListItem -List $ListaSistemaAccesos -Values $valoresFila
+    $PorId[$nueva.Id] = Get-PnPListItem -List $ListaSistemaAccesos -Id $nueva.Id
+    Write-Host "    [+] Creada: $Ruta ($($Valores.TIPOACCESO), ID $($nueva.Id))" -ForegroundColor Green
+    return $nueva.Id
+}
+
 # ── Conexión ───────────────────────────────────────────────────────────────────
 
 Write-Host "`nConectando a $SiteUrl..." -ForegroundColor Cyan
@@ -328,6 +417,49 @@ if ($EliminarListasBitacora) {
         } else {
             Write-Host "    [~] Se mantiene: $lista" -ForegroundColor Yellow
         }
+    }
+}
+
+# ── Opcional: filas del menú en SISTEMA_ACCESOS ────────────────────────────────
+
+if ($CrearMenu) {
+    Write-Host "`nMenú ($ListaSistemaAccesos)" -ForegroundColor Cyan
+    Assert-ListExists -Title $ListaSistemaAccesos
+
+    $grupoAcceso = $null
+    if (-not [string]::IsNullOrWhiteSpace($MenuGrupoAcceso)) {
+        $grupoAcceso = Get-PnPGroup -Identity $MenuGrupoAcceso -ErrorAction SilentlyContinue
+        if (-not $grupoAcceso) {
+            throw "No existe el grupo '$MenuGrupoAcceso' en $SiteUrl. Créalo o deja -MenuGrupoAcceso vacío."
+        }
+    }
+
+    $porId = @{}
+    foreach ($fila in @(Get-PnPListItem -List $ListaSistemaAccesos -PageSize 500)) {
+        $porId[$fila.Id] = $fila
+    }
+
+    $padre = Find-FilaMenu -Ruta $RutaMenuPadre -PorId $porId
+    if (-not $padre) {
+        Write-Warning "    [!] No hay fila con ruta '$RutaMenuPadre' en $ListaSistemaAccesos; no se crea el menú."
+    } else {
+        $orden = $MenuOrden
+        if ($orden -le 0) {
+            $ordenesHermanos = @($porId.Values | Where-Object { (Get-PadreIdMenu -Fila $_) -eq $padre.Id } |
+                ForEach-Object { [double]$_["ORDEN"] })
+            $orden = if ($ordenesHermanos.Count -gt 0) { ($ordenesHermanos | Measure-Object -Maximum).Maximum + 1 } else { 1 }
+        }
+
+        $comunes = @{ ACTIVO = $true }
+        if ($grupoAcceso) {
+            $comunes.GRUPOACCESO = @($grupoAcceso.Id)
+        }
+
+        $idGrupo = Ensure-FilaMenu -Ruta "$RutaMenuPadre/operador-renovable" -PadreId $padre.Id -PorId $porId -Valores (
+            $comunes + @{ TIPOACCESO = "Header"; HASH_TITLE = $MenuTituloGrupo; HASH_KEY = "operador-renovable"; ORDEN = $orden; ICONO = $MenuIcono })
+        Ensure-FilaMenu -Ruta "$RutaMenuPadre/operador-renovable/solicitudes" -PadreId $idGrupo -PorId $porId -Valores (
+            $comunes + @{ TIPOACCESO = "Route"; HASH_TITLE = $MenuTituloOpcion; HASH_KEY = "solicitudes"; ORDEN = 1 }) | Out-Null
+        Write-Host "    La SPA guarda el menú hasta 45 minutos en el navegador: para verlo antes, abre la página en una ventana privada." -ForegroundColor Cyan
     }
 }
 

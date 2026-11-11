@@ -155,26 +155,34 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
     [ObtenerContenedorPortalWebPart]
   );
 
-  useEffect(() => {
-    if (busqueda) {
-      setTextoBusquedaLocal(busqueda.valorEnConsulta);
-    }
-  }, [busqueda?.valorEnConsulta, busqueda]);
+  // El padre suele pasar `busqueda` como objeto en línea: los efectos dependen de sus valores, no del
+  // objeto, para que un re-render (p. ej. al llegar la respuesta) no pise lo que el usuario está escribiendo.
+  const valorEnConsulta = busqueda?.valorEnConsulta;
+  const demoraBusquedaMs = busqueda?.demoraMs ?? 450;
+  const onCambioConsultaRef = useRef(busqueda?.onCambioConsulta);
+  onCambioConsultaRef.current = busqueda?.onCambioConsulta;
 
   useEffect(() => {
-    if (!busqueda) {
+    if (valorEnConsulta === undefined) {
+      return;
+    }
+    // Solo cuando el valor cambia desde fuera (p. ej. limpiar filtros); conserva espacios al final.
+    setTextoBusquedaLocal((actual) => (actual.trim() === valorEnConsulta.trim() ? actual : valorEnConsulta));
+  }, [valorEnConsulta]);
+
+  useEffect(() => {
+    if (valorEnConsulta === undefined) {
       return;
     }
     const textoNormalizado = textoBusquedaLocal.trim();
-    const demoraBase = busqueda.demoraMs ?? 450;
-    const demoraMs = textoNormalizado.length === 0 ? 0 : demoraBase;
+    const demoraMs = textoNormalizado.length === 0 ? 0 : demoraBusquedaMs;
     const id = window.setTimeout(() => {
-      if (textoNormalizado !== busqueda.valorEnConsulta.trim()) {
-        busqueda.onCambioConsulta(textoNormalizado);
+      if (textoNormalizado !== valorEnConsulta.trim()) {
+        onCambioConsultaRef.current?.(textoNormalizado);
       }
     }, demoraMs);
     return () => window.clearTimeout(id);
-  }, [textoBusquedaLocal, busqueda]);
+  }, [textoBusquedaLocal, valorEnConsulta, demoraBusquedaMs]);
 
   const modeloOrden: GridSortModel = useMemo(
     () => [{ field: campoOrden, sort: direccionOrden }],
