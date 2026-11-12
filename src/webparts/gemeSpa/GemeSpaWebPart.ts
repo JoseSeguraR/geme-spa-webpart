@@ -19,6 +19,7 @@ export type GemeSpaWebPartProps = PropiedadesWebPartSolicitudesIl & PropiedadesW
 const GrupoFlujoBitacoraSolicitudesIl = 'Solicitudes IL · Flujo (bitácora)';
 const GrupoEnlacesSolicitudesIl = 'Solicitudes IL · Enlaces';
 const GrupoSiodSolicitudesIl = 'Solicitudes IL · SIOD (Azure Functions)';
+const GrupoResumenIaSolicitudesIl = 'Solicitudes IL · Resumen con IA (Azure Functions)';
 const GrupoAppFunctionOperadorRenovable = 'Operador renovable · Meteológica (Azure Functions)';
 
 function CampoUrlPropertyPane(
@@ -60,7 +61,8 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
         concSolicitudesIlUrlExcelVinculado: this.properties.concSolicitudesIlUrlExcelVinculado,
         concSolicitudesIlUrlInsertSIOD: this.properties.concSolicitudesIlUrlInsertSIOD,
         concSolicitudesIlUrlDeleteSIOD: this.properties.concSolicitudesIlUrlDeleteSIOD,
-        concSolicitudesIlUrlUpdateSIOD: this.properties.concSolicitudesIlUrlUpdateSIOD
+        concSolicitudesIlUrlUpdateSIOD: this.properties.concSolicitudesIlUrlUpdateSIOD,
+        concSolicitudesIlUrlResumenIa: this.properties.concSolicitudesIlUrlResumenIa
       }
     });
 
@@ -166,6 +168,17 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
                   'concSolicitudesIlUrlUpdateSIOD',
                   'URL Update SIOD',
                   'Endpoint de actualización en SIOD (Azure Function u otro servicio).'
+                )
+              ]
+            },
+            {
+              groupName: GrupoResumenIaSolicitudesIl,
+              isCollapsed: true,
+              groupFields: [
+                CampoUrlPropertyPane(
+                  'concSolicitudesIlUrlResumenIa',
+                  'URL resumen con IA',
+                  'POST /api/ai/summarize-text con ?code=<function key>. Botón «Resumir con IA» de Gestionar: resume la descripción larga en la descripción (200 caracteres).'
                 )
               ]
             },

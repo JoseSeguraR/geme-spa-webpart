@@ -109,6 +109,7 @@ type ItemSolicitudIlRest = {
   Id: number;
   ID_CEN?: string;
   DESCRIPCION?: string;
+  DESCRIPCION_LARGA?: string;
   FECHA_INICIO?: string;
   FECHA_FIN?: string;
   TAREAACTUALId?: number;
@@ -127,6 +128,7 @@ export async function ObtenerDetalleSolicitudIlPorId(
     'Id',
     'ID_CEN',
     'DESCRIPCION',
+    'DESCRIPCION_LARGA',
     'FECHA_INICIO',
     'FECHA_FIN',
     'TAREAACTUALId',
@@ -152,6 +154,7 @@ export async function ObtenerDetalleSolicitudIlPorId(
     centralId: item.INSTALACIONId ?? undefined,
     centralEtiqueta,
     descripcion: item.DESCRIPCION ?? '',
+    descripcionLarga: item.DESCRIPCION_LARGA ?? '',
     fechaInicio: item.FECHA_INICIO ?? undefined,
     fechaFin: item.FECHA_FIN ?? undefined,
     estado: ResolverEstadoSolicitudIl(estadoTexto),
@@ -176,6 +179,10 @@ export async function ActualizarSolicitudIlEnSharePoint(
     DESCRIPCION: datos.descripcion,
     FECHA_INICIO: datos.fechaInicioIso
   };
+
+  if (datos.descripcionLarga !== undefined) {
+    cuerpo.DESCRIPCION_LARGA = datos.descripcionLarga;
+  }
 
   if (datos.limpiarFechaFin) {
     cuerpo.FECHA_FIN = null;

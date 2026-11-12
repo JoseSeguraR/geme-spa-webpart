@@ -26,6 +26,8 @@ export type PropiedadesWebPartSolicitudesIl = {
   concSolicitudesIlUrlInsertSIOD?: string;
   concSolicitudesIlUrlDeleteSIOD?: string;
   concSolicitudesIlUrlUpdateSIOD?: string;
+  /** POST /api/ai/summarize-text de la App Function con ?code=<function key> (resumen de la descripción larga). */
+  concSolicitudesIlUrlResumenIa?: string;
 };
 
 export function ObtenerUrlExcelVinculadoSolicitudesIlDesdeProps(
@@ -53,6 +55,13 @@ export function ObtenerUrlDeleteSiodSolicitudesIlDesdeProps(
   props: PropiedadesWebPartSolicitudesIl
 ): string | undefined {
   const url = props.concSolicitudesIlUrlDeleteSIOD?.trim() ?? '';
+  return url.length > 0 ? url : undefined;
+}
+
+export function ObtenerUrlResumenIaSolicitudesIlDesdeProps(
+  props: PropiedadesWebPartSolicitudesIl
+): string | undefined {
+  const url = props.concSolicitudesIlUrlResumenIa?.trim() ?? '';
   return url.length > 0 ? url : undefined;
 }
 

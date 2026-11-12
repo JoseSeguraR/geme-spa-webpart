@@ -10,6 +10,8 @@
       - concOperadorRenovableUrlPeriodos              → /api/concentrador-periodos?code=<llave> (indisponibilidades
                                                         con fecha estimada de fin, Planificación, bitácoras y limitaciones;
                                                         la misma llave sirve para todos los endpoints)
+      - concSolicitudesIlUrlResumenIa                 → POST /api/ai/summarize-text?code=<llave> (botón «Resumir con IA»
+                                                        de Gestionar en Solicitudes IL)
 
     Lee las propiedades actuales del web part y solo cambia esas, para no borrar las demás
     (Solicitudes IL: tareas, acciones, Excel, SIOD). Luego vuelve a publicar la página.
@@ -78,6 +80,7 @@ $codigo = [uri]::EscapeDataString($FunctionKey.Trim())
 $nuevas = [ordered]@{
     concOperadorRenovableUrlMeteologicaFacilities = "$base/meteologica-facilities?code=$codigo"
     concOperadorRenovableUrlPeriodos              = "$base/concentrador-periodos?code=$codigo"
+    concSolicitudesIlUrlResumenIa                 = "$base/ai/summarize-text?code=$codigo"
 }
 
 # ── Conexión ───────────────────────────────────────────────────────────────────

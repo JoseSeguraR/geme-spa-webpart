@@ -43,7 +43,7 @@ El menú de acciones de cada fila (`DesplegableAccionesFila`) se dibuja en un po
 
 | Lista | Uso |
 | --- | --- |
-| `CONC_LISTA_SOLICITUDES_IL` | Solicitud: `ID_CEN`, `INSTALACION`, `DESCRIPCION`, `FECHA_INICIO`, `FECHA_FIN`, lookup `TAREAACTUAL` y adjuntos. |
+| `CONC_LISTA_SOLICITUDES_IL` | Solicitud: `ID_CEN`, `INSTALACION`, `DESCRIPCION` (texto, hasta 200 caracteres en la UI), `DESCRIPCION_LARGA` (nota; solo la lee y escribe Gestionar), `FECHA_INICIO`, `FECHA_FIN`, lookup `TAREAACTUAL` y adjuntos. |
 | `ENGINE_BITACORA` | Historial de flujo. Tipo de registro `SOLICITUDES_IL`, clasificación `FLUJO`. |
 | `CONC_MANTENEDOR_INSTALACIONES` | Centrales. En pantalla se muestran como «Central»; hacia SIOD se envía `codigoSiod`. |
 | `CONC_MANTENEDOR_USUARIOSINSTALACIONES` | Instalaciones permitidas del usuario actual (perfil solicitante). |
@@ -101,6 +101,17 @@ Finalizada ↔ Anulada no está definida: `ResolverTransicionEstadoSolicitudIl` 
 
 Al reactivar o anular, la actualización de la lista puede limpiar `FECHA_FIN` (`limpiarFechaFin`).
 
+### Resumen de la descripción con IA
+
+`ModalGestionarSolicitudIl` (solo lo abren Administrador y Despachador; el Solicitante tiene «solo ver bitácora») muestra **Descripción larga** (`DESCRIPCION_LARGA`) y **Descripción** (`DESCRIPCION`). Con la solicitud Vigente, el botón **Resumir con IA** llama a `ResumirDescripcionSolicitudIl` (`ResumenDescripcionIaServicio.ts`):
+
+1. Toma `DESCRIPCION_LARGA` del formulario (sin guardar todavía). Si está vacía, el botón queda deshabilitado.
+2. Si mide 200 caracteres o menos (`MaxLongitudDescripcionSolicitudIl`, tras `trim`), la copia en Descripción **sin llamar** a la Function.
+3. Si es más larga, hace `POST` a la URL de la propiedad «URL resumen con IA» (`concSolicitudesIlUrlResumenIa`, `/api/ai/summarize-text?code=<llave>`) con `{ "text": <descripción larga>, "language": "es" }`. Espera hasta 90 s (`AbortController`). Pone `summary` en Descripción, cortado a 200 por seguridad.
+4. Errores HTTP a mensaje en el formulario: 400 texto corto, 401/403 llave, 422 filtro de contenido de Azure, 503 Azure OpenAI sin configurar, 504 timeout; sin conexión o timeout del navegador, mensaje propio. No se escribe nada en la lista.
+
+El resumen queda en el formulario para revisarlo y editarlo; se guarda con **Guardar** junto con los demás campos (`DESCRIPCION` y `DESCRIPCION_LARGA` en el mismo `MERGE`). Hacia SIOD sigue yendo solo `DESCRIPCION`. El resumen se muestra como valor de `textarea`, nunca como HTML.
+
 La bitácora de solo lectura (`ModalBitacoraSolicitudIl`) consulta `ENGINE_BITACORA` filtrada por el id de la solicitud (`ConstruirViewXmlBitacoraSolicitudIl`).
 
 ## SIOD
@@ -132,13 +143,14 @@ Necesita los IDs del grupo «Solicitudes IL · Flujo (bitácora)» del panel de 
 
 ## Panel de propiedades
 
-`GemeSpaWebPart` muestra una página «COR Conecta» con tres grupos, todos colapsados:
+`GemeSpaWebPart` muestra una página «COR Conecta» con estos grupos de Solicitudes IL (además del de Operador renovable), todos colapsados:
 
 | Grupo | Propiedades |
 | --- | --- |
 | Solicitudes IL · Flujo (bitácora) | IDs enteros de tareas (Crear, Finalizar, Anular, Reactivar) y de acciones (Finalizar, Anular, Reactivar). Son ítems lookup de las listas del motor. |
 | Solicitudes IL · Enlaces | URL del Excel vinculado. |
 | Solicitudes IL · SIOD (Azure Functions) | URLs de insert, delete y update. |
+| Solicitudes IL · Resumen con IA (Azure Functions) | «URL resumen con IA» (`concSolicitudesIlUrlResumenIa`): `https://<host>/api/ai/summarize-text?code=<llave>`. También la carga `scripts/configurar-propiedades-webpart.ps1`. Vacía: «Resumir con IA» solo copia descripciones de hasta 200 caracteres y avisa que falta configurarla para las largas. |
 
 `ConstruirConfiguracionSolicitudesIlDesdeProps` exige los siete IDs de flujo como enteros mayores que cero en el momento de registrar o cambiar estado. Una URL vacía se trata como no configurada.
 
@@ -160,6 +172,7 @@ services/sharepoint/solicitudesIl/
   BitacoraEngineServicio      Alta y cierre en ENGINE_BITACORA
   SiodSolicitudIlApiServicio    POST Insert/Update; DELETE baja (fire-and-forget)
   SincronizarSiodGestion…       Reglas SIOD en edición y cambio de estado
+  ResumenDescripcionIaServicio  POST /api/ai/summarize-text (o copia si cabe en 200)
 models/
   SolicitudIl.ts
   ConfiguracionSolicitudesIl.ts

@@ -13,8 +13,13 @@ import {
   ConstruirConfiguracionSolicitudesIlDesdeProps,
   ObtenerUrlDeleteSiodSolicitudesIlDesdeProps,
   ObtenerUrlInsertSiodSolicitudesIlDesdeProps,
+  ObtenerUrlResumenIaSolicitudesIlDesdeProps,
   ObtenerUrlUpdateSiodSolicitudesIlDesdeProps
 } from '../../../../../models/ConfiguracionSolicitudesIl';
+import {
+  ResumenDescripcionIaError,
+  ResumirDescripcionSolicitudIl
+} from '../../../../../services/sharepoint/solicitudesIl/ResumenDescripcionIaServicio';
 import {
   ObtenerAdjuntosSolicitudIl,
   ObtenerDetalleSolicitudIlPorId
@@ -93,6 +98,10 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
   const [idCen, setIdCen] = useState('');
   const [centralId, setCentralId] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [descripcionLarga, setDescripcionLarga] = useState('');
+  const [resumiendo, setResumiendo] = useState(false);
+  const [avisoResumen, setAvisoResumen] = useState<string | undefined>();
+  const [errorResumen, setErrorResumen] = useState<string | undefined>();
   const [inicioLocal, setInicioLocal] = useState('');
   const [finLocal, setFinLocal] = useState('');
   const [anularMarcado, setAnularMarcado] = useState(false);
@@ -147,6 +156,9 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
         setIdCen(detalle.idCen);
         setCentralId(detalle.centralId ? String(detalle.centralId) : '');
         setDescripcion(detalle.descripcion);
+        setDescripcionLarga(detalle.descripcionLarga);
+        setAvisoResumen(undefined);
+        setErrorResumen(undefined);
         setInicioLocal(ConvertirIsoAFechaLocalInput(detalle.fechaInicio));
         setFinLocal(ConvertirIsoAFechaLocalInput(detalle.fechaFin));
         setTeniaFechaFinAlCargar(Boolean(detalle.fechaFin));
@@ -193,6 +205,26 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
       return;
     }
     onCerrar();
+  };
+
+  const ResumirConIa = (): void => {
+    setResumiendo(true);
+    setAvisoResumen(undefined);
+    setErrorResumen(undefined);
+    ResumirDescripcionSolicitudIl(ObtenerUrlResumenIaSolicitudesIlDesdeProps(propiedadesSolicitudesIl), descripcionLarga)
+      .then((resultado) => {
+        setDescripcion(resultado.resumen);
+        setAvisoResumen(
+          resultado.generadoConIa
+            ? 'Resumen generado con IA: revíselo antes de guardar.'
+            : 'La descripción larga cabe en 200 caracteres: se copió sin pasar por la IA.'
+        );
+      })
+      .catch((err: Error) =>
+        setErrorResumen(err instanceof ResumenDescripcionIaError ? err.message : 'No se pudo resumir la descripción.')
+      )
+      .then(() => setResumiendo(false))
+      .catch(() => undefined);
   };
 
   const OnCambioInicio = (valor: string): void => {
@@ -344,6 +376,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
       idCen: idCen.trim(),
       centralId: Number(centralId),
       descripcion: descripcion.trim(),
+      descripcionLarga: modoEdicion ? descripcionLarga.trim() : undefined,
       fechaInicioIso: inicioPersistir,
       fechaFinIso: modoEdicion ? finIso : undefined,
       limpiarFechaFin: limpiarFechaFin || undefined
@@ -543,9 +576,40 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
                       </select>
                     </div>
                     <div className="col-12">
-                      <EtiquetaCampo htmlFor="gestionar-solicitud-descripcion" obligatorio={modoEdicion}>
-                        Descripción
-                      </EtiquetaCampo>
+                      <EtiquetaCampo htmlFor="gestionar-solicitud-descripcion-larga">Descripción larga</EtiquetaCampo>
+                      <textarea
+                        id="gestionar-solicitud-descripcion-larga"
+                        className="form-control form-control-sm"
+                        rows={5}
+                        value={descripcionLarga}
+                        onChange={(evento) => setDescripcionLarga(evento.target.value)}
+                        readOnly={!modoEdicion}
+                        disabled={!modoEdicion}
+                      />
+                    </div>
+                    <div className="col-12">
+                      <div className="d-flex flex-wrap align-items-end justify-content-between gap-2">
+                        <EtiquetaCampo htmlFor="gestionar-solicitud-descripcion" obligatorio={modoEdicion}>
+                          Descripción
+                        </EtiquetaCampo>
+                        {modoEdicion ? (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary mb-2"
+                            onClick={ResumirConIa}
+                            disabled={resumiendo || guardando || !descripcionLarga.trim()}
+                            title={
+                              descripcionLarga.trim()
+                                ? `Resume la descripción larga en ${MaxLongitudDescripcionSolicitudIl} caracteres`
+                                : 'Ingrese la descripción larga para resumirla'
+                            }
+                          >
+                            <i className="bi bi-stars me-1" aria-hidden="true" />
+                            {resumiendo ? 'Resumiendo…' : 'Resumir con IA'}
+                          </button>
+                        ) : null}
+                      </div>
+                      {errorResumen ? <div className="alert alert-danger py-2 small">{errorResumen}</div> : null}
                       <textarea
                         id="gestionar-solicitud-descripcion"
                         className="form-control form-control-sm"
@@ -560,6 +624,7 @@ export default function ModalGestionarSolicitudIl(props: ModalGestionarSolicitud
                       {modoEdicion ? (
                         <div className="form-text">
                           {descripcion.length}/{MaxLongitudDescripcionSolicitudIl}
+                          {avisoResumen ? ` · ${avisoResumen}` : ''}
                         </div>
                       ) : null}
                     </div>
