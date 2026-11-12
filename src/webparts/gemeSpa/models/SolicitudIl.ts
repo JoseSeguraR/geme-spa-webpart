@@ -33,12 +33,16 @@ export type AdjuntoSolicitudIl = {
 /** Detalle para gestión: incluye lookup TAREAACTUAL (bitácora vigente). */
 export type DetalleSolicitudIl = SolicitudIl & {
   idBitacoraActual?: number;
+  /** DESCRIPCION_LARGA: texto completo; DESCRIPCION es su versión corta (hasta 200 caracteres). */
+  descripcionLarga: string;
 };
 
 export type DatosActualizarSolicitudIl = {
   idCen: string;
   centralId: number;
   descripcion: string;
+  /** undefined = no se escribe DESCRIPCION_LARGA. */
+  descripcionLarga?: string;
   fechaInicioIso: string;
   fechaFinIso?: string;
   /** MERGE con FECHA_FIN en null (reactivar o anular). */
