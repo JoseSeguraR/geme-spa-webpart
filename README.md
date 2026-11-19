@@ -10,6 +10,7 @@ La carcasa, el menú, la navegación y la grilla son comunes a todos los módulo
 | --- | --- |
 | [Arquitectura de la SPA](docs/arquitectura-spa.md) | Arranque, layout, menú, rutas, registro de vistas, grilla y estilos. Sirve para cualquier pantalla nueva. |
 | [Solicitudes IL](docs/solicitudes-il.md) | Perfiles, listas, consulta, alta, gestión, bitácora y SIOD. Propio de ese módulo. |
+| [Solicitud de Falla](docs/solicitud-falla.md) | Perfiles, listas, grilla, alta, edición, gestión, bitácora e integración SIOD (Concentrador). |
 | [Versionado](docs/versionado.md) | Política de versiones del producto (`.sppkg`), `solution.version` y alineación con `package.json`. |
 
 Convenciones para agentes y contribuidores: [`AGENTS.md`](AGENTS.md).
