@@ -20,12 +20,12 @@ import ModalVerSolicitudIl from './ModalVerSolicitudIl';
 import ModalBitacoraSolicitudIl from './ModalBitacoraSolicitudIl';
 import ModalGestionarSolicitudIl from './ModalGestionarSolicitudIl';
 import {
-  ObtenerEnlacesTabsSolicitudesIl,
   ObtenerModoAccionesGrillaPorPerfil,
   ObtenerTituloVistaSolicitudesIlPorPerfil,
   PermitirCreacionSolicitudesIlPorPerfil,
   type PerfilVistaSolicitudesIlConcentrador
 } from './PerfilVistaSolicitudesIl';
+import { ObtenerEnlacesTabsConcentrador } from '../EnlacesTabsConcentrador';
 
 const EstadoFiltroInicial: EstadoSolicitudIl = 'Vigente';
 
@@ -43,7 +43,7 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
   const { context, propiedadesSolicitudesIl, perfil } = props;
   const prefijoRutaServidorSitio = context.pageContext.site.serverRelativeUrl;
   const enlacesTabs = useMemo(
-    () => ObtenerEnlacesTabsSolicitudesIl(perfil, prefijoRutaServidorSitio),
+    () => ObtenerEnlacesTabsConcentrador(perfil, prefijoRutaServidorSitio),
     [perfil, prefijoRutaServidorSitio]
   );
   const modoAccionesGrilla = ObtenerModoAccionesGrillaPorPerfil(perfil);
@@ -177,6 +177,11 @@ export default function VistaSolicitudesIlContenido(props: VistaSolicitudesIlCon
         <li className="nav-item" role="presentation">
           <a className="nav-link" href={enlacesTabs.urlTabSolicitudes}>
             Solicitudes
+          </a>
+        </li>
+        <li className="nav-item" role="presentation">
+          <a className="nav-link" href={enlacesTabs.urlTabFalla}>
+            Solicitud de Falla
           </a>
         </li>
         <li className="nav-item" role="presentation">

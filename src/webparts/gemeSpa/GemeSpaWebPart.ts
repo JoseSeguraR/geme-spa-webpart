@@ -11,15 +11,20 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import GemeSpa from './components/GemeSpa';
 import type { PropiedadesWebPartOperadorRenovable } from './models/ConfiguracionOperadorRenovable';
 import type { PropiedadesWebPartSolicitudesIl } from './models/ConfiguracionSolicitudesIl';
+import type { PropiedadesWebPartSolicitudFalla } from './models/ConfiguracionSolicitudFalla';
 import { EstablecerConfiguracionOperadorRenovable } from './services/sharepoint/operadorRenovable/CapacidadCentralApiServicio';
 import './styles/GemeSpa.global.scss';
 
-export type GemeSpaWebPartProps = PropiedadesWebPartSolicitudesIl & PropiedadesWebPartOperadorRenovable;
+export type GemeSpaWebPartProps = PropiedadesWebPartSolicitudesIl &
+  PropiedadesWebPartSolicitudFalla &
+  PropiedadesWebPartOperadorRenovable;
 
 const GrupoFlujoBitacoraSolicitudesIl = 'Solicitudes IL · Flujo (bitácora)';
 const GrupoEnlacesSolicitudesIl = 'Solicitudes IL · Enlaces';
 const GrupoSiodSolicitudesIl = 'Solicitudes IL · SIOD (Azure Functions)';
 const GrupoResumenIaSolicitudesIl = 'Solicitudes IL · Resumen con IA (Azure Functions)';
+const GrupoEnlacesSolicitudFalla = 'Solicitud de Falla · Enlaces';
+const GrupoSiodSolicitudFalla = 'Solicitud de Falla · SIOD (Azure Functions)';
 const GrupoAppFunctionOperadorRenovable = 'Operador renovable · Meteológica (Azure Functions)';
 
 function CampoUrlPropertyPane(
@@ -63,6 +68,12 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
         concSolicitudesIlUrlDeleteSIOD: this.properties.concSolicitudesIlUrlDeleteSIOD,
         concSolicitudesIlUrlUpdateSIOD: this.properties.concSolicitudesIlUrlUpdateSIOD,
         concSolicitudesIlUrlResumenIa: this.properties.concSolicitudesIlUrlResumenIa
+      },
+      propiedadesSolicitudFalla: {
+        concSolicitudFallaUrlExcelVinculado: this.properties.concSolicitudFallaUrlExcelVinculado,
+        concSolicitudFallaUrlInsertSIOD: this.properties.concSolicitudFallaUrlInsertSIOD,
+        concSolicitudFallaUrlDeleteSIOD: this.properties.concSolicitudFallaUrlDeleteSIOD,
+        concSolicitudFallaUrlUpdateSIOD: this.properties.concSolicitudFallaUrlUpdateSIOD
       }
     });
 
@@ -94,7 +105,7 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
       displayName: 'COR Conecta',
       header: {
         description:
-          'Concentrador · Solicitudes IL y Operador renovable. Expanda cada grupo según lo que deba configurar.'
+          'Concentrador · Solicitudes IL, Solicitud de Falla y Operador renovable. Expanda cada grupo según lo que deba configurar.'
       },
       displayGroupsAsAccordion: true,
       groups: [
@@ -179,6 +190,38 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
                   'concSolicitudesIlUrlResumenIa',
                   'URL resumen con IA',
                   'POST /api/ai/summarize-text con ?code=<function key>. Botón «Resumir con IA» de Gestionar: resume la descripción larga en la descripción (200 caracteres).'
+                )
+              ]
+            },
+            {
+              groupName: GrupoEnlacesSolicitudFalla,
+              isCollapsed: true,
+              groupFields: [
+                CampoUrlPropertyPane(
+                  'concSolicitudFallaUrlExcelVinculado',
+                  'URL Excel vinculado',
+                  'Enlace al informe Excel vinculado para solicitudes de falla.'
+                )
+              ]
+            },
+            {
+              groupName: GrupoSiodSolicitudFalla,
+              isCollapsed: true,
+              groupFields: [
+                CampoUrlPropertyPane(
+                  'concSolicitudFallaUrlInsertSIOD',
+                  'URL Insert SIOD',
+                  'Endpoint de inserción en SIOD para solicitudes de falla.'
+                ),
+                CampoUrlPropertyPane(
+                  'concSolicitudFallaUrlDeleteSIOD',
+                  'URL Delete SIOD',
+                  'Endpoint de eliminación en SIOD para solicitudes de falla.'
+                ),
+                CampoUrlPropertyPane(
+                  'concSolicitudFallaUrlUpdateSIOD',
+                  'URL Update SIOD',
+                  'Endpoint de actualización en SIOD para solicitudes de falla.'
                 )
               ]
             },

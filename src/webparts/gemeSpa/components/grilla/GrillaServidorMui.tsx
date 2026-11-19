@@ -245,7 +245,8 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
       ? filas.length
       : paginaActual * tamanoPagina + filas.length;
   const estaCargando = cargando ?? (estadoCarga === 'cargando' || estadoCarga === 'inicial');
-  const ocultarGrilla = estadoCarga === 'vacio' && filas.length === 0;
+  const filasVisibles = estaCargando ? [] : filas;
+  const ocultarGrilla = estadoCarga === 'vacio' && filasVisibles.length === 0 && !estaCargando;
   const hayBusquedaActiva = textoBusquedaActiva.trim().length > 0;
   const mensajeVacio = hayBusquedaActiva ? mensajeSinRegistrosBusqueda : mensajeSinRegistros;
 
@@ -294,7 +295,7 @@ export default function GrillaServidorMui<Row extends GridValidRowModel & { id: 
         >
           <DataGrid
             apiRef={apiRef}
-            rows={filas}
+            rows={filasVisibles}
             columns={columnasGrilla}
             rowHeight={AlturaFilaGrillaPx}
             autoHeight={alturaAutomatica}

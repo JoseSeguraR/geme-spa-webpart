@@ -28,15 +28,16 @@ export function ObtenerOpcionesBaseColumnaAccionesGrilla(ancho?: number): Opcion
 
 export type CeldaAccionesCentradaProps = {
   children: React.ReactNode;
+  alinearVerticalInicio?: boolean;
 };
 
 export function CeldaAccionesCentrada(props: CeldaAccionesCentradaProps): React.ReactElement {
-  const { children } = props;
+  const { children, alinearVerticalInicio = false } = props;
   return (
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: alinearVerticalInicio ? 'flex-start' : 'center',
         justifyContent: 'center',
         width: '100%',
         height: '100%'

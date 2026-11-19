@@ -6,7 +6,7 @@ import { AlturaEncabezadoGrillaPx, AlturaFilaGrillaPx } from '../../models/Grill
 
 /**
  * Valores alineados con `styles/_tokens.scss` y `docs/arquitectura-spa.md` (tipografía en vistas).
- * Celdas, encabezados de columna, paginación e inputs: `--cowork-font-size-sm`.
+ * Celdas, encabezados y fila de paginación («Filas por página»): 9pt; otros inputs del grid: `--cowork-font-size-sm`.
  * La palette de MUI no admite `var(--cowork-*)` en todos los campos: el tema parsea colores en runtime.
  * La grilla usa fondo claro de contenido (no el azul del sidebar).
  */
@@ -46,19 +46,21 @@ export const TemaGrillaGeme = createTheme(
           root: {
             border: '1px solid var(--cowork-color-grilla-borde)',
             backgroundColor: 'var(--cowork-color-grilla-superficie-bg)',
-            fontSize: 'var(--cowork-font-size-sm)',
+            fontSize: '9pt',
             lineHeight: 'var(--cowork-line-height)',
             '--DataGrid-rowHeight': `${AlturaFilaGrillaPx}px`,
             '--DataGrid-headerHeight': `${AlturaEncabezadoGrillaPx}px`
           },
           columnHeader: {
-            fontSize: 'var(--cowork-font-size-sm)',
+            fontSize: '9pt',
             fontWeight: 600
           },
           columnHeaderTitle: {
+            fontSize: '9pt',
             fontWeight: 600
           },
           cell: {
+            fontSize: '9pt',
             alignItems: 'center',
             display: 'flex',
             paddingTop: 'var(--cowork-space-2)',
@@ -79,7 +81,8 @@ export const TemaGrillaGeme = createTheme(
               maxHeight: AlturaEncabezadoGrillaPx,
               alignItems: 'center',
               overflow: 'hidden',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              fontSize: '9pt'
             },
             '& .MuiInputBase-root': {
               minHeight: 'unset'
@@ -90,16 +93,22 @@ export const TemaGrillaGeme = createTheme(
             '& .MuiTablePagination-selectLabel': {
               margin: 0,
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              fontSize: '9pt'
             },
             '& .MuiTablePagination-displayedRows': {
               margin: 0,
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              fontSize: '9pt'
             },
             '& .MuiTablePagination-select': {
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              fontSize: '9pt'
+            },
+            '& .MuiTablePagination-input .MuiSelect-select': {
+              fontSize: '9pt'
             },
             '& .MuiTablePagination-actions': {
               display: 'flex',
@@ -162,25 +171,32 @@ export const TemaGrillaGeme = createTheme(
       MuiTablePagination: {
         styleOverrides: {
           root: {
-            fontSize: 'var(--cowork-font-size-sm)',
-            lineHeight: 'var(--cowork-line-height)',
+            fontSize: '9pt',
+            lineHeight: 1.4,
             overflow: 'hidden'
           },
           toolbar: {
-            alignItems: 'center'
+            alignItems: 'center',
+            fontSize: '9pt'
           },
           selectLabel: {
             margin: 0,
-            alignSelf: 'center'
+            alignSelf: 'center',
+            fontSize: '9pt'
           },
           displayedRows: {
             margin: 0,
-            alignSelf: 'center'
+            alignSelf: 'center',
+            fontSize: '9pt'
           },
           select: {
             alignSelf: 'center',
             paddingTop: 'var(--cowork-space-1)',
-            paddingBottom: 'var(--cowork-space-1)'
+            paddingBottom: 'var(--cowork-space-1)',
+            fontSize: '9pt'
+          },
+          input: {
+            fontSize: '9pt'
           },
           actions: {
             alignSelf: 'center'

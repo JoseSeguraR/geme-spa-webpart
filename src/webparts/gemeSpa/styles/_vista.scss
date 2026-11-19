@@ -266,6 +266,27 @@
   width: 100%;
   min-width: 0;
 
+  .MuiDataGrid-cell {
+    font-size: 9pt;
+  }
+
+  /* Pie de grilla (paginación: «Filas por página», rango, selector). */
+  .MuiDataGrid-footerContainer,
+  .MuiTablePagination-root {
+    font-size: 9pt;
+
+    .MuiTablePagination-toolbar,
+    .MuiTablePagination-selectLabel,
+    .MuiTablePagination-displayedRows,
+    .MuiTablePagination-select,
+    .MuiTablePagination-input,
+    .MuiSelect-select,
+    .MuiInputBase-input {
+      font-size: 9pt;
+      line-height: 1.4;
+    }
+  }
+
   .cowork-badge-estado {
     font-size: var(--cowork-font-size-xs);
     padding: 0.2rem 0.65rem;
@@ -299,6 +320,12 @@
   }
 }
 
+/* Celdas alineadas arriba (p. ej. grilla Solicitud de Falla). */
+.cowork-vista-tabla-mui--celdas-superior .MuiDataGrid-cell {
+  align-items: flex-start;
+}
+
+/* Grilla Solicitud de Falla (administrador, despachador, solicitante). */
 .cowork-campo-fecha-hora24__selector {
   position: absolute;
   bottom: 0;
@@ -311,8 +338,62 @@
   pointer-events: none;
 }
 
+.cowork-select-multiple-filtro {
+  position: relative;
+  width: 100%;
+}
+
+.cowork-select-multiple-filtro__disparador {
+  background-image: var(--bs-form-select-bg-img, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"));
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 16px 12px;
+}
+
+.cowork-select-multiple-filtro__panel {
+  z-index: 2050;
+  max-height: 16rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--cowork-color-grilla-superficie-bg, #ffffff);
+  border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+  border-radius: var(--cowork-radius-md, 0.375rem);
+}
+
+.cowork-select-multiple-filtro__lista {
+  overflow-y: auto;
+  max-height: 10rem;
+}
+
+.cowork-select-multiple-filtro__opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.35rem 0.75rem;
+  margin: 0;
+  font-size: 9pt;
+  line-height: 1.4;
+  cursor: pointer;
+
+  span {
+    font-size: 9pt;
+    line-height: 1.4;
+  }
+
+  &:hover {
+    background-color: rgba(15, 23, 43, 0.06);
+  }
+}
+
 .cowork-desplegable-acciones {
   position: relative;
+}
+
+.cowork-desplegable-acciones__disparador-marca {
+  font-size: 10pt;
+  line-height: 1;
 }
 
 .cowork-desplegable-acciones__disparador::after {
@@ -340,6 +421,14 @@
   padding: 0.4rem 0.75rem;
   color: var(--cowork-color-texto-principal, #0f172b);
   background-color: transparent;
+}
+
+.cowork-desplegable-acciones__menu--solicitud-falla .dropdown-item {
+  font-size: 9pt;
+}
+
+.cowork-desplegable-acciones__menu--solicitud-falla .dropdown-item .bi {
+  font-size: 11pt;
 }
 
 .cowork-desplegable-acciones__menu .dropdown-item:hover,
@@ -563,6 +652,203 @@
 
 .cowork-formulario-detalle__adjuntos a:hover {
   text-decoration: underline;
+}
+
+// Modales Solicitud de Falla (carcasa común; Ver es la referencia visual).
+.cowork-modal-solicitud-falla {
+  background-color: #ffffff;
+  border-color: var(--cowork-color-grilla-borde, #dee2e6);
+
+  .modal-header {
+    background-color: #003773;
+    border-bottom-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+
+    .modal-title {
+      color: #ffffff;
+    }
+  }
+
+  .modal-body,
+  .modal-footer {
+    background-color: #ffffff;
+  }
+
+  .modal-body {
+    font-size: 9pt;
+  }
+
+  &__alertas-pie {
+    margin-top: var(--cowork-space-3);
+    margin-bottom: 0;
+
+    .alert:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__tarjeta {
+    border: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+    box-shadow: none;
+    background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+    border-radius: var(--cowork-radius-md, 0.375rem);
+    margin-bottom: var(--cowork-space-3);
+  }
+
+  &__tarjeta-encabezado {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--cowork-color-grilla-borde, #dee2e6);
+    padding: var(--cowork-space-2) var(--cowork-space-4);
+    font-size: var(--cowork-font-size-sm);
+  }
+
+  &__tarjeta-cuerpo {
+    padding: var(--cowork-space-4);
+  }
+
+  &__tarjeta-titulo {
+    color: var(--cowork-color-btn-primary-bg, #003773);
+    font-weight: 600;
+    font-size: var(--cowork-font-size-sm);
+    line-height: 1.35;
+  }
+
+  &__tarjeta-encabezado--accion-gestion {
+    background-color: #ffc107;
+    border-bottom: 1px solid #e0a800;
+  }
+
+  &__tarjeta-titulo--accion-gestion {
+    color: #212529;
+  }
+
+  &__grilla {
+    margin-bottom: 0;
+
+    + .cowork-modal-solicitud-falla__grilla {
+      margin-top: var(--cowork-space-3);
+    }
+  }
+
+  &__etiqueta {
+    font-size: 9pt;
+    font-weight: 500;
+    color: var(--cowork-color-texto-apoyo, #64748b);
+    margin-bottom: var(--cowork-space-1);
+  }
+
+  &__campo-contenedor {
+    min-width: 0;
+  }
+
+  &__campo,
+  &__control {
+    font-size: 9pt;
+    line-height: 1.4;
+    border-color: var(--cowork-color-grilla-borde, #dee2e6);
+    color: var(--cowork-color-texto-principal, #0f172b);
+    border-radius: var(--cowork-radius-md, 0.375rem);
+  }
+
+  &__campo {
+    background-color: #e9ecef;
+    cursor: default;
+  }
+
+  &__control {
+    background-color: var(--cowork-color-grilla-superficie-bg, #ffffff);
+
+    &:disabled {
+      background-color: #e9ecef;
+      cursor: not-allowed;
+    }
+  }
+
+  .input-group-sm > .form-control {
+    font-size: 9pt;
+    line-height: 1.4;
+    border-color: var(--cowork-color-grilla-borde, #dee2e6);
+    color: var(--cowork-color-texto-principal, #0f172b);
+    border-radius: var(--cowork-radius-md, 0.375rem);
+  }
+
+  .cowork-select-multiple-filtro__disparador {
+    font-size: 9pt;
+    line-height: 1.4;
+    border-color: var(--cowork-color-grilla-borde, #dee2e6);
+    color: var(--cowork-color-texto-principal, #0f172b);
+    border-radius: var(--cowork-radius-md, 0.375rem);
+    background-color: var(--cowork-color-grilla-superficie-bg, #ffffff);
+
+    &:disabled {
+      background-color: #e9ecef;
+      cursor: not-allowed;
+    }
+  }
+
+  &__ayuda-campo {
+    font-size: 9pt;
+    color: var(--cowork-color-texto-apoyo, #64748b);
+  }
+
+  .form-check-label {
+    font-size: 9pt;
+    color: var(--cowork-color-texto-principal, #0f172b);
+  }
+
+  &__texto-apoyo {
+    font-size: 9pt;
+    color: var(--cowork-color-texto-apoyo, #64748b);
+  }
+
+  &__texto-adjunto {
+    font-size: 9pt;
+    color: var(--cowork-color-texto-principal, #0f172b);
+  }
+
+  &__insignia {
+    font-size: 9pt;
+  }
+
+  .alert {
+    font-size: 9pt;
+  }
+
+  &__adjuntos {
+    border: none;
+    border-radius: var(--cowork-radius-md, 0.375rem);
+    overflow: hidden;
+    font-size: 9pt;
+
+    .list-group-item {
+      background: var(--cowork-color-grilla-superficie-bg, #ffffff);
+      padding: var(--cowork-space-3) var(--cowork-space-4);
+    }
+  }
+
+  &__btn-cerrar,
+  &__btn-modal-secundario {
+    width: 115px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 9pt;
+  }
+
+  .modal-footer .btn.cowork-btn-primary,
+  .modal-footer .btn.cowork-btn-exito {
+    height: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 9pt;
+    line-height: 1.2;
+  }
 }
 
 // Mismo breakpoint que la carcasa SPA (_layout.scss).

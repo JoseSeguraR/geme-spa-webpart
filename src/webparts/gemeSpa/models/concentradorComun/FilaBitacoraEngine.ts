@@ -7,4 +7,9 @@ export type FilaBitacoraEngine = {
   fechaCierre: string;
   responsableCierre: string;
   estadoFinal: string;
+  tareaIdentificador: string;
+  /** Nombres de usuario en líneas separadas (lookup multivalor tarea origen). */
+  responsablesOrigen: string;
+  usuarioAvance: string;
+  responsableComentarios: string;
 };

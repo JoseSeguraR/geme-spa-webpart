@@ -13,7 +13,8 @@ const IconosPorIdAccion: Record<string, { icono: string; clase: string }> = {
   gestionar: { icono: 'bi-arrow-right-circle-fill', clase: 'text-danger' },
   editar: { icono: 'bi-pencil', clase: 'text-warning' },
   finalizar: { icono: 'bi-check-circle', clase: 'text-success' },
-  'lista-equipos': { icono: 'bi-list-ul', clase: 'text-secondary' }
+  'lista-equipos': { icono: 'bi-list-ul', clase: 'text-secondary' },
+  'integrar-siod': { icono: 'bi-cloud-upload', clase: 'text-info' }
 };
 
 export function AccionMenuFilaGrillaConIcono(

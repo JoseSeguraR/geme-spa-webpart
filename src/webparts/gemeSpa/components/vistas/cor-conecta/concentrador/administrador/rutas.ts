@@ -1,3 +1,5 @@
+import { RutaHashSolicitudFallaAdministrador } from '../solicitudes-falla/rutas';
+
 /** Debe coincidir con la rutaHash del menú (HASH_KEY acumulados). */
 export const RutaHashSolicitudesIl = 'cor-conecta/concentrador/administrador/solicitudes-il' as const;
 
@@ -9,4 +11,7 @@ export const RutaHashAnclaSolicitudesAdministrador =
  * Pantallas del mismo grupo de tabs que resaltan la ancla en el menú lateral.
  * Ampliar al registrar guías de maniobra u otras rutas hermanas.
  */
-export const RutasHashGrupoTabsSolicitudesAdministrador: readonly string[] = [RutaHashSolicitudesIl];
+export const RutasHashGrupoTabsSolicitudesAdministrador: readonly string[] = [
+  RutaHashSolicitudesIl,
+  RutaHashSolicitudFallaAdministrador
+];

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import type { PropiedadesWebPartSolicitudesIl } from '../../models/ConfiguracionSolicitudesIl';
+import type { PropiedadesWebPartSolicitudFalla } from '../../models/ConfiguracionSolicitudFalla';
 import { ObtenerComponenteDelRegistro } from '../../constants/ComponentRegistry';
 import { EsRutaDisponibleEnMenu } from '../../utils/EsRutaDisponibleEnMenu';
 import { NormalizarSegmentoHash } from '../../utils/NavegacionHash';
@@ -12,11 +13,13 @@ export type EnrutadorVistasProps = {
   userDisplayName: string;
   context: WebPartContext;
   propiedadesSolicitudesIl: PropiedadesWebPartSolicitudesIl;
+  propiedadesSolicitudFalla: PropiedadesWebPartSolicitudFalla;
   rutasDisponibles: ReadonlySet<string>;
 };
 
 export default function EnrutadorVistas(props: EnrutadorVistasProps): React.ReactElement {
-  const { rutaActual, userDisplayName, context, propiedadesSolicitudesIl, rutasDisponibles } = props;
+  const { rutaActual, userDisplayName, context, propiedadesSolicitudesIl, propiedadesSolicitudFalla, rutasDisponibles } =
+    props;
   const rutaNormalizada = NormalizarSegmentoHash(rutaActual);
 
   const Componente = ObtenerComponenteDelRegistro(rutaNormalizada);
@@ -26,6 +29,7 @@ export default function EnrutadorVistas(props: EnrutadorVistasProps): React.Reac
         userDisplayName={userDisplayName}
         context={context}
         propiedadesSolicitudesIl={propiedadesSolicitudesIl}
+        propiedadesSolicitudFalla={propiedadesSolicitudFalla}
       />
     );
   }

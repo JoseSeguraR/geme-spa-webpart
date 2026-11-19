@@ -7,6 +7,10 @@ export type DesplegableAccionesFilaGrillaProps = {
   idRegistro: string | number;
   acciones: AccionMenuFilaGrilla[];
   etiquetaAria?: string;
+  /** Muestra «:» en negrita en el botón disparador (maqueta concentrador). */
+  mostrarDosPuntosEnDisparador?: boolean;
+  /** Clase adicional del menú desplegable (p. ej. tipografía por módulo). */
+  claseMenu?: string;
 };
 
 type PosicionMenu = {
@@ -32,7 +36,13 @@ function NotificarAperturaMenu(idRegistro: string | number): void {
 export default function DesplegableAccionesFilaGrilla(
   props: DesplegableAccionesFilaGrillaProps
 ): React.ReactElement {
-  const { idRegistro, acciones, etiquetaAria = `Acciones registro ${idRegistro}` } = props;
+  const {
+    idRegistro,
+    acciones,
+    etiquetaAria = `Acciones registro ${idRegistro}`,
+    mostrarDosPuntosEnDisparador = false,
+    claseMenu
+  } = props;
   const [abierto, setAbierto] = useState(false);
   const [posicionMenu, setPosicionMenu] = useState<PosicionMenu | null>(null);
   const [contenedorPortal, setContenedorPortal] = useState<HTMLElement | null>(null);
@@ -137,7 +147,7 @@ export default function DesplegableAccionesFilaGrilla(
       ? createPortal(
           <ul
             ref={menuRef}
-            className="dropdown-menu show cowork-desplegable-acciones__menu"
+            className={`dropdown-menu show cowork-desplegable-acciones__menu${claseMenu ? ` ${claseMenu}` : ''}`}
             role="menu"
             style={{
               position: 'fixed',
@@ -182,7 +192,11 @@ export default function DesplegableAccionesFilaGrilla(
         aria-expanded={abierto}
         aria-haspopup="menu"
         aria-label={etiquetaAria}
-      />
+      >
+        {mostrarDosPuntosEnDisparador ? (
+          <span className="fw-bold m-1 cowork-desplegable-acciones__disparador-marca">:</span>
+        ) : null}
+      </button>
       {menuPortal}
     </div>
   );
