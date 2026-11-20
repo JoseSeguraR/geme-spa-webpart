@@ -1,7 +1,9 @@
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import {
   ResultadoIntegracionSiodExitosa,
-  ResultadoIntegracionSiodFallida
+  ResultadoIntegracionSiodFallida,
+  TextoResponsableComentariosBitacoraIntegracionSiodExitosa,
+  TextoResponsableComentariosBitacoraIntegracionSiodFallida
 } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-falla/constantesSolicitudFalla';
 import type { FilaBitacoraEngine } from '../../../models/concentradorComun/FilaBitacoraEngine';
 import type { SolicitudFalla } from '../../../models/SolicitudFalla';
@@ -15,10 +17,22 @@ export type EstadoIntegracionSiodDesdeBitacora = {
   resultadoSiod?: string;
 };
 
+function ComentarioIndicaIntegracionSiod(comentario: string): boolean {
+  const texto = comentario.trim();
+  return (
+    texto === TextoResponsableComentariosBitacoraIntegracionSiodExitosa ||
+    texto === TextoResponsableComentariosBitacoraIntegracionSiodFallida ||
+    texto.startsWith('Integración SIOD')
+  );
+}
+
 function EsEntradaIntegracionSiod(fila: FilaBitacoraEngine): boolean {
   const estado = fila.estadoInicial.trim();
   const tarea = fila.tarea.trim();
   if (estado === EtiquetaAccionIntegracionSiod || tarea === EtiquetaAccionIntegracionSiod) {
+    return true;
+  }
+  if (ComentarioIndicaIntegracionSiod(fila.responsableComentarios)) {
     return true;
   }
   if (estado === ResultadoIntegracionSiodExitosa || estado === ResultadoIntegracionSiodFallida) {

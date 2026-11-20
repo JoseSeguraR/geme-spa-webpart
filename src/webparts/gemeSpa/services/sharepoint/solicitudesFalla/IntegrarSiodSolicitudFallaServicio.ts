@@ -1,7 +1,9 @@
 import type { WebPartContext } from '@microsoft/sp-webpart-base';
 import {
   ResultadoIntegracionSiodExitosa,
-  ResultadoIntegracionSiodFallida
+  ResultadoIntegracionSiodFallida,
+  TextoResponsableComentariosBitacoraIntegracionSiodExitosa,
+  TextoResponsableComentariosBitacoraIntegracionSiodFallida
 } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-falla/constantesSolicitudFalla';
 import { ObtenerCentralesDesdeSharePoint } from '../solicitudesIl/CentralesServicio';
 import { ParsearIdCentralDesdeCodigoSiod } from '../solicitudesIl/ParsearIdCentralSiod';
@@ -40,12 +42,15 @@ export async function IntegrarSolicitudFallaEnSiod(
   }
 
   const resultado = exito ? ResultadoIntegracionSiodExitosa : ResultadoIntegracionSiodFallida;
+  const comentarioBitacora = exito
+    ? TextoResponsableComentariosBitacoraIntegracionSiodExitosa
+    : TextoResponsableComentariosBitacoraIntegracionSiodFallida;
 
   await CrearEntradaBitacoraSolicitudFalla(context, {
     idSolicitudFalla: idSolicitud,
     accion: 'Integración SIOD',
     estadoInicial: resultado,
-    comentario: resultado
+    comentario: comentarioBitacora
   });
 
   return {

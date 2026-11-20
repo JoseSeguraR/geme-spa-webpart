@@ -93,7 +93,7 @@ El detalle en **Gestionar** reutiliza `PresentacionDetalleSolicitudFalla` **sin*
 
 ### Integración SIOD
 
-`IntegrarSiodSolicitudFallaServicio` llama a la Function configurada y añade entrada de bitácora genérica (`CrearEntradaBitacoraSolicitudFalla`) para el resultado.
+`IntegrarSiodSolicitudFallaServicio` llama a la Function configurada y registra el resultado en bitácora (`CrearEntradaBitacoraSolicitudFalla`): `TAREA_IDENTIFICADOR` = `SOLICITUDFALLA-{id}`, `TAREAORIGEN_ESTADO` = `Exitosa` o `Fallida`, `RESPONSABLE_COMENTARIOS` = texto de éxito o fallo de la integración.
 
 **Modal:** card **Información Solicitud** (ID CEN, central, estado), leyenda informativa SIOD, barra de **Progreso** (solo tras **Iniciar Integración**; permanece visible hasta cerrar el modal). Al cerrar y reabrir, el estado del modal se reinicia (sin progreso ni resultado previo). Pie: **Cancelar** + **Iniciar Integración** (`bi-play-fill`); tras resultado, **Cerrar**.
 

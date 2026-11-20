@@ -71,3 +71,8 @@ export const TamanoLoteCargaCompletaSolicitudFalla = 500;
 
 export const ResultadoIntegracionSiodExitosa = 'Exitosa';
 export const ResultadoIntegracionSiodFallida = 'Fallida';
+
+export const TextoResponsableComentariosBitacoraIntegracionSiodExitosa =
+  'Integración SIOD exitosa.';
+export const TextoResponsableComentariosBitacoraIntegracionSiodFallida =
+  'Integración SIOD fallida.';

@@ -288,13 +288,19 @@ export async function CrearEntradaBitacoraSolicitudFalla(
     ID_REGISTRO: params.idSolicitudFalla,
     TIPO_REGISTRO: TipoRegistroBitacoraSolicitudFalla,
     TAREAORIGEN_ESTADO: params.estadoInicial ?? params.accion,
+    TAREAORIGEN_ACTOR: ActorTareaOrigenBitacoraSolicitudFalla,
     TAREAORIGEN_FECHAINGRESO: ahoraIso,
     CLASIFICACION_TAREA: ClasificacionTareaBitacoraFlujo,
-    ES_TAREA_PENDIENTE: EsTareaPendienteBitacoraNo
+    ES_TAREA_PENDIENTE: EsTareaPendienteBitacoraNo,
+    TAREA_IDENTIFICADOR: ConstruirTareaIdentificadorSolicitudFalla(params.idSolicitudFalla)
   };
 
   if (params.estadoFinal) {
     cuerpo.TAREAORIGEN_FECHASALIDA = ahoraIso;
+  }
+
+  if (params.comentario?.trim()) {
+    cuerpo.RESPONSABLE_COMENTARIOS = params.comentario.trim();
   }
 
   if (idUsuario !== undefined) {
