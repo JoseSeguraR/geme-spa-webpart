@@ -12,6 +12,10 @@ import {
   TarjetaSeccionVerSolicitudFalla
 } from './PresentacionVerSolicitudFalla';
 import { BloqueEstadoSolicitudFalla } from './PresentacionEstadoSolicitudFalla';
+import PieProgresoFormularioSolicitudFalla from './PieProgresoFormularioSolicitudFalla';
+import { useMensajesProgresoSolicitudFalla } from './useMensajesProgresoSolicitudFalla';
+import { useTemporizadorCierreModalFalla } from './useTemporizadorCierreModalFalla';
+import AvisoCierreAutomaticoFormularioFalla from './AvisoCierreAutomaticoFormularioFalla';
 
 export type ModalIntegrarSiodSolicitudFallaProps = {
   context: WebPartContext;
@@ -48,6 +52,9 @@ export default function ModalIntegrarSiodSolicitudFalla(
   const [exito, setExito] = useState<boolean | undefined>();
   const [mostrarProgreso, setMostrarProgreso] = useState(false);
   const intervaloProgresoRef = useRef<number | undefined>();
+  const { mensajeActual, historial, informar, cerrarProgreso, reiniciar } = useMensajesProgresoSolicitudFalla();
+  const { programarCierre, cancelarCierre } = useTemporizadorCierreModalFalla();
+  const [esperandoCierreAutomatico, setEsperandoCierreAutomatico] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -70,6 +77,9 @@ export default function ModalIntegrarSiodSolicitudFalla(
       setResultado(reinicio.resultado);
       setExito(reinicio.exito);
       setMostrarProgreso(reinicio.mostrarProgreso);
+      reiniciar();
+      cancelarCierre();
+      setEsperandoCierreAutomatico(false);
       return;
     }
 
@@ -79,11 +89,23 @@ export default function ModalIntegrarSiodSolicitudFalla(
     setResultado(reinicio.resultado);
     setExito(reinicio.exito);
     setMostrarProgreso(reinicio.mostrarProgreso);
-  }, [visible, fila?.id]);
+    reiniciar();
+    cancelarCierre();
+    setEsperandoCierreAutomatico(false);
+  }, [visible, fila?.id, reiniciar, cancelarCierre]);
 
   if (!visible || !fila) {
     return <></>;
   }
+
+  const manejarCerrar = (): void => {
+    if (intervaloProgresoRef.current !== undefined) {
+      window.clearInterval(intervaloProgresoRef.current);
+      intervaloProgresoRef.current = undefined;
+    }
+    cancelarCierre();
+    onCerrar();
+  };
 
   const IniciarIntegracion = (): void => {
     if (intervaloProgresoRef.current !== undefined) {
@@ -95,6 +117,8 @@ export default function ModalIntegrarSiodSolicitudFalla(
     setProgreso(0);
     setResultado(undefined);
     setExito(undefined);
+    reiniciar();
+    informar('Iniciando integración manual con SIOD…');
 
     const intervalo = window.setInterval(() => {
       setProgreso((valor) => Math.min(valor + 10, 90));
@@ -103,12 +127,13 @@ export default function ModalIntegrarSiodSolicitudFalla(
 
     const urlInsert = ObtenerUrlInsertSiodSolicitudFallaDesdeProps(propiedadesSolicitudFalla);
 
-    IntegrarSolicitudFallaEnSiod(context, fila.id, urlInsert)
+    void IntegrarSolicitudFallaEnSiod(context, fila.id, urlInsert, (mensaje) => informar(mensaje))
       .then((res) => {
         if (intervaloProgresoRef.current !== undefined) {
           window.clearInterval(intervaloProgresoRef.current);
           intervaloProgresoRef.current = undefined;
         }
+        cerrarProgreso();
         setProgreso(100);
         setExito(res.exito);
         setResultado(res.mensaje);
@@ -116,25 +141,22 @@ export default function ModalIntegrarSiodSolicitudFalla(
         if (res.exito) {
           onIntegrado();
         }
+        setEsperandoCierreAutomatico(true);
+        programarCierre(manejarCerrar, !res.exito);
       })
       .catch(() => {
         if (intervaloProgresoRef.current !== undefined) {
           window.clearInterval(intervaloProgresoRef.current);
           intervaloProgresoRef.current = undefined;
         }
+        cerrarProgreso();
         setProgreso(100);
         setExito(false);
-        setResultado('Error al integrar con SIOD.');
+        setResultado('Integración SIOD (inserción): error inesperado al completar el proceso.');
         setProcesando(false);
+        setEsperandoCierreAutomatico(true);
+        programarCierre(manejarCerrar, true);
       });
-  };
-
-  const manejarCerrar = (): void => {
-    if (intervaloProgresoRef.current !== undefined) {
-      window.clearInterval(intervaloProgresoRef.current);
-      intervaloProgresoRef.current = undefined;
-    }
-    onCerrar();
   };
 
   return (
@@ -194,7 +216,7 @@ export default function ModalIntegrarSiodSolicitudFalla(
               {mostrarProgreso ? (
                 <TarjetaSeccionVerSolicitudFalla titulo="Progreso" iconoBootstrap="bi-hourglass-split">
                   <div
-                    className="progress"
+                    className="progress mb-3"
                     role="progressbar"
                     aria-valuenow={progreso}
                     aria-valuemin={0}
@@ -204,6 +226,11 @@ export default function ModalIntegrarSiodSolicitudFalla(
                       {progreso}%
                     </div>
                   </div>
+                  <PieProgresoFormularioSolicitudFalla
+                    procesando={procesando}
+                    mensajeActual={mensajeActual}
+                    historial={historial}
+                  />
                 </TarjetaSeccionVerSolicitudFalla>
               ) : null}
               {resultado ? (
@@ -212,6 +239,9 @@ export default function ModalIntegrarSiodSolicitudFalla(
                     {resultado}
                   </div>
                 </div>
+              ) : null}
+              {esperandoCierreAutomatico ? (
+                <AvisoCierreAutomaticoFormularioFalla conError={!exito} />
               ) : null}
             </div>
             <div className="modal-footer">
@@ -243,7 +273,7 @@ export default function ModalIntegrarSiodSolicitudFalla(
                   onClick={manejarCerrar}
                 >
                   <i className="bi bi-x-lg me-1" aria-hidden="true" />
-                  Cerrar
+                  {esperandoCierreAutomatico ? 'Cerrar ahora' : 'Cerrar'}
                 </button>
               )}
             </div>

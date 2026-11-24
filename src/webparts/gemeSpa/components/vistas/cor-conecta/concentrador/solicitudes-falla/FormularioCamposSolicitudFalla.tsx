@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useMemo } from 'react';
 import type { CentralMantenedor, EquipoMantenedorFalla, MedidaPotenciaFalla } from '../../../../../models/SolicitudFalla';
 import CampoFechaHora24 from '../../../../concentrador/CampoFechaHora24';
-import { EstadoSolicitudFallaVigente } from './constantesSolicitudFalla';
+import { ResolverEstadoSolicitudFallaDesdeFechaRetorno } from './constantesSolicitudFalla';
+import { AnexarArchivosAdjuntosFormulario } from './AnexarArchivosAdjuntosFormulario';
 import {
   ColumnaCampoVerSolicitudFalla,
   GrillaCamposVerSolicitudFalla,
@@ -30,7 +31,8 @@ export type FormularioCamposSolicitudFallaProps = {
   equiposCargando: boolean;
   estadoSoloLectura?: string;
   disposicion?: DisposicionFormularioSolicitudFalla;
-  mostrarEstadoInicialVigente?: boolean;
+  /** Muestra el estado calculado según si hay fecha de retorno efectiva. */
+  derivarEstadoDesdeFechaRetorno?: boolean;
   archivosAdjuntos?: File[];
   onCambioArchivosAdjuntos?: (archivos: File[]) => void;
   idAdjuntos?: string;
@@ -50,10 +52,9 @@ function ContenedorCampo(props: { children: React.ReactNode }): React.ReactEleme
 function CamposIdentificacionFalla(props: {
   valores: ValoresFormularioSolicitudFalla;
   estadoVisible?: string;
-  textoAyudaEstado?: boolean;
   onCambio: (parcial: Partial<ValoresFormularioSolicitudFalla>) => void;
 }): React.ReactElement {
-  const { valores, estadoVisible, textoAyudaEstado, onCambio } = props;
+  const { valores, estadoVisible, onCambio } = props;
   return (
     <GrillaCamposVerSolicitudFalla>
       <ColumnaCampoVerSolicitudFalla>
@@ -79,7 +80,6 @@ function CamposIdentificacionFalla(props: {
               Estado
             </label>
             <input id="falla-estado" className={ClaseControl} value={estadoVisible} disabled />
-            {textoAyudaEstado ? <small className={ClaseAyuda}>Estado inicial de la solicitud</small> : null}
           </ContenedorCampo>
         </ColumnaCampoVerSolicitudFalla>
       ) : null}
@@ -257,7 +257,14 @@ function CamposDetallesTecnicosFalla(props: {
                 className={ClaseControl}
                 multiple
                 accept=".pdf,.zip,.cfg,.dat,application/pdf,application/zip"
-                onChange={(evento) => onCambioArchivosAdjuntos(Array.from(evento.target.files ?? []))}
+                onChange={(evento) =>
+                  onCambioArchivosAdjuntos(
+                    AnexarArchivosAdjuntosFormulario(
+                      archivosAdjuntos ?? [],
+                      Array.from(evento.target.files ?? [])
+                    )
+                  )
+                }
               />
               <small className={ClaseAyuda}>Formatos permitidos: PDF, ZIP, CFG, DAT</small>
               {archivosAdjuntos && archivosAdjuntos.length > 0 ? (
@@ -308,7 +315,7 @@ export default function FormularioCamposSolicitudFalla(
     equiposCargando,
     estadoSoloLectura,
     disposicion = 'plano',
-    mostrarEstadoInicialVigente,
+    derivarEstadoDesdeFechaRetorno,
     archivosAdjuntos,
     onCambioArchivosAdjuntos,
     idAdjuntos = 'falla-adjuntos-nueva',
@@ -317,9 +324,10 @@ export default function FormularioCamposSolicitudFalla(
   } = props;
 
   const estadoVisible =
-    estadoSoloLectura ?? (mostrarEstadoInicialVigente ? EstadoSolicitudFallaVigente : undefined);
-  const textoAyudaEstado = Boolean(mostrarEstadoInicialVigente && estadoVisible === EstadoSolicitudFallaVigente);
-
+    estadoSoloLectura ??
+    (derivarEstadoDesdeFechaRetorno
+      ? ResolverEstadoSolicitudFallaDesdeFechaRetorno(valores.fechaRetorno)
+      : undefined);
   if (disposicion === 'secciones') {
     return (
       <>
@@ -327,7 +335,6 @@ export default function FormularioCamposSolicitudFalla(
           <CamposIdentificacionFalla
             valores={valores}
             estadoVisible={estadoVisible}
-            textoAyudaEstado={textoAyudaEstado}
             onCambio={onCambio}
           />
         </TarjetaSeccionVerSolicitudFalla>
@@ -362,7 +369,6 @@ export default function FormularioCamposSolicitudFalla(
       <CamposIdentificacionFalla
         valores={valores}
         estadoVisible={estadoVisible}
-        textoAyudaEstado={textoAyudaEstado}
         onCambio={onCambio}
       />
       <CamposFechasFalla valores={valores} onCambio={onCambio} />

@@ -171,7 +171,8 @@ export async function ResolverIdBitacoraActualSolicitudFalla(
 /** Primer registro de bitácora al crear una solicitud de falla (formulario Nueva). */
 export async function CrearEntradaBitacoraAltaSolicitudFalla(
   context: WebPartContext,
-  idSolicitudFalla: number
+  idSolicitudFalla: number,
+  estadoSolicitud: string = EstadoSolicitudFallaVigente
 ): Promise<number> {
   const idUsuario = ObtenerIdUsuarioActual(context);
   if (idUsuario === undefined) {
@@ -187,7 +188,7 @@ export async function CrearEntradaBitacoraAltaSolicitudFalla(
     Title: `${TipoRegistroBitacoraSolicitudFalla} ${idSolicitudFalla}`,
     ID_REGISTRO: idSolicitudFalla,
     TIPO_REGISTRO: TipoRegistroBitacoraSolicitudFalla,
-    TAREAORIGEN_ESTADO: EstadoSolicitudFallaVigente,
+    TAREAORIGEN_ESTADO: estadoSolicitud.trim() || EstadoSolicitudFallaVigente,
     TAREAORIGEN_ACTOR: ActorTareaOrigenBitacoraSolicitudFalla,
     TAREAORIGEN_FECHAINGRESO: ahoraIso,
     CLASIFICACION_TAREA: ClasificacionTareaBitacoraFlujo,

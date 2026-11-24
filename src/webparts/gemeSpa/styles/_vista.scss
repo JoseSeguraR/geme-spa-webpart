@@ -678,13 +678,56 @@
     font-size: 9pt;
   }
 
-  &__alertas-pie {
+  &__pie-formulario {
     margin-top: var(--cowork-space-3);
-    margin-bottom: 0;
+    font-size: 9pt;
+    line-height: 1.4;
 
-    .alert:last-child {
+    .cowork-modal-solicitud-falla__alertas-pie {
+      margin-top: var(--cowork-space-2);
       margin-bottom: 0;
     }
+
+    .cowork-formulario-progreso {
+      margin-bottom: var(--cowork-space-2);
+      padding: var(--cowork-space-2) var(--cowork-space-3);
+    }
+
+    .cowork-formulario-progreso__texto {
+      font-size: 9pt;
+      font-weight: 500;
+    }
+
+    .cowork-modal-solicitud-falla__historial-proceso {
+      font-size: 9pt;
+      margin-bottom: 0;
+
+      .bi {
+        font-size: 0.85rem;
+      }
+    }
+
+    .cowork-modal-solicitud-falla__alerta-progreso {
+      font-size: 9pt;
+      margin-bottom: var(--cowork-space-2);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__alertas-pie {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  &__aviso-cierre-auto {
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: var(--cowork-space-2);
+    font-size: 9pt;
+    line-height: 1.4;
   }
 
   &__tarjeta {

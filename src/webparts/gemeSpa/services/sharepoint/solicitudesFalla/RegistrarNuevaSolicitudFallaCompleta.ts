@@ -10,17 +10,33 @@ import {
 } from './SolicitudFallaCrudServicio';
 import { CrearEntradaBitacoraAltaSolicitudFalla } from './BitacoraSolicitudFallaServicio';
 import { IdCenDuplicadoSolicitudFallaError } from './IdCenDuplicadoSolicitudFallaError';
+import { ResolverEstadoSolicitudFallaDesdeFechaRetorno } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-falla/constantesSolicitudFalla';
+import { SincronizarSiodTrasAltaSolicitudFalla } from './SincronizarSiodTrasAltaSolicitudFalla';
+import type { ResultadoSincronizacionSiodFalla } from './ResultadoSiodSolicitudFalla';
 
 export type ProgresoRegistroSolicitudFalla = {
   mensaje: string;
+};
+
+export type ResultadoRegistroNuevaSolicitudFalla = {
+  idSolicitud: number;
+  resultadoSiod?: ResultadoSincronizacionSiodFalla;
+};
+
+export type OpcionesSiodAltaSolicitudFalla = {
+  urlInsertSiod?: string;
+  urlUpdateSiod?: string;
+  fechaPerturbacionLocal: string;
+  fechaRetornoLocal?: string;
 };
 
 export async function RegistrarNuevaSolicitudFallaCompleta(
   context: WebPartContext,
   datos: DatosNuevaSolicitudFalla,
   archivos: File[],
+  opcionesSiod?: OpcionesSiodAltaSolicitudFalla,
   onProgreso?: (progreso: ProgresoRegistroSolicitudFalla) => void
-): Promise<number> {
+): Promise<ResultadoRegistroNuevaSolicitudFalla> {
   const informar = (mensaje: string): void => {
     onProgreso?.({ mensaje });
   };
@@ -50,9 +66,24 @@ export async function RegistrarNuevaSolicitudFallaCompleta(
   }
 
   informar('Registrando bitácora…');
-  const idBitacora = await CrearEntradaBitacoraAltaSolicitudFalla(context, idSolicitud);
+  const estadoSolicitud = ResolverEstadoSolicitudFallaDesdeFechaRetorno(datos.fechaRetornoIso);
+  const idBitacora = await CrearEntradaBitacoraAltaSolicitudFalla(context, idSolicitud, estadoSolicitud);
 
   await ActualizarIdBitacoraFalla(context, idSolicitud, idBitacora);
 
-  return idSolicitud;
+  let resultadoSiod: ResultadoSincronizacionSiodFalla | undefined;
+  if (opcionesSiod?.urlInsertSiod) {
+    informar('Preparando integración con SIOD…');
+    resultadoSiod = await SincronizarSiodTrasAltaSolicitudFalla({
+      idSolicitud,
+      datos,
+      fechaPerturbacionLocal: opcionesSiod.fechaPerturbacionLocal,
+      fechaRetornoLocal: opcionesSiod.fechaRetornoLocal,
+      urlInsertSiod: opcionesSiod.urlInsertSiod,
+      urlUpdateSiod: opcionesSiod.urlUpdateSiod,
+      onProgreso: informar
+    });
+  }
+
+  return { idSolicitud, resultadoSiod };
 }

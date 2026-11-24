@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import type { SolicitudFalla } from '../../../../../models/SolicitudFalla';
 import DesplegableAccionesFilaGrilla from '../../../../concentrador/DesplegableAccionesFilaGrilla';
 import { AccionMenuFilaGrillaConIcono } from '../../../../concentrador/accionesGrillaConcentrador';
-import { EstadoSolicitudFallaFinalizada, EstadoSolicitudFallaVigente } from './constantesSolicitudFalla';
+import { EstadoSolicitudFallaVigente } from './constantesSolicitudFalla';
 import type { ModoAccionesFilaSolicitudFalla } from './PerfilVistaSolicitudFalla';
 
 export type DesplegableAccionesFilaSolicitudFallaProps = {
@@ -11,8 +11,6 @@ export type DesplegableAccionesFilaSolicitudFallaProps = {
   modoAcciones?: ModoAccionesFilaSolicitudFalla;
   onVer: (fila: SolicitudFalla) => void;
   onEditar?: (fila: SolicitudFalla) => void;
-  onGestionar?: (fila: SolicitudFalla) => void;
-  onIntegrarSiod?: (fila: SolicitudFalla) => void;
   onBitacora?: (fila: SolicitudFalla) => void;
 };
 
@@ -24,8 +22,6 @@ export default function DesplegableAccionesFilaSolicitudFalla(
     modoAcciones = 'completo',
     onVer,
     onEditar,
-    onGestionar,
-    onIntegrarSiod,
     onBitacora
   } = props;
   const accionesCompletas = modoAcciones === 'completo';
@@ -41,7 +37,7 @@ export default function DesplegableAccionesFilaSolicitudFalla(
 
     const items = [
       AccionMenuFilaGrillaConIcono('ver', 'Ver', () => onVer(fila)),
-      ...(onEditar
+      ...(onEditar && fila.estado === EstadoSolicitudFallaVigente
         ? [AccionMenuFilaGrillaConIcono('editar', 'Editar', () => onEditar(fila))]
         : []),
       ...(onBitacora
@@ -49,20 +45,8 @@ export default function DesplegableAccionesFilaSolicitudFalla(
         : [])
     ];
 
-    if (fila.estado !== EstadoSolicitudFallaFinalizada) {
-      if (fila.estado === EstadoSolicitudFallaVigente && onGestionar) {
-        items.push(AccionMenuFilaGrillaConIcono('gestionar', 'Gestionar', () => onGestionar(fila)));
-      }
-
-      if (!fila.integradoSiod && onIntegrarSiod) {
-        items.push(
-          AccionMenuFilaGrillaConIcono('integrar-siod', 'Integrar a SIOD', () => onIntegrarSiod(fila))
-        );
-      }
-    }
-
     return items;
-  }, [accionesCompletas, fila, onBitacora, onEditar, onGestionar, onIntegrarSiod, onVer]);
+  }, [accionesCompletas, fila, onBitacora, onEditar, onVer]);
 
   return (
     <DesplegableAccionesFilaGrilla

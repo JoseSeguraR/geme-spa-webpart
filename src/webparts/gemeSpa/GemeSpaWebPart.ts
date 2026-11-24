@@ -72,7 +72,6 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
       propiedadesSolicitudFalla: {
         concSolicitudFallaUrlExcelVinculado: this.properties.concSolicitudFallaUrlExcelVinculado,
         concSolicitudFallaUrlInsertSIOD: this.properties.concSolicitudFallaUrlInsertSIOD,
-        concSolicitudFallaUrlDeleteSIOD: this.properties.concSolicitudFallaUrlDeleteSIOD,
         concSolicitudFallaUrlUpdateSIOD: this.properties.concSolicitudFallaUrlUpdateSIOD
       }
     });
@@ -211,17 +210,12 @@ export default class GemeSpaWebPart extends BaseClientSideWebPart<GemeSpaWebPart
                 CampoUrlPropertyPane(
                   'concSolicitudFallaUrlInsertSIOD',
                   'URL Insert SIOD',
-                  'Endpoint de inserción en SIOD para solicitudes de falla.'
-                ),
-                CampoUrlPropertyPane(
-                  'concSolicitudFallaUrlDeleteSIOD',
-                  'URL Delete SIOD',
-                  'Endpoint de eliminación en SIOD para solicitudes de falla.'
+                  'POST https://…/api/httptriggersiodfalla?code=<function key> (una sola línea, key completa). HTTP 401 = URL o code incorrectos.'
                 ),
                 CampoUrlPropertyPane(
                   'concSolicitudFallaUrlUpdateSIOD',
                   'URL Update SIOD',
-                  'Endpoint de actualización en SIOD para solicitudes de falla.'
+                  'POST de actualización SIOD para falla: URL completa con ?code=<function key> en una sola línea.'
                 )
               ]
             },

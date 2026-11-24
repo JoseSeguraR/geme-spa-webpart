@@ -22,7 +22,7 @@ El modo de menú lo define `PerfilVistaSolicitudFalla.ts` (`completo` vs `solo-v
 
 | Perfil | Alta en grilla | Acciones |
 | --- | --- | --- |
-| Administrador / Despachador | Sí | Ver, editar, bitácora. **Gestionar** solo si **Vigente**. **Integrar a SIOD** si no está **Finalizada** y aún no figura integrada. **Finalizada**: ver, editar y bitácora (sin gestionar ni SIOD). |
+| Administrador / Despachador | Sí | Ver y bitácora siempre. **Editar** solo si **Vigente**. En **Finalizada**: ver y bitácora. Gestionar e integración SIOD no figuran en la columna Acciones. |
 | Solicitante | No | Ver y bitácora (Excel vinculado si el web part lo expone). |
 
 El solicitante solo ve solicitudes de instalaciones asignadas en `CONC_MANTENEDOR_USUARIOSINSTALACIONES` (módulo `Concentrador`). Sin instalaciones, la grilla queda vacía.
@@ -69,6 +69,8 @@ Banner «Estado actual» de la solicitud: último registro de bitácora (prioriz
 
 Implementación: `services/sharepoint/solicitudesFalla/BitacoraSolicitudFallaServicio.ts` y orquestadores en la misma carpeta.
 
+**Estado y fecha de retorno.** En formularios Nueva, Editar y Gestionar, la leyenda superior (`BloqueLeyendaFormularioSolicitudFalla`) explica el criterio; el estado mostrado y persistido es **Finalizada** si hay **Fecha y Hora Efectiva de Retorno**; si no, **Vigente**. Al pasar de Vigente a Finalizada al guardar edición/gestión, se ejecuta el cierre de bitácora (`FinalizarGestionSolicitudFallaConBitacora`). Los inputs de adjuntos aceptan **varios archivos** (selección múltiple y acumulación por nuevas selecciones).
+
 ### Alta (`RegistrarNuevaSolicitudFallaCompleta`)
 
 1. Valida adjuntos y `ID_CEN` único.
@@ -76,10 +78,20 @@ Implementación: `services/sharepoint/solicitudesFalla/BitacoraSolicitudFallaSer
 3. Sube adjuntos.
 4. `CrearEntradaBitacoraAltaSolicitudFalla`: `CLASIFICACION_TAREA` **FLUJO**, `TAREAORIGEN_ESTADO` **Vigente**, `TAREAORIGEN_ACTOR` **CONCENTRADOR - SOLICITUD DE FALLA**, `TAREA_IDENTIFICADOR` **`SOLICITUDFALLA-{id}`**, `TAREAORIGEN_RESPONSABLE_MULTIPLEId` (usuario actual), `ES_TAREA_PENDIENTE` **0**.
 5. `ActualizarIdBitacoraFalla` en la solicitud con el id del registro creado.
+6. **SIOD (opcional):** si el web part tiene configurada `concSolicitudFallaUrlInsertSIOD`, tras la bitácora se ejecuta `SincronizarSiodTrasAltaSolicitudFalla` (insert y, si **Finalizada**, update). Los modales **Nueva**, **Editar** y **Integrar SIOD** muestran el progreso y el resultado; al terminar esperan unos segundos (más si hay error SIOD) y se cierran solos. El usuario puede usar **Cerrar ahora** para salir antes.
+
+   - **Insert** (`POST` a la URL insert): `idsolicitud` = ID ítem SharePoint, `instalacion` = `centralId`, `descripcion`, `fechainicio` = perturbación en local `YYYY-MM-DDTHH:mm:ss` (`FormatearFechaHoraLocalParaSiodApi`).
+   - **Update** (`POST` a la URL update): solo si el estado resuelto es **Finalizada** (hay fecha de retorno). Cuerpo: `idreg` = mismo ID ítem, `fechaefectivafin` = retorno local con el mismo formato. Orden: insert y luego update en la misma tarea async.
+   - Sin URL insert configurada, no hay llamadas SIOD en el alta. La integración manual usa el **mismo contrato** insert (`instalacion`, `fechainicio` local `YYYY-MM-DDTHH:mm:ss`).
+   - En `SiodSolicitudFallaApiServicio`, cada `POST` espera la respuesta HTTP hasta **60 s**. Éxito = código **2xx** (p. ej. 201). Los mensajes en UI incluyen código HTTP o pista de CORS/red si aplica.
+   - **CORS:** la Function debe permitir el origen de la página (`https://<tenant>.sharepoint.com`). Para `gulp serve` en `https://localhost:4321`, agregar ese origen en CORS de la Function App; sin eso el navegador bloquea el `fetch` aunque PowerShell/curl funcionen.
+   - **HTTP 401:** la URL del web part no coincide con la key válida (falta `?code=`, saltos de línea al pegar en el panel, key truncada o rotada). `ConfiguracionSolicitudFalla` normaliza espacios y `&amp;` al leer la propiedad; conviene pegar la URL en **una sola línea**.
 
 ### Edición (`GuardarEdicionSolicitudFallaCompleta`)
 
-Actualiza campos y adjuntos en la lista **sin cambiar `ESTADO`**. Tras guardar, `CrearEntradaBitacoraEdicionSolicitudFalla`: registro de auditoría con el mismo `TIPO_REGISTRO`, `TAREAORIGEN_ESTADO` = estado actual de la solicitud, `CLASIFICACION_TAREA` **FLUJO**, `RESPONSABLE_COMENTARIOS` = **«Edición de la Solicitud»**. No actualiza `ID_BITACORA` (no cierra el flujo vigente).
+Mismos indicadores de progreso y SIOD que en **Nueva** cuando el guardado implica pasar de **Vigente** a **Finalizada** (update SIOD con `concSolicitudFallaUrlUpdateSIOD`).
+
+Actualiza campos y adjuntos en la lista **sin cambiar `ESTADO`** salvo el cierre por fecha de retorno. Tras guardar, `CrearEntradaBitacoraEdicionSolicitudFalla`: registro de auditoría con el mismo `TIPO_REGISTRO`, `TAREAORIGEN_ESTADO` = estado actual de la solicitud, `CLASIFICACION_TAREA` **FLUJO**, `RESPONSABLE_COMENTARIOS` = **«Edición de la Solicitud»**. No actualiza `ID_BITACORA` (no cierra el flujo vigente).
 
 ### Gestión — finalizar (`FinalizarGestionSolicitudFallaConBitacora`)
 
@@ -105,7 +117,7 @@ Mapa de ordenación principal: `UseSolicitudFallaLista` → `MapaCampoOrdenGrill
 
 ## Propiedades del Web Part
 
-Grupos **Solicitud de Falla · Enlaces** y **Solicitud de Falla · SIOD** en el property pane COR Conecta. Llegan como `PropsVistaSpa.propiedadesSolicitudFalla` (`ConfiguracionSolicitudFalla.ts`); la URL de insert SIOD alimenta el modal de integración.
+Grupos **Solicitud de Falla · Enlaces** y **Solicitud de Falla · SIOD** en el property pane COR Conecta. En SIOD solo figuran **Insert** y **Update** (no hay baja SIOD en este módulo). Llegan como `PropsVistaSpa.propiedadesSolicitudFalla` (`ConfiguracionSolicitudFalla.ts`): insert en alta y en integración manual; update en alta **Finalizada** y según evolucione el módulo.
 
 ## Operador renovable
 

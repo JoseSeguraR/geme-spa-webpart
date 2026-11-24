@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
-  ConvertirIsoAFechaLocalInput,
   FormatearValorLocalParaEdicion,
   InterpretarFechaHoraPegada
 } from '../../utils/FechaHoraCorConecta';
@@ -20,16 +19,22 @@ export type CampoFechaHora24Props = {
 
 const MensajeFormatoInvalido = 'Formato dd/mm/aaaa hh:mm (00 a 23 h).';
 
+function ValorLocalParaSelectorNativo(valor: string): string {
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(valor)) {
+    return valor.substring(0, 16);
+  }
+  return '';
+}
+
 /**
- * Campo de fecha y hora en 24 h para COR Conecta (reemplaza a `datetime-local`, que muestra AM/PM
- * según el idioma del sistema). Acepta escribir o pegar `dd/mm/aaaa hh:mm` o `dd-mm-aaaa hh:mm`;
- * sin hora toma la actual. El botón de calendario solo elige el día y conserva la hora.
+ * Campo de fecha y hora en 24 h para COR Conecta. El texto visible evita AM/PM del sistema;
+ * el botón de calendario abre `datetime-local` oculto (día y hora en un solo selector).
  */
 export default function CampoFechaHora24(props: CampoFechaHora24Props): React.ReactElement {
   const { id, valor, onCambio, min, disabled, readOnly, required } = props;
   const [texto, setTexto] = useState(FormatearValorLocalParaEdicion(valor));
   const [error, setError] = useState<string | undefined>();
-  const selectorFechaRef = useRef<HTMLInputElement>(null);
+  const selectorFechaHoraRef = useRef<HTMLInputElement>(null);
   const bloqueado = Boolean(disabled || readOnly);
 
   useEffect(() => {
@@ -66,8 +71,8 @@ export default function CampoFechaHora24(props: CampoFechaHora24Props): React.Re
     }
   };
 
-  const AbrirCalendario = (): void => {
-    const selector = selectorFechaRef.current;
+  const AbrirSelectorFechaHora = (): void => {
+    const selector = selectorFechaHoraRef.current;
     if (!selector) {
       return;
     }
@@ -78,13 +83,12 @@ export default function CampoFechaHora24(props: CampoFechaHora24Props): React.Re
     }
   };
 
-  const OnElegirDia = (evento: React.ChangeEvent<HTMLInputElement>): void => {
-    const dia = evento.target.value;
-    if (!dia) {
+  const OnElegirFechaHora = (evento: React.ChangeEvent<HTMLInputElement>): void => {
+    const elegido = evento.target.value;
+    if (!elegido) {
       return;
     }
-    const hora = (valor || ConvertirIsoAFechaLocalInput(new Date().toISOString())).substring(11, 16);
-    Aplicar(`${dia}T${hora}`);
+    Aplicar(elegido.substring(0, 16));
   };
 
   return (
@@ -116,20 +120,21 @@ export default function CampoFechaHora24(props: CampoFechaHora24Props): React.Re
         <button
           type="button"
           className="btn btn-outline-secondary"
-          onClick={AbrirCalendario}
+          onClick={AbrirSelectorFechaHora}
           disabled={bloqueado}
-          title="Elegir día en el calendario"
-          aria-label="Elegir día en el calendario"
+          title="Elegir fecha y hora"
+          aria-label="Elegir fecha y hora"
         >
           <i className="bi bi-calendar3" aria-hidden="true" />
         </button>
         <input
-          ref={selectorFechaRef}
-          type="date"
+          ref={selectorFechaHoraRef}
+          type="datetime-local"
           className="cowork-campo-fecha-hora24__selector"
-          value={valor.substring(0, 10)}
-          min={min ? min.substring(0, 10) : undefined}
-          onChange={OnElegirDia}
+          value={ValorLocalParaSelectorNativo(valor)}
+          min={min ? ValorLocalParaSelectorNativo(min) || undefined : undefined}
+          step={60}
+          onChange={OnElegirFechaHora}
           tabIndex={-1}
           aria-hidden="true"
         />

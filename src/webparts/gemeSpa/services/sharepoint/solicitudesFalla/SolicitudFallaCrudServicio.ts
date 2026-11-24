@@ -19,7 +19,8 @@ import {
 } from './CamposListaSolicitudFalla';
 import {
   EstadoSolicitudFallaVigente,
-  NombreListaSolicitudFalla
+  NombreListaSolicitudFalla,
+  ResolverEstadoSolicitudFallaDesdeFechaRetorno
 } from '../../../components/vistas/cor-conecta/concentrador/solicitudes-falla/constantesSolicitudFalla';
 import type {
   AdjuntoSolicitudFalla,
@@ -106,7 +107,7 @@ export async function CrearSolicitudFallaEnSharePoint(
   const url = `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items`;
   const cuerpo = {
     ...ConstruirCuerpoCamposFalla(datos),
-    [CampoEstadoSolicitudFalla]: EstadoSolicitudFallaVigente
+    [CampoEstadoSolicitudFalla]: ResolverEstadoSolicitudFallaDesdeFechaRetorno(datos.fechaRetornoIso)
   };
 
   const response = await context.spHttpClient.post(url, SPHttpClient.configurations.v1, {
@@ -234,7 +235,10 @@ export async function ActualizarSolicitudFallaEnSharePoint(
   const webUrl = context.pageContext.web.absoluteUrl;
   const tituloLista = encodeURIComponent(NombreListaSolicitudFalla);
   const url = `${webUrl}/_api/web/lists/getbytitle('${tituloLista}')/items(${idElemento})`;
-  const cuerpo = ConstruirCuerpoCamposFalla(datos);
+  const cuerpo = {
+    ...ConstruirCuerpoCamposFalla(datos),
+    [CampoEstadoSolicitudFalla]: ResolverEstadoSolicitudFallaDesdeFechaRetorno(datos.fechaRetornoIso)
+  };
 
   const response = await context.spHttpClient.post(url, SPHttpClient.configurations.v1, {
     headers: {

@@ -27,7 +27,7 @@ Documentación: [solicitud-falla.md](../solicitud-falla.md). Rutas SPA: `…/sol
 | --- | --- | --- | --- | --- |
 | F1 | Grilla columnas y radios Vigente/Finalizada/Todas | `falla-*.html` | `GrillaSolicitudFalla` + radios | ☐ |
 | F2 | Alta / edición validaciones | `solicitud-falla-modals.js` | Modales + `SolicitudFallaCrudServicio` | ☐ |
-| F3 | Gestionar solo Vigente + observaciones | Checkbox finalizada | `ModalGestionarSolicitudFalla` | ☐ |
+| F3 | Gestionar (modal; ya no en menú Acciones de grilla) | Checkbox finalizada | `ModalGestionarSolicitudFalla` | ☐ |
 | F4 | Integrar SIOD (progreso + resultado) | Simulación | `ModalIntegrarSiodSolicitudFalla` + Azure | ☐ |
 | F5 | Bitácora (consulta y registros por alta/edición/gestión/SIOD) | `falla.bitacora` | `ENGINE_BITACORA` `CONCENTRADOR-SOLICITUDFALLA` | ☐ |
 | F6 | Solicitante Ver + Bitácora (+ Excel si props) | Matriz rol | `solo-ver` + `ModalBitacoraSolicitudFalla` | ☐ |

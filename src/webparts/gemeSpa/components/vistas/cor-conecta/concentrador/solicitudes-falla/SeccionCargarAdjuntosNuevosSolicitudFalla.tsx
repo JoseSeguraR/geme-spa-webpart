@@ -3,6 +3,7 @@ import {
   ColumnaCampoVerSolicitudFalla,
   GrillaCamposVerSolicitudFalla
 } from './PresentacionVerSolicitudFalla';
+import { AnexarArchivosAdjuntosFormulario } from './AnexarArchivosAdjuntosFormulario';
 
 const ClaseEtiqueta = 'form-label cowork-modal-solicitud-falla__etiqueta mb-1';
 const ClaseControl = 'form-control form-control-sm cowork-modal-solicitud-falla__control';
@@ -35,7 +36,14 @@ export default function SeccionCargarAdjuntosNuevosSolicitudFalla(
             multiple
             disabled={deshabilitado}
             accept=".pdf,.zip,.cfg,.dat,application/pdf,application/zip"
-            onChange={(evento) => onCambioArchivosAdjuntos(Array.from(evento.target.files ?? []))}
+            onChange={(evento) =>
+              onCambioArchivosAdjuntos(
+                AnexarArchivosAdjuntosFormulario(
+                  archivosAdjuntos,
+                  Array.from(evento.target.files ?? [])
+                )
+              )
+            }
           />
           <small className={ClaseAyuda}>Formatos permitidos: PDF, ZIP, CFG, DAT</small>
           {archivosAdjuntos.length > 0 ? (

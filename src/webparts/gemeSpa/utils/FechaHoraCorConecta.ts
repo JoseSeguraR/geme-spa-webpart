@@ -96,6 +96,25 @@ export function InterpretarFechaHoraPegada(texto: string): string | undefined {
   return ConstruirValorLocal(anio, mes, dia, hora, minuto);
 }
 
+/**
+ * `AAAA-MM-DDTHH:mm` (o con segundos) → `YYYY-MM-DDTHH:mm:ss` para APIs SIOD (hora local, sin zona).
+ */
+export function FormatearFechaHoraLocalParaSiodApi(valorLocal: string): string | undefined {
+  const limpio = valorLocal.trim();
+  if (!limpio) {
+    return undefined;
+  }
+  const conSegundos = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/.exec(limpio);
+  if (conSegundos) {
+    return conSegundos[1];
+  }
+  const sinSegundos = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})$/.exec(limpio);
+  if (sinSegundos) {
+    return `${sinSegundos[1]}:00`;
+  }
+  return undefined;
+}
+
 /** `AAAA-MM-DDTHH:mm` → `dd/mm/aaaa hh:mm` para mostrar en el campo de edición. */
 export function FormatearValorLocalParaEdicion(valorLocal: string | undefined): string {
   const partes = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(valorLocal ?? '');

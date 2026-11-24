@@ -21,8 +21,6 @@ import GrillaSolicitudFalla from './GrillaSolicitudFalla';
 import ModalNuevaSolicitudFalla from './ModalNuevaSolicitudFalla';
 import ModalEditarSolicitudFalla from './ModalEditarSolicitudFalla';
 import ModalVerSolicitudFalla from './ModalVerSolicitudFalla';
-import ModalGestionarSolicitudFalla from './ModalGestionarSolicitudFalla';
-import ModalIntegrarSiodSolicitudFalla from './ModalIntegrarSiodSolicitudFalla';
 import ModalBitacoraSolicitudFalla from './ModalBitacoraSolicitudFalla';
 import type { FiltrosFechaSolicitudFalla } from './UseSolicitudFallaLista';
 import { CargarTodasSolicitudesFallaFiltradas } from './CargarTodasSolicitudesFallaFiltradas';
@@ -43,7 +41,7 @@ export type VistaSolicitudFallaContenidoProps = PropsVistaSpa & {
 };
 
 export default function VistaSolicitudFallaContenido(props: VistaSolicitudFallaContenidoProps): React.ReactElement {
-  const { context, propiedadesSolicitudFalla, perfil } = props;
+  const { context, perfil, propiedadesSolicitudFalla } = props;
   const prefijoRutaServidorSitio = context.pageContext.site.serverRelativeUrl;
   const enlacesTabs = useMemo(
     () => ObtenerEnlacesTabsConcentrador(perfil, prefijoRutaServidorSitio),
@@ -74,8 +72,6 @@ export default function VistaSolicitudFallaContenido(props: VistaSolicitudFallaC
   const [modalNuevaVisible, setModalNuevaVisible] = useState(false);
   const [filaVer, setFilaVer] = useState<SolicitudFalla | undefined>();
   const [filaEditar, setFilaEditar] = useState<SolicitudFalla | undefined>();
-  const [filaGestionar, setFilaGestionar] = useState<SolicitudFalla | undefined>();
-  const [filaIntegrarSiod, setFilaIntegrarSiod] = useState<SolicitudFalla | undefined>();
   const [bitacoraMeta, setBitacoraMeta] = useState<{ id: number; idCen?: string } | undefined>();
   const [recargarToken, setRecargarToken] = useState(0);
   const [exportandoExcel, setExportandoExcel] = useState(false);
@@ -461,8 +457,6 @@ export default function VistaSolicitudFallaContenido(props: VistaSolicitudFallaC
         modoAcciones={modoAccionesGrilla}
         onVer={setFilaVer}
         onEditar={permitirCreacion ? setFilaEditar : undefined}
-        onGestionar={permitirCreacion ? setFilaGestionar : undefined}
-        onIntegrarSiod={permitirCreacion ? setFilaIntegrarSiod : undefined}
         onBitacora={(fila) => setBitacoraMeta({ id: fila.id, idCen: fila.idCen })}
       />
 
@@ -487,6 +481,7 @@ export default function VistaSolicitudFallaContenido(props: VistaSolicitudFallaC
             context={context}
             visible={modalNuevaVisible}
             centrales={centrales}
+            propiedadesSolicitudFalla={propiedadesSolicitudFalla ?? {}}
             onCerrar={() => setModalNuevaVisible(false)}
             onCreado={OnRecargarGrilla}
           />
@@ -496,25 +491,9 @@ export default function VistaSolicitudFallaContenido(props: VistaSolicitudFallaC
             fila={filaEditar}
             visible={filaEditar !== undefined}
             centrales={centrales}
+            propiedadesSolicitudFalla={propiedadesSolicitudFalla ?? {}}
             onCerrar={() => setFilaEditar(undefined)}
             onGuardado={OnRecargarGrilla}
-          />
-
-          <ModalGestionarSolicitudFalla
-            context={context}
-            fila={filaGestionar}
-            visible={filaGestionar !== undefined}
-            onCerrar={() => setFilaGestionar(undefined)}
-            onGuardado={OnRecargarGrilla}
-          />
-
-          <ModalIntegrarSiodSolicitudFalla
-            context={context}
-            fila={filaIntegrarSiod}
-            visible={filaIntegrarSiod !== undefined}
-            propiedadesSolicitudFalla={propiedadesSolicitudFalla}
-            onCerrar={() => setFilaIntegrarSiod(undefined)}
-            onIntegrado={OnRecargarGrilla}
           />
         </>
       ) : null}

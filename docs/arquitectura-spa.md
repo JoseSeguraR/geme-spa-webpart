@@ -192,7 +192,7 @@ Regla del workspace (`CLAUDE.md` y `.cursor/rules/fecha-hora-cor-conecta.mdc`): 
 
 - `utils/FechaHoraCorConecta.ts`: `FormatearFechaHoraVisible` (ISO → texto visible), `ConvertirEntradaLocalAIsoUtc` / `ConvertirIsoAFechaLocalInput` (valor local `AAAA-MM-DDTHH:mm` ↔ ISO UTC), `InterpretarFechaHoraPegada` (acepta `dd/mm/aaaa hh:mm`, `dd-mm-aaaa hh:mm` y `aaaa-mm-ddThh:mm`; sin hora usa la actual; rechaza horas > 23 y fechas inexistentes) y `FormatearValorLocalParaEdicion`. El texto visible se arma a mano: `toLocaleString('es-CL')` separa con guiones y puede usar AM/PM según el navegador.
 - `InterpretarHora24` y `components/concentrador/CampoHora24.tsx`: hora sola `HH:mm` (00 a 23) en lugar de `<input type="time">`; acepta `9:05`, `0905`, `9` o pegar. Lo usan los plazos de envío de los mantenedores.
-- `components/concentrador/CampoFechaHora24.tsx`: reemplaza a `<input type="datetime-local">`. Mismo contrato de valor (`valor`/`onCambio` con `AAAA-MM-DDTHH:mm`, `min`, `disabled`, `readOnly`, `required`). Campo de texto que interpreta al salir, con Enter o al pegar; marca `is-invalid` si el formato o el mínimo no se cumplen y no propaga el valor. El botón de calendario abre un `input type="date"` oculto (`showPicker`) que solo cambia el día y conserva la hora.
+- `components/concentrador/CampoFechaHora24.tsx`: el valor visible es texto `dd/mm/aaaa hh:mm` (sin depender de AM/PM del SO). Mismo contrato de valor (`AAAA-MM-DDTHH:mm`, `min`, etc.). El botón de calendario abre un `datetime-local` oculto (`showPicker`) con fecha y hora; el texto sigue interpretándose al salir, con Enter o al pegar.
 
 ## Carpetas estructurales
 

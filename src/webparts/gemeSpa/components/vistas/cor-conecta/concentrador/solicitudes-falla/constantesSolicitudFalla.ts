@@ -49,6 +49,17 @@ export function ConstruirTareaIdentificadorSolicitudFalla(idSolicitud: number): 
 export const EstadoSolicitudFallaVigente = 'Vigente';
 export const EstadoSolicitudFallaFinalizada = 'Finalizada';
 
+export const TextoLeyendaFormularioSolicitudFalla =
+  'El estado de la solicitud se calcula al guardar según la Fecha y Hora Efectiva de Retorno: si la indica, ' +
+  'la solicitud queda Finalizada; si la deja vacía, queda Vigente. El campo Estado del formulario solo refleja ' +
+  'ese criterio y no se edita directamente. Puede adjuntar varios archivos (PDF, ZIP, CFG, DAT) en una o más ' +
+  'selecciones del control de archivos.';
+
+/** Valor del campo de fecha/hora local (`CampoFechaHora24`) o ISO en guardado. */
+export function ResolverEstadoSolicitudFallaDesdeFechaRetorno(fechaRetorno?: string): typeof EstadoSolicitudFallaVigente | typeof EstadoSolicitudFallaFinalizada {
+  return fechaRetorno?.trim() ? EstadoSolicitudFallaFinalizada : EstadoSolicitudFallaVigente;
+}
+
 import type { EstadoFiltroSolicitudFalla, MedidaPotenciaFalla } from '../../../../../models/SolicitudFalla';
 
 export type { MedidaPotenciaFalla, EstadoFiltroSolicitudFalla };

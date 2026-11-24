@@ -38,8 +38,6 @@ export type GrillaSolicitudFallaProps = {
   modoAcciones?: ModoAccionesFilaSolicitudFalla;
   onVer: (fila: SolicitudFalla) => void;
   onEditar?: (fila: SolicitudFalla) => void;
-  onGestionar?: (fila: SolicitudFalla) => void;
-  onIntegrarSiod?: (fila: SolicitudFalla) => void;
   onBitacora?: (fila: SolicitudFalla) => void;
 };
 
@@ -57,8 +55,6 @@ export default function GrillaSolicitudFalla(props: GrillaSolicitudFallaProps): 
     modoAcciones,
     onVer,
     onEditar,
-    onGestionar,
-    onIntegrarSiod,
     onBitacora
   } = props;
 
@@ -105,8 +101,6 @@ export default function GrillaSolicitudFalla(props: GrillaSolicitudFallaProps): 
               modoAcciones={modoAcciones}
               onVer={(fila) => onVer(fila)}
               onEditar={onEditar}
-              onGestionar={onGestionar}
-              onIntegrarSiod={onIntegrarSiod}
               onBitacora={onBitacora}
             />
           </CeldaAccionesCentrada>
@@ -156,7 +150,7 @@ export default function GrillaSolicitudFalla(props: GrillaSolicitudFallaProps): 
         renderCell: (params) => <BloqueEstadoSolicitudFalla estado={String(params.value ?? '')} />
       }
     ],
-    [modoAcciones, onBitacora, onEditar, onGestionar, onIntegrarSiod, onVer]
+    [modoAcciones, onBitacora, onEditar, onVer]
   );
 
   return (
